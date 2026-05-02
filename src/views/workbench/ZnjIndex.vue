@@ -2,6 +2,7 @@
 import { inject, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { Bell, DataLine } from '@element-plus/icons-vue'
 import { getWorkbenchCount, getWorkbenchNotices } from '@/services/workbenchService'
+import flowApiMapping from '@/utils/flowApiMapping'
 import { initChart, disposeChart, makeDonutOption, makeLineOption, makeGaugeOption } from '@/utils/echarts'
 
 defineProps({ pageName: { type: String, default: 'ZnjIndex' } })
@@ -87,8 +88,8 @@ onMounted(async () => {
     loadMetric('orderInfo/djs_order_list','djsgd'), loadMetric('orderInfo/dfk_order_list','dfkgd'),
     loadMetric('orderInfo/cb_order_list','cbgd'), loadMetric('orderInfo/znjdd_ldps_order_list','ldpsgd'),
     loadMetric('orderInfo/dyp_my_order_list','dypgd'), loadMetric('knowledgeBase/condition_list','bmzsd'),
-    loadWarning('orderInfo/znj_yyqgd_order_list','znj_yyqgd'), loadWarning('orderInfo/yqgd_order_list','znj_yqgd'),
-    loadWarning('orderInfo/znj_sbgd_order_list','znj_ysbgd'), loadNotices(), loadCharts()
+    loadWarning(flowApiMapping.listApi.znj_yyqgd?.api,'znj_yyqgd'), loadWarning(flowApiMapping.listApi.znj_yqgd?.api,'znj_yqgd'),
+    loadWarning(flowApiMapping.listApi.znj_ysbgd?.api,'znj_ysbgd'), loadNotices(), loadCharts()
   ])
   loading.value=false; window.addEventListener('resize',resizeAll)
 })

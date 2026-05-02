@@ -2,6 +2,7 @@
 import { inject, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { Bell, DataLine, Tickets } from '@element-plus/icons-vue'
 import { getWorkbenchCount, getWorkbenchNotices } from '@/services/workbenchService'
+import flowApiMapping from '@/utils/flowApiMapping'
 import { initChart, disposeChart, makeDonutOption, makeLineOption, makeGaugeOption } from '@/utils/echarts'
 
 defineProps({ pageName: { type: String, default: 'FzgIndex' } })
@@ -100,10 +101,10 @@ onMounted(async () => {
     loadMetric('orderInfo/fzg_sp_order_list', 'sp'),
     loadMetric('orderInfo/fzg_gdsp_order_list', 'gdsp'),
     loadMetric('orderInfo/dgj_order_list', 'dgj'),
-    loadWarning('orderInfo/fzg_yyqgd_order_list', 'fzg_yyqgd'),
-    loadWarning('orderInfo/fzg_yqgd_order_list', 'fzg_yqgd'),
-    loadWarning('orderInfo/fzg_ldps_order_list', 'fzg_ldps'),
-    loadWarning('orderInfo/fzg_yfpgd_order_list', 'fzg_yfpgd'),
+    loadWarning(flowApiMapping.listApi.fzg_yyqgd?.api, 'fzg_yyqgd'),
+    loadWarning(flowApiMapping.listApi.fzg_yqgd?.api, 'fzg_yqgd'),
+    loadWarning(flowApiMapping.listApi.fzg_ldps?.api, 'fzg_ldps'),
+    loadWarning(flowApiMapping.listApi.fzg_yfpgd?.api, 'fzg_yfpgd'),
     loadNotices(), loadCharts()
   ])
   loading.value = false

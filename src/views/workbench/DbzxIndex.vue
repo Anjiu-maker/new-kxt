@@ -1,19 +1,26 @@
 <script setup>
 import { computed, inject, onMounted, reactive, ref } from 'vue'
-import { Bell, Close, Collection, DataLine, Plus, Star, StarFilled, Tickets } from '@element-plus/icons-vue'
+import { Bell, Close, Collection, DataLine, DocumentChecked, Microphone, Plus, Printer, Star, StarFilled, Tickets } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import {
   addKnowledgeCollect, checkKnowledgeCollected, deleteMyMenu,
-  getKnowledgeDetail, getKnowledgeList, getMyMenuList,
+  getKnowledgeDetail, getKnowledgeList, getMyMenuList, getOrderDetail,
   getWorkbenchCount, getWorkbenchList, getWorkbenchNotices,
   removeKnowledgeCollect, saveMyMenu
 } from '@/services/workbenchService'
 import { useAuthStore } from '@/stores/auth'
+import PrintExport from '@/components/PrintExport.vue'
+import EcdbForm from './EcdbForm.vue'
 
 defineProps({ pageName: { type: String, default: 'DbzxIndex' } })
 const authStore = useAuthStore()
 const workbenchNav = inject('workbenchNav', null)
 const loading = ref(false)
+const printVisible = ref(false)
+const printData = ref({})
+const printMode = ref('print')
+const ecdbVisible = ref(false)
+const ecdbRow = ref(null)
 
 const metrics = reactive({ dbsqd: 0, ddydbd: 0, dbz: 0, yellowyjd: 0, redyjd: 0 })
 const extraMetrics = reactive({ overseeInstructions: 0, requestForApproval: 0 })
@@ -90,6 +97,22 @@ function handleClick(row) {
   workbenchNav?.openCustomTab('dbzx_ecdb', '二次督办', '/order/addOrder', '二次督办', { orderId: row.orderId })
 }
 
+async function printOrder(row, mode) {
+  const isHaveLookBaomi = authStore.hasPermission('lookOrderInfo', 1)
+  try {
+    const res = await getOrderDetail(row.orderNo, isHaveLookBaomi)
+    if (res.data?.code === 200) { printData.value = res.data.data ?? {}; printMode.value = mode; printVisible.value = true }
+  } catch { ElMessage.error('获取工单详情失败') }
+}
+
+function playSound(row) {
+  if (row.haveSoundName && row.haveSoundName !== '无') {
+    const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || ''
+    const audio = new Audio(`${baseApi}${row.haveSoundName}`)
+    audio.play().catch(() => ElMessage.warning('录音播放失败'))
+  }
+}
+
 // Knowledge, Notices, Quick Menu (same pattern as CbgIndex)
 async function loadKnowledge() { try { const res = await getKnowledgeList(); if (res.data?.code === 200) knowledges.value = res.data.data?.records ?? [] } catch { knowledges.value = [] } }
 function knowledgeMore() { workbenchNav?.openMenuByCode('xxrw') }
@@ -154,8 +177,13 @@ onMounted(async () => {
             <el-table-column label="登记时间" width="155" align="center"><template #default="{ row }">{{ formatDateTime(row.createTime) }}</template></el-table-column>
             <el-table-column prop="handlerDeptName" label="办理单位" width="140" show-overflow-tooltip />
             <el-table-column prop="orderStateName" label="状态" width="100" show-overflow-tooltip />
-            <el-table-column label="操作" width="120" align="center" fixed="right">
-              <template #default="{ row }"><el-button type="primary" size="small" round @click="handleClick(row)">二次督办</el-button></template>
+            <el-table-column label="操作" width="220" align="center" fixed="right">
+              <template #default="{ row }">
+                <el-button type="primary" size="small" round @click="ecdbRow = row; ecdbVisible = true">二次督办</el-button>
+                <el-button :icon="DocumentChecked" size="small" text @click="printOrder(row, 'print')" />
+                <el-button :icon="Printer" size="small" text @click="printOrder(row, 'dbprint')" />
+                <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18" @click="playSound(row)" style="cursor:pointer"><Microphone /></el-icon>
+              </template>
             </el-table-column>
           </el-table>
         </section>
@@ -197,6 +225,9 @@ onMounted(async () => {
       <div class="kjcd-dialog"><div class="kjcd-left"><el-tree node-key="id" :data="menus" :props="defaultProps" highlight-current accordion :expand-on-click-node="true" :current-node-key="currentSelectNode.id" @node-click="treeClick" /></div><div class="kjcd-right"><el-checkbox-group v-model="currentKjcdList" :max="5"><el-checkbox v-for="item in currentSubMenus" :key="item.id" :label="item.id" :value="item.id">{{ item.text }}</el-checkbox></el-checkbox-group></div></div>
       <template #footer><div class="kjcd-footer"><span>最多可选5项，已选 (<em>{{ currentKjcdList.length }}</em>) 项</span><div><el-button @click="kjcdShow=false">关闭</el-button><el-button type="primary" @click="saveKjcdFn">保存</el-button></div></div></template>
     </el-dialog>
+
+    <PrintExport :visible="printVisible" :print-data="printData" :mode="printMode" @update:visible="printVisible = $event" />
+    <EcdbForm :visible="ecdbVisible" :row="ecdbRow" @update:visible="ecdbVisible = $event" @success="loadTable()" />
   </section>
 </template>
 

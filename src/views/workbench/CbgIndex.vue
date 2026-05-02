@@ -12,11 +12,18 @@ import {
   removeKnowledgeCollect, saveMyMenu
 } from '@/services/workbenchService'
 import { useAuthStore } from '@/stores/auth'
+import PrintExport from '@/components/PrintExport.vue'
+import SqdbForm from './SqdbForm.vue'
 
 defineProps({ pageName: { type: String, default: 'CbgIndex' } })
 const authStore = useAuthStore()
 const workbenchNav = inject('workbenchNav', null)
 const loading = ref(false)
+const printVisible = ref(false)
+const printData = ref({})
+const printMode = ref('print')
+const sqdbVisible = ref(false)
+const sqdbRow = ref(null)
 
 const metrics = reactive({
   remindersRed: 0, messageReminders: 0, callReminders: 0, dbspzOrder: 0, bydbOrder: 0
@@ -97,6 +104,22 @@ async function loadTable() {
 
 async function handleClick(row) {
   workbenchNav?.openCustomTab('cbg_handle', '催办处理', '/order/addOrder', '催办处理', { orderId: row.orderId })
+}
+
+async function printOrder(row, mode) {
+  const isHaveLookBaomi = authStore.hasPermission('lookOrderInfo', 1)
+  try {
+    const res = await getOrderDetail(row.orderNo, isHaveLookBaomi)
+    if (res.data?.code === 200) { printData.value = res.data.data ?? {}; printMode.value = mode; printVisible.value = true }
+  } catch { ElMessage.error('获取工单详情失败') }
+}
+
+function playSound(row) {
+  if (row.haveSoundName && row.haveSoundName !== '无') {
+    const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || ''
+    const audio = new Audio(`${baseApi}${row.haveSoundName}`)
+    audio.play().catch(() => ElMessage.warning('录音播放失败'))
+  }
 }
 
 function totalNumber(code) {
@@ -226,9 +249,13 @@ onMounted(async () => {
             <el-table-column label="登记时间" width="155" align="center"><template #default="{ row }">{{ formatDateTime(row.createTime) }}</template></el-table-column>
             <el-table-column prop="handlerDeptName" label="办理单位" width="140" show-overflow-tooltip />
             <el-table-column prop="orderStateName" label="状态" width="100" show-overflow-tooltip />
-            <el-table-column label="操作" width="160" align="center" fixed="right">
+            <el-table-column label="操作" width="220" align="center" fixed="right">
               <template #default="{ row }">
                 <el-button type="primary" size="small" round @click="handleClick(row)">立即处理</el-button>
+                <el-button type="warning" size="small" round @click="sqdbRow = row; sqdbVisible = true">申请督办</el-button>
+                <el-button :icon="DocumentChecked" size="small" text @click="printOrder(row, 'print')" />
+                <el-button :icon="Printer" size="small" text @click="printOrder(row, 'zprint')" />
+                <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18" @click="playSound(row)" style="cursor:pointer"><Microphone /></el-icon>
               </template>
             </el-table-column>
           </el-table>
@@ -294,6 +321,9 @@ onMounted(async () => {
       </div>
       <template #footer><div class="kjcd-footer"><span>最多可选5项，已选 (<em>{{ currentKjcdList.length }}</em>) 项</span><div><el-button @click="kjcdShow=false">关闭</el-button><el-button type="primary" @click="saveKjcdFn">保存</el-button></div></div></template>
     </el-dialog>
+
+    <PrintExport :visible="printVisible" :print-data="printData" :mode="printMode" @update:visible="printVisible = $event" />
+    <SqdbForm :visible="sqdbVisible" :row="sqdbRow" @update:visible="sqdbVisible = $event" @success="loadTable()" />
   </section>
 </template>
 

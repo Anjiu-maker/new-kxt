@@ -2,6 +2,7 @@
 import { inject, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { Bell, DataLine } from '@element-plus/icons-vue'
 import { getWorkbenchCount, getWorkbenchNotices } from '@/services/workbenchService'
+import flowApiMapping from '@/utils/flowApiMapping'
 import { initChart, disposeChart, makeDonutOption, makeLineOption, makeGaugeOption } from '@/utils/echarts'
 
 defineProps({ pageName: { type: String, default: 'BjshIndex' } })
@@ -79,8 +80,8 @@ onMounted(async () => {
   await Promise.all([
     loadMetric('orderInfo/my_dhf_order_list','dhf'), loadMetric('orderInfo/dgd_order_list','dgd'),
     loadMetric('orderInfo/dyp_order_list','dyp'), loadMetric('orderInfo/dyp_all_order_list','dypz'),
-    loadWarning('orderInfo/yyhf_order_list','yyhf'), loadWarning('orderInfo/hf_csdhfgd_order_list','hf_csdhfgd'),
-    loadWarning('orderInfo/hf_yhfgd_order_list','hf_yhfgd'), loadWarning('orderInfo/hf_gdhfcs_order_list','hf_yhfcs'),
+    loadWarning(flowApiMapping.listApi.yyhf?.api,'yyhf'), loadWarning(flowApiMapping.listApi.hf_csdhfgd?.api,'hf_csdhfgd'),
+    loadWarning(flowApiMapping.listApi.hf_yhfgd?.api,'hf_yhfgd'), loadWarning(flowApiMapping.listApi.hf_yhfcs?.api,'hf_yhfcs'),
     loadNotices(), loadCharts()
   ])
   loading.value=false; window.addEventListener('resize',resizeAll)

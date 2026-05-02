@@ -91,8 +91,10 @@ const noticeDetailWin = ref(false)
 const noticeDetail = ref({})
 
 // ── 打印 ──
+import PrintExport from '@/components/PrintExport.vue'
 const printVisible = ref(false)
 const printData = ref({})
+const printMode = ref('print')
 
 // ── 计算属性 ──
 const userInfo = computed(() => authStore.userInfo ?? {})
@@ -456,10 +458,19 @@ async function printOrder(row, mode) {
     const res = await getOrderDetail(row.orderNo)
     if (res.data?.code === 200) {
       printData.value = res.data.data ?? {}
+      printMode.value = mode
       printVisible.value = true
     }
   } catch {
     ElMessage.error('获取工单详情失败')
+  }
+}
+
+function playSound(row) {
+  if (row.haveSoundName && row.haveSoundName !== '无') {
+    const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || ''
+    const audio = new Audio(`${baseApi}${row.haveSoundName}`)
+    audio.play().catch(() => ElMessage.warning('录音播放失败'))
   }
 }
 
@@ -599,7 +610,7 @@ onMounted(async () => {
                 <el-button type="primary" size="small" round @click="handleClick(row)">立即处理</el-button>
                 <el-button :icon="DocumentChecked" size="small" text @click="printOrder(row, 'print')" />
                 <el-button :icon="Printer" size="small" text @click="printOrder(row, 'zprint')" />
-                <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18"><Microphone /></el-icon>
+                <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18" @click="playSound(row)" style="cursor:pointer"><Microphone /></el-icon>
               </template>
             </el-table-column>
           </el-table>
@@ -797,6 +808,11 @@ onMounted(async () => {
         </div>
       </template>
     </el-dialog>
+
+    <PrintExport :visible="printVisible" :print-data="printData" :mode="printMode" @update:visible="printVisible = $event" />
+
+    <!-- 录音播放 -->
+    <audio ref="audioRef" style="display:none" />
   </section>
 </template>
 

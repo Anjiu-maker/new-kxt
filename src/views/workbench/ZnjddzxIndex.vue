@@ -54,6 +54,19 @@ async function loadCharts() {
 }
 function resizeAll() { Object.values(chartInstances).forEach(i=>i?.resize?.()) }
 
+async function refreshData() {
+  await Promise.all([
+    loadMetric('orderInfo/djs_order_list','djsgd'), loadMetric('orderInfo/dfk_order_list','dfkgd'),
+    loadMetric('orderInfo/cb_order_list','cbgd'), loadMetric('orderInfo/znjdd_ldps_order_list','ldpsgd'),
+    loadMetric('orderInfo/dyp_my_order_list','dypgd'), loadMetric('knowledgeBase/condition_list','bmzsd'),
+    loadWarning('orderInfo/znjdd_yyqgd_order_list','znjdd_yyqgd'), loadWarning('orderInfo/znjdd_yqgd_order_list','znjdd_yqgd'),
+    loadWarning('orderInfo/znjdd_ldps_order_list','znjdd_ldps'), loadWarning('orderInfo/znjdd_yfpgd_order_list','znjdd_yfpgd')
+  ])
+}
+
+const refreshSeconds = ref((window.common?.refreshTime || window.__KXT_CONFIG__?.refreshTime) || 30)
+let refreshTimer = null
+
 onMounted(async () => {
   loading.value=true
   await Promise.all([
@@ -65,8 +78,25 @@ onMounted(async () => {
     loadSubordinate(), loadCharts()
   ])
   loading.value=false; window.addEventListener('resize',resizeAll)
+  refreshTimer = setInterval(refreshData, refreshSeconds.value * 1000)
+
+  const watchKey = '__kxt_isDjsRefresh_watch'
+  if (!window[watchKey]) {
+    window[watchKey] = true
+    const orig = window.localStorage.setItem.bind(window.localStorage)
+    window.localStorage.setItem = function(key, value) {
+      if (key === 'isDjsRefresh' && value === 'true') {
+        window.localStorage.setItem = orig
+        metrics.djsgd++
+        window.localStorage.removeItem('isDjsRefresh')
+        window.localStorage.setItem = orig
+        return
+      }
+      return orig(key, value)
+    }
+  }
 })
-onUnmounted(() => { window.removeEventListener('resize',resizeAll); Object.keys(chartInstances).forEach(id=>disposeChart(id)) })
+onUnmounted(() => { window.removeEventListener('resize',resizeAll); Object.keys(chartInstances).forEach(id=>disposeChart(id)); clearInterval(refreshTimer) })
 </script>
 
 <template>

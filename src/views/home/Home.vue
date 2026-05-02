@@ -3,14 +3,14 @@ import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Bell,
+  ArrowDown,
   Clock,
   Close,
-  Fold,
   HomeFilled,
+  Menu,
   Plus,
   Refresh,
-  SwitchButton,
-  UserFilled
+  SwitchButton
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import defaultAvatar from '@/assets/images/user.png'
@@ -67,7 +67,7 @@ const loadingUser = ref(false)
 const tabs = ref([])
 const activeTabId = ref('')
 const tabContextVisible = ref('')
-const menuIconModules = import.meta.glob('@/assets/images/menus/*.png', {
+const menuIconModules = import.meta.glob('../../assets/images/menus/*.png', {
   eager: true,
   import: 'default'
 })
@@ -89,11 +89,27 @@ const menus = computed(() => authStore.menus ?? [])
 const activeMenu = computed(() => menus.value.find((item) => item.id === activeMenuId.value) ?? menus.value[0])
 const submenus = computed(() => activeMenu.value?.submenu ?? [])
 const activeTab = computed(() => tabs.value.find((item) => item.id === activeTabId.value) ?? tabs.value[0])
+const rolePageIndex = computed(() => localStorage.getItem('rolePageIndex') || 'BlankPage')
 const activeInternalPage = computed(() => resolveInternalPageComponent(activeTab.value?.url || rolePageIndex.value, activeTab.value?.query ?? {}))
 const currentPage = computed(() => activeTab.value?.fullpath || activeSubmenu.value?.fullpath || activeSubmenu.value?.text || '欢迎首页')
-const rolePageIndex = computed(() => localStorage.getItem('rolePageIndex') || 'BlankPage')
 const footerTitle = computed(() => window.common?.bottomName || window.__KXT_CONFIG__?.bottomName || '')
 const telNum = computed(() => localStorage.getItem('telNum') || '')
+const menuShowType = computed(() => localStorage.getItem('menuShowType') || '')
+const leftMenuRoleCodes = computed(() => {
+  const source = window.common?.leftMenuRoleCodes ?? window.__KXT_CONFIG__?.leftMenuRoleCodes ?? ''
+  return String(source)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+})
+const showSubmenuLeft = computed(() => {
+  const value = window.common?.showSubmenuLeft ?? window.__KXT_CONFIG__?.showSubmenuLeft
+  return value === true || value === 'true'
+})
+const isLeftMenu = computed(() => {
+  const roleCode = localStorage.getItem('roleCode') || userInfo.value.roleCode || ''
+  return menuShowType.value === '3' || showSubmenuLeft.value || leftMenuRoleCodes.value.includes(String(roleCode))
+})
 const uploadAction = computed(() => {
   const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || ''
   return `${baseApi}/api/v1/uploadFile/uploadImg`
@@ -172,6 +188,21 @@ function getMenuIcon(icon, active = false) {
 
   const fallback = Object.entries(menuIconModules).find(([path]) => path.endsWith(`/${icon}.png`))
   return fallback?.[1] ?? ''
+}
+
+function getLeftMenuIcon(icon) {
+  if (!icon) {
+    return ''
+  }
+
+  const activeMatch = Object.entries(menuIconModules).find(([path]) => path.endsWith(`/${icon}-blue.png`))
+  
+
+  if (activeMatch) {
+    return activeMatch[1]
+  }
+
+  return getMenuIcon(icon)
 }
 
 function getDirectBadge(menu) {
@@ -1023,13 +1054,13 @@ onUnmounted(() => {
 
 <template>
   <div class="home-shell" v-loading="loadingUser">
-    <header class="home-header">
+    <header class="home-header" :class="{ 'home-header--left-menu': isLeftMenu }">
       <div class="home-brand">
         <strong>{{ runtimeTitle }}</strong>
         <span>一号响应平台</span>
       </div>
 
-      <nav class="home-menu" aria-label="主菜单">
+      <nav v-if="!isLeftMenu" class="home-menu" aria-label="主菜单">
         <button
           v-for="menu in menus"
           :key="menu.id"
@@ -1046,15 +1077,17 @@ onUnmounted(() => {
       </nav>
 
       <div class="home-actions">
-        <el-badge :hidden="noticeMessage <= 0" :max="99" :value="noticeMessage" class="notice-badge">
-          <el-button circle :icon="Bell" @click="selectNoticeMenu" />
+        <el-badge :hidden="noticeMessage <= 0" is-dot class="notice-badge">
+          <button class="notice-button" type="button" aria-label="通知公告" @click="selectNoticeMenu">
+            <el-icon><Bell /></el-icon>
+          </button>
         </el-badge>
 
         <el-dropdown trigger="click" @command="handleCommand">
           <button class="user-entry" type="button">
-            <el-avatar :size="36" :src="avatarUrl || defaultAvatar" />
-            <span>{{ userInfo.userName || userInfo.account || '用户' }}</span>
-            <Fold />
+            <el-avatar :size="40" :src="avatarUrl || defaultAvatar" />
+            <span class="user-entry__name">{{ userInfo.userName || userInfo.account || '用户' }}</span>
+            <el-icon class="user-entry__arrow"><ArrowDown /></el-icon>
           </button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -1070,7 +1103,7 @@ onUnmounted(() => {
       </div>
     </header>
 
-    <section class="submenu-bar">
+    <section v-if="!isLeftMenu" class="submenu-bar">
       <button
         v-for="submenu in submenus"
         :key="submenu.id"
@@ -1090,86 +1123,130 @@ onUnmounted(() => {
 
     <CtiTopBar />
 
-    <section class="workspace-bar">
-      <div class="location-bar">
-        <span>当前位置：</span>
-        <strong>{{ currentPage }}</strong>
+    <section class="home-body" :class="{ 'with-left-menu': isLeftMenu }">
+      <aside v-if="isLeftMenu" class="left-submenu">
+        <header class="left-submenu__header">
+          <time>
+            <el-icon><Clock /></el-icon>
+            {{ nowTime }}
+          </time>
+        </header>
+
+        <el-scrollbar class="left-submenu__scroll">
+          <el-menu
+            class="left-menu"
+            :default-active="String(activeSubMenuId)"
+            :default-openeds="[String(activeMenuId)]"
+            unique-opened
+          >
+            <el-sub-menu v-for="menu in menus" :key="menu.id" :index="String(menu.id)">
+              <template #title>
+                <span class="left-menu__title">
+                  <span class="left-menu__icon-wrap">
+                    <img v-if="getLeftMenuIcon(menu.icon)" class="left-menu__icon" :src="getLeftMenuIcon(menu.icon)" alt="" />
+                    <HomeFilled v-else class="left-menu__fallback-icon" />
+                  </span>
+                  <span>{{ menu.text }}</span>
+                  <el-badge v-if="getMenuBadge(menu) > 0" :max="99" :value="getMenuBadge(menu)" class="menu-badge" />
+                </span>
+              </template>
+              <el-menu-item
+                v-for="submenu in menu.submenu"
+                :key="submenu.id"
+                :index="String(submenu.id)"
+                @click="selectSubmenu(submenu)"
+              >
+                <span class="left-menu__item-text">{{ submenu.text }}</span>
+                <el-badge v-if="getDirectBadge(submenu) > 0" :max="99" :value="getDirectBadge(submenu)" class="menu-badge" />
+              </el-menu-item>
+            </el-sub-menu>
+          </el-menu>
+        </el-scrollbar>
+      </aside>
+
+      <div class="home-main-region">
+        <section class="workspace-bar">
+          <div class="location-bar">
+            <span>当前位置：</span>
+            <strong>{{ currentPage }}</strong>
+          </div>
+
+          <el-button :icon="Refresh" @click="refreshActiveTab">刷新</el-button>
+        </section>
+
+        <section class="tabs-strip" aria-label="打开的页面">
+          <el-dropdown
+            v-for="tab in tabs"
+            :key="tab.id"
+            trigger="contextmenu"
+            @command="(command) => handleTabCommand(command, tab)"
+          >
+            <button
+              class="tab-chip"
+              :class="{ active: activeTabId === tab.id }"
+              type="button"
+              @click="activateTab(tab)"
+              @contextmenu="tabContextVisible = tab.id"
+            >
+              <span>{{ tab.title }}</span>
+              <el-icon v-if="tab.closable" @click.stop="closeTab(tab)"><Close /></el-icon>
+            </button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="refresh">刷新</el-dropdown-item>
+                <el-dropdown-item v-if="tab.closable" command="close">关闭标签页</el-dropdown-item>
+                <el-dropdown-item command="closeOther">关闭其他标签页</el-dropdown-item>
+                <el-dropdown-item command="closeRight">关闭右侧标签页</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </section>
+
+        <main class="home-content">
+          <iframe
+            v-if="activeTab?.external"
+            :key="activeTab.id + activeTab.refreshKey"
+            class="content-frame"
+            :src="activeTab.realPath || activeTab.url"
+            :title="activeTab.title"
+          ></iframe>
+
+          <component
+            :is="activeInternalPage.component"
+            v-else-if="activeInternalPage.component"
+            :key="`${activeTab?.id || rolePageIndex}_${activeTab?.refreshKey || 0}`"
+            v-bind="activeInternalPage.props"
+            @notice-read="handleNoticeRead"
+          />
+
+          <section v-else class="welcome-panel">
+            <div>
+              <p class="eyebrow">Home Migration</p>
+              <h1>{{ activeTab?.title || activeSubmenu?.text || '欢迎首页' }}</h1>
+              <p>
+                首页已同步旧项目的菜单、当前位置、页签和外链承载方式。业务页面会继续按模块迁移；
+                在对应页面迁移前，页签会先保留菜单上下文，方便验证权限和导航。
+              </p>
+            </div>
+
+            <dl class="home-facts">
+              <div>
+                <dt>账号</dt>
+                <dd>{{ userInfo.account || '-' }}</dd>
+              </div>
+              <div>
+                <dt>角色</dt>
+                <dd>{{ userInfo.roleName || userInfo.roleCode || '-' }}</dd>
+              </div>
+              <div>
+                <dt>当前地址</dt>
+                <dd>{{ activeTab?.realPath || activeTab?.url || rolePageIndex }}</dd>
+              </div>
+            </dl>
+          </section>
+        </main>
       </div>
-
-      <el-button :icon="Refresh" @click="refreshActiveTab">刷新</el-button>
     </section>
-
-    <section class="tabs-strip" aria-label="打开的页面">
-      <el-dropdown
-        v-for="tab in tabs"
-        :key="tab.id"
-        trigger="contextmenu"
-        @command="(command) => handleTabCommand(command, tab)"
-      >
-        <button
-          class="tab-chip"
-          :class="{ active: activeTabId === tab.id }"
-          type="button"
-          @click="activateTab(tab)"
-          @contextmenu="tabContextVisible = tab.id"
-        >
-          <span>{{ tab.title }}</span>
-          <el-icon v-if="tab.closable" @click.stop="closeTab(tab)"><Close /></el-icon>
-        </button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="refresh">刷新</el-dropdown-item>
-            <el-dropdown-item v-if="tab.closable" command="close">关闭标签页</el-dropdown-item>
-            <el-dropdown-item command="closeOther">关闭其他标签页</el-dropdown-item>
-            <el-dropdown-item command="closeRight">关闭右侧标签页</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-    </section>
-
-    <main class="home-content">
-      <iframe
-        v-if="activeTab?.external"
-        :key="activeTab.id + activeTab.refreshKey"
-        class="content-frame"
-        :src="activeTab.realPath || activeTab.url"
-        :title="activeTab.title"
-      ></iframe>
-
-      <component
-        :is="activeInternalPage.component"
-        v-else-if="activeInternalPage.component"
-        :key="`${activeTab?.id || rolePageIndex}_${activeTab?.refreshKey || 0}`"
-        v-bind="activeInternalPage.props"
-        @notice-read="handleNoticeRead"
-      />
-
-      <section v-else class="welcome-panel">
-        <div>
-          <p class="eyebrow">Home Migration</p>
-          <h1>{{ activeTab?.title || activeSubmenu?.text || '欢迎首页' }}</h1>
-          <p>
-            首页已同步旧项目的菜单、当前位置、页签和外链承载方式。业务页面会继续按模块迁移；
-            在对应页面迁移前，页签会先保留菜单上下文，方便验证权限和导航。
-          </p>
-        </div>
-
-        <dl class="home-facts">
-          <div>
-            <dt>账号</dt>
-            <dd>{{ userInfo.account || '-' }}</dd>
-          </div>
-          <div>
-            <dt>角色</dt>
-            <dd>{{ userInfo.roleName || userInfo.roleCode || '-' }}</dd>
-          </div>
-          <div>
-            <dt>当前地址</dt>
-            <dd>{{ activeTab?.realPath || activeTab?.url || rolePageIndex }}</dd>
-          </div>
-        </dl>
-      </section>
-    </main>
 
     <CtiToolbar
       @show-black-dialog="ctiBlackDialogVisible = true"
@@ -1332,6 +1409,14 @@ onUnmounted(() => {
   color: #fff;
 }
 
+.home-header--left-menu {
+  grid-template-columns: 280px minmax(0, 1fr) auto;
+
+  .home-actions {
+    grid-column: 3;
+  }
+}
+
 .home-brand {
   strong,
   span {
@@ -1404,19 +1489,73 @@ onUnmounted(() => {
 }
 
 .home-actions {
-  gap: 14px;
-  padding-left: 18px;
+  gap: 18px;
+  justify-content: flex-end;
+  min-width: 210px;
+  padding-left: 20px;
+}
+
+.notice-button {
+  display: grid;
+  width: 28px;
+  height: 40px;
+  font-size: 20px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+
+  :deep(svg) {
+    width: 21px;
+    height: 21px;
+  }
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.86);
+  }
+}
+
+.notice-badge {
+  :deep(.el-badge__content.is-dot) {
+    top: 8px;
+    right: 5px;
+    width: 7px;
+    height: 7px;
+    border: 1px solid #fff;
+    background: #ff333e;
+  }
 }
 
 .user-entry {
-  gap: 8px;
+  gap: 7px;
   min-height: 40px;
-  padding: 0 10px 0 4px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  max-width: 190px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #fff;
   cursor: pointer;
+  font-family: "Microsoft YaHei", sans-serif;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.user-entry__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.user-entry__arrow {
+  flex: 0 0 auto;
+  font-size: 18px;
 }
 
 .submenu-bar {
@@ -1469,6 +1608,137 @@ onUnmounted(() => {
     border-radius: 2px;
     background: #fff;
     content: "";
+  }
+}
+
+.home-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.home-body.with-left-menu {
+  grid-template-columns: 230px minmax(0, 1fr);
+  min-height: calc(100dvh - 186px);
+}
+
+.home-main-region {
+  min-width: 0;
+}
+
+.left-submenu {
+  min-width: 0;
+  min-height: calc(100dvh - 186px);
+  border-right: 1px solid var(--kxt-line);
+  background: var(--kxt-panel);
+  box-shadow: 8px 0 24px -28px rgba(49, 103, 221, 0.5);
+}
+
+.left-submenu__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--kxt-line);
+  color: var(--kxt-ink-strong);
+  font-weight: 700;
+
+  time {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--kxt-muted);
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+}
+
+.left-submenu__scroll {
+  height: calc(100dvh - 244px);
+}
+
+.left-menu {
+  border-right: 0;
+
+  :deep(.el-sub-menu__title),
+  :deep(.el-menu-item) {
+    height: 44px;
+    line-height: 44px;
+    font-weight: 700;
+    .el-sub-menu__icon-arrow {
+      font-weight: 700;
+      font-size: 14px;
+    }
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title),
+  :deep(.el-menu-item.is-active) {
+    color: var(--kxt-brand);
+    font-weight: 700;
+  }
+
+  :deep(.el-menu-item.is-active) {
+    background: #f4f9ff;
+    box-shadow: inset 3px 0 0 var(--kxt-brand);
+  }
+}
+
+.left-menu__title,
+.left-menu__item-text {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.left-menu__title {
+  gap: 8px;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.left-menu__icon-wrap {
+  display: inline-grid;
+  width: 25px;
+  height: 44px;
+  flex: 0 0 25px;
+  place-items: center start;
+  overflow: visible;
+}
+
+.left-menu__icon {
+  width: 30px;
+  height: 30px;
+  margin-left: -3px;
+  object-fit: contain;
+}
+
+.left-menu__fallback-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--kxt-brand);
+}
+
+.left-menu__item-text {
+  max-width: 128px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-body.with-left-menu {
+  .workspace-bar,
+  .tabs-strip,
+  .home-content {
+    padding-right: 24px;
+    padding-left: 24px;
   }
 }
 
@@ -1719,6 +1989,8 @@ onUnmounted(() => {
   }
 
   .home-actions {
+    justify-content: flex-start;
+    min-width: 0;
     padding-left: 0;
   }
 
@@ -1730,6 +2002,38 @@ onUnmounted(() => {
     time {
       margin-left: 0;
     }
+  }
+
+  .home-body.with-left-menu {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+
+    .workspace-bar,
+    .tabs-strip,
+    .home-content {
+      padding-right: 16px;
+      padding-left: 16px;
+    }
+  }
+
+  .left-submenu {
+    min-height: 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--kxt-line);
+  }
+
+  .left-submenu__header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+
+    time {
+      grid-column: auto;
+      padding-bottom: 0;
+    }
+  }
+
+  .left-submenu__scroll {
+    height: auto;
+    max-height: 320px;
   }
 
   .workspace-bar,

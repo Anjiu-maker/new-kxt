@@ -139,3 +139,15 @@
 - `Home.vue` 内部页签承载接入真实 `NoticeMine`，`workbenchRegistry` 识别 `/notice/mine`，保留 `noticemine` 首页铃铛入口和未读 `state=0` 参数；公告已读后会刷新首页未读数和菜单徽章。
 - `router/index.js` 增加 `/notice/mine` 直达路由，便于独立验证。
 - 构建验证：`npm run build` 通过，仍保留 Vite 大 chunk 和大字体资源提示。
+
+## 2026-05-02 首页左侧菜单布局
+
+- 对齐旧首页 `left-submenu` 能力：按 `localStorage.menuShowType === "3"`、`common.showSubmenuLeft`、`common.leftMenuRoleCodes` 三类条件判断是否启用左侧二级菜单。
+- `Home.vue` 在左侧菜单模式下隐藏顶部主菜单和横向二级菜单，新增左侧树形菜单和右侧工作区布局，保留菜单图标、徽章、当前菜单选中和点击打开页签逻辑。
+- 移动端左侧菜单自动降级为顶部单列区域，避免挤压内容；未启用左侧菜单时仍保持原横向菜单布局。
+- 顺带保留空页签兜底 key，避免 `activeTab.id` 为空时报错。
+- 右上角 `home-actions` 对齐旧 `user-logo` 视觉：通知铃铛改为白色纯图标+红点，用户入口改为 40px 头像、白色用户名、小下拉箭头的紧凑样式。
+- 左侧一级菜单图标对齐旧版：优先使用 `*-blue.png`，图标尺寸恢复为 30px，避免普通顶部菜单图标样式误用到侧边栏。
+- 修复菜单图标 glob 路径：`import.meta.glob("@/assets/...")` 未展开导致 `menuIconModules` 为空，改为 `../../assets/images/menus/*.png` 相对路径。
+- 左侧菜单字体加粗，一级标题和二级菜单项统一使用 700 字重，贴近旧首页菜单视觉。
+- 构建验证：`npm run build` 通过，仍保留 Vite 大 chunk 和大字体资源提示。

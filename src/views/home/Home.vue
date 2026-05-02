@@ -7,7 +7,6 @@ import {
   Clock,
   Close,
   HomeFilled,
-  Menu,
   Plus,
   Refresh,
   SwitchButton
@@ -1400,17 +1399,21 @@ onUnmounted(() => {
 
 .home-header {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) auto;
+  grid-template-columns: 160px minmax(0, 1fr) auto;
   align-items: center;
   min-height: 60px;
-  padding: 0 24px;
-  background: linear-gradient(90deg, var(--kxt-brand-strong), var(--kxt-brand), var(--kxt-brand-soft));
-  box-shadow: inset 0 -1px 0 rgba(37, 83, 184, 0.42);
+  padding: 0 22px;
+  background:
+    linear-gradient(90deg, rgba(31, 80, 182, 0.94), rgba(49, 103, 221, 0.98) 42%, rgba(70, 130, 239, 0.96)),
+    var(--kxt-brand);
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14),
+    0 6px 18px rgba(23, 73, 184, 0.12);
   color: #fff;
 }
 
 .home-header--left-menu {
-  grid-template-columns: 280px minmax(0, 1fr) auto;
+  grid-template-columns: 160px minmax(0, 1fr) auto;
 
   .home-actions {
     grid-column: 3;
@@ -1418,6 +1421,8 @@ onUnmounted(() => {
 }
 
 .home-brand {
+  min-width: 0;
+
   strong,
   span {
     display: block;
@@ -1425,37 +1430,73 @@ onUnmounted(() => {
 
   strong {
     font-family: "SourceHanSansSC-Medium", "Microsoft YaHei", sans-serif;
-    font-size: 22px;
+    overflow: hidden;
+    font-size: 20px;
     font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   span {
-    margin-top: 4px;
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 13px;
+    display: none;
   }
 }
 
 .home-menu {
   display: flex;
+  align-items: stretch;
   min-width: 0;
-  gap: 4px;
+  gap: 0;
   overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .home-menu__item {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 7px;
-  min-height: 48px;
-  padding: 0 15px;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 17px;
   border: 0;
   border-radius: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.86);
   cursor: pointer;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
   white-space: nowrap;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+
+  &::before {
+    position: absolute;
+    top: 14px;
+    right: 0;
+    bottom: 14px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.18);
+    content: "";
+  }
+
+  &::after {
+    position: absolute;
+    right: 16px;
+    bottom: 0;
+    left: 16px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: transparent;
+    content: "";
+  }
 
   img,
   svg {
@@ -1465,13 +1506,17 @@ onUnmounted(() => {
 
   &.active,
   &:hover {
-    background: rgba(37, 83, 184, 0.56);
+    background: rgba(27, 75, 178, 0.5);
     color: #fff;
   }
 
   &.active {
     font-weight: 700;
-    box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  &.active::after {
+    background: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
   }
 }
 
@@ -1489,17 +1534,16 @@ onUnmounted(() => {
 }
 
 .home-actions {
-  gap: 18px;
+  gap: 16px;
   justify-content: flex-end;
-  min-width: 210px;
-  padding-left: 20px;
+  min-width: 198px;
+  padding-left: 18px;
 }
 
 .notice-button {
   display: grid;
   width: 28px;
-  height: 40px;
-  font-size: 20px;
+  height: 36px;
   padding: 0;
   place-items: center;
   border: 0;
@@ -1508,8 +1552,8 @@ onUnmounted(() => {
   cursor: pointer;
 
   :deep(svg) {
-    width: 21px;
-    height: 21px;
+    width: 20px;
+    height: 20px;
   }
 
   &:hover {
@@ -1530,8 +1574,8 @@ onUnmounted(() => {
 
 .user-entry {
   gap: 7px;
-  min-height: 40px;
-  max-width: 190px;
+  min-height: 38px;
+  max-width: 176px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -1551,22 +1595,23 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1;
 }
 
 .user-entry__arrow {
   flex: 0 0 auto;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .submenu-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 45px;
-  padding: 0 24px;
+  min-height: 39px;
+  padding: 0 38px;
   border-bottom: 1px solid var(--kxt-line);
-  background: var(--kxt-brand-soft);
-  box-shadow: 0 2px 3px rgba(219, 227, 237, 0.72);
+  background: linear-gradient(90deg, rgba(72, 132, 240, 0.98), rgba(78, 139, 244, 0.96));
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.15);
 
   time {
     display: inline-flex;
@@ -1584,13 +1629,17 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: 34px;
-  padding: 0 18px;
+  min-height: 39px;
+  padding: 0 20px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.86);
   cursor: pointer;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  transition: color 0.18s ease;
 
   &.active,
   &:hover {
@@ -1601,12 +1650,17 @@ onUnmounted(() => {
 
   &.active::after,
   &:hover::after {
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+    left: 20px;
     display: block;
     width: 40px;
     height: 4px;
-    margin: 4px auto -4px;
+    margin: 0 auto;
     border-radius: 2px;
     background: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     content: "";
   }
 }
@@ -1746,10 +1800,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 48px;
-  padding: 0 50px;
+  min-height: 36px;
+  padding: 0 38px;
   border-bottom: 1px solid var(--kxt-line);
-  background: var(--kxt-bg);
+  background: #f5f9fc;
 }
 
 .location-bar {
@@ -1773,12 +1827,12 @@ onUnmounted(() => {
 .tabs-strip {
   display: flex;
   gap: 0;
-  min-height: 44px;
-  padding: 0 50px;
+  min-height: 40px;
+  padding: 0 38px;
   overflow-x: auto;
   border-bottom: 1px solid var(--kxt-line);
   background: var(--kxt-panel);
-  box-shadow: 2px 2px 3px #dbe3ed;
+  box-shadow: 0 2px 8px rgba(219, 227, 237, 0.72);
 }
 
 .tab-chip {
@@ -1787,8 +1841,8 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   max-width: 220px;
-  min-height: 44px;
-  padding: 7px 20px 0 0;
+  min-height: 40px;
+  padding: 6px 20px 0 0;
   border: 0;
   border-radius: 0;
   background: transparent;

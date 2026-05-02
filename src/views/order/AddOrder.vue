@@ -346,20 +346,20 @@ onMounted(async () => {
 <template>
   <Container type="scroll">
     <div class="addOrder">
-      <el-row :gutter="16">
-        <el-col :span="14">
+      <el-row class="order-layout" :gutter="12">
+        <el-col class="main-col" :span="14">
           <div class="form-panel">
             <div class="panel-head"><span>{{ isEdit ? '编辑工单' : '新增工单' }}</span></div>
             <div v-if="audioWinMaster" style="margin:8px"><Audio :the-url="audioUrlMaster" :call-i-d="audioCallId" @soundError="audioWinMaster = false" /><el-button size="small" @click="audioWinMaster = false">关闭</el-button></div>
 
             <!-- 市民信息 -->
-            <div class="info-section">
+            <div class="info-section citizen-section">
               <div class="section-head"><span>市民信息</span><el-button text type="primary" size="small" @click="qzbz = !qzbz">{{ qzbz ? '收起' : '展开' }}</el-button><el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" size="small" @click="playOrderSound">通话录音</el-button></div>
               <el-form label-width="90px" size="small">
                 <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="市民姓名"><el-input v-model="model.name" placeholder="请输入" clearable /></el-form-item></el-col>
-                  <el-col :span="10"><el-form-item label="呼叫号码"><el-input v-model="model.callTel" placeholder="呼叫号码" maxlength="12" show-word-limit clearable @keyup.enter="getlsgdList" /><el-button size="small" style="margin-left:4px" @click="getlsgdList">查询</el-button><el-button size="small" type="success" style="margin-left:2px" @click="hujiao(model.callTel)">呼叫</el-button><el-button size="small" @click="add0Click">{{ isTelAddZero ? '去0' : '加0' }}</el-button></el-form-item></el-col>
-                  <el-col :span="6"><el-form-item label="性别"><el-select v-model="model.sex" placeholder="选择" clearable><el-option v-for="s in sexOptions" :key="s.value" :label="s.label" :value="s.value" /></el-select></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="呼叫号码"><el-input v-model="model.callTel" placeholder="呼叫号码" maxlength="12" show-word-limit clearable @keyup.enter="getlsgdList" /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="性别"><el-select v-model="model.sex" placeholder="选择" clearable><el-option v-for="s in sexOptions" :key="s.value" :label="s.label" :value="s.value" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12" v-show="qzbz">
                   <el-col :span="8"><el-form-item label="年龄"><el-select v-model="model.ageRange" clearable><el-option v-for="a in ageRangeOptions" :key="a.value" :label="a.label" :value="a.value" /></el-select></el-form-item></el-col>
@@ -370,13 +370,13 @@ onMounted(async () => {
                   <el-col :span="12"><el-form-item label="人像"><el-select v-model="model.portrait" multiple placeholder="最多3项" :multiple-limit="3"><el-option v-for="p in portraitOptions" :key="p.value" :label="p.label" :value="p.value" /></el-select></el-form-item></el-col>
                   <el-col :span="12"><el-form-item label="本地人"><el-select v-model="model.isNative"><el-option v-for="b in isNativeOptions" :key="b.value" :label="b.label" :value="b.value" /></el-select></el-form-item></el-col>
                 </el-row>
-                <el-row :gutter="12"><el-col :span="16"><el-form-item label="群众地址"><el-input v-model="model.addr" clearable /></el-form-item></el-col><el-col :span="8" v-show="qzbz"><el-form-item label="身份证"><el-input v-model="model.idcard" maxlength="18" clearable /></el-form-item></el-col></el-row>
+                <el-row :gutter="12"><el-col :span="16"><el-form-item label="群众地址"><el-input v-model="model.addr" clearable /></el-form-item></el-col><el-col :span="8" v-show="!qzbz"><div class="citizen-actions"><el-button size="small" @click="getlsgdList">查询</el-button><el-button size="small" type="success" @click="hujiao(model.callTel)">呼叫</el-button><el-button size="small" @click="add0Click">{{ isTelAddZero ? '去0' : '加0' }}</el-button></div></el-col><el-col :span="8" v-show="qzbz"><el-form-item label="身份证"><el-input v-model="model.idcard" maxlength="18" clearable /></el-form-item></el-col></el-row>
                 <el-row :gutter="12" v-show="qzbz"><el-col :span="24"><el-form-item label="群众备注"><el-input v-model="model.massesRemarks" clearable /></el-form-item></el-col></el-row>
               </el-form>
             </div>
 
             <!-- 受理单信息 -->
-            <div class="info-section">
+            <div class="info-section order-section">
               <div class="section-head"><span>受理单信息</span><el-button size="small" @click="uploadFileWin = true">上传附件</el-button><el-button size="small" @click="isShowFj = true">查看附件</el-button><el-button size="small" type="warning" @click="intelligentExtraction">智能提取</el-button><el-button size="small" @click="getHotType">推荐热点</el-button><el-button size="small" @click="getMindTitle">推荐标题</el-button></div>
               <el-form label-width="90px" size="small">
                 <el-row :gutter="12">
@@ -402,7 +402,7 @@ onMounted(async () => {
             </div>
 
             <!-- 办理信息 -->
-            <div class="info-section">
+            <div class="info-section handle-section">
               <div class="section-head"><span>办理信息</span></div>
               <el-form label-width="90px" size="small">
                 <el-row :gutter="12">
@@ -451,8 +451,8 @@ onMounted(async () => {
         </el-col>
 
         <!-- 右侧面板 -->
-        <el-col :span="10">
-          <div class="form-panel">
+        <el-col class="side-col" :span="10">
+          <div class="form-panel side-panel">
             <div class="panel-tabs">
               <button v-for="(tab, ti) in ['知识库','办理信息','历史单','重复单','失物单','热线']" :key="ti" :class="{ active: activeClass === ti }" @click="activeClass = ti">{{ tab }}</button>
             </div>
@@ -491,16 +491,487 @@ onMounted(async () => {
   </Container>
 </template>
 
-<style scoped>
-.addOrder { min-height: 600px; }
-.form-panel { border: 1px solid #e6eaf0; border-radius: 8px; background: #fff; margin-bottom: 14px; }
-.panel-head { padding: 12px 16px; border-bottom: 1px solid #f0f4f8; font-weight: 700; font-size: 15px; color: #1c4886; display:flex; align-items:center; justify-content:space-between; }
-.panel-tabs { display: flex; border-bottom: 1px solid #f0f4f8; }
-.panel-tabs button { flex:1; padding: 10px 4px; border: 0; background: transparent; font-size: 13px; cursor: pointer; color: #666; border-bottom: 2px solid transparent; }
-.panel-tabs button.active { color: #3167dd; border-bottom-color: #3167dd; font-weight: 700; }
-.info-section { padding: 14px 16px; border-bottom: 1px solid #f5f7fa; }
-.section-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 700; font-size: 14px; color: #333; }
-.form-actions { display: flex; gap: 10px; padding: 16px; justify-content: center; align-items: center; }
-.fj-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-.fj-list a { color: #3167dd; font-size: 13px; }
+<style scoped lang="scss">
+$page: #eef5f9;
+$panel: #ffffff;
+$line: #d8e5f0;
+$line-soft: #e8f0f7;
+$section-bg: #eef6ff;
+$control: #f9fcff;
+$text: #23364a;
+$muted: #7b8ea2;
+$primary: #1f74d8;
+$primary-dark: #07549b;
+$green: #42c638;
+$orange: #e99a22;
+$red: #f45b63;
+$shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
+
+.addOrder {
+  min-height: 900px;
+  padding: 6px 18px 18px;
+  color: $text;
+  background:
+    linear-gradient(90deg, rgba(23, 103, 185, 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(0deg, rgba(23, 103, 185, 0.03) 1px, transparent 1px) 0 0 / 48px 48px,
+    $page;
+  font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  font-size: 14px;
+}
+
+.order-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(640px, 828px);
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.order-layout > .main-col,
+.order-layout > .side-col {
+  max-width: none;
+  width: auto;
+  flex: initial;
+}
+
+.form-panel {
+  overflow: hidden;
+  border: 1px solid $line;
+  border-radius: 3px;
+  background: $panel;
+  box-shadow: $shadow;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 37px;
+  padding: 0 12px;
+  border-bottom: 1px solid $line;
+  background: linear-gradient(#f6fbff, #ecf5ff);
+  color: #0f4f93;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.info-section {
+  border-bottom: 1px solid $line;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 37px;
+  padding: 0 12px;
+  border-bottom: 1px solid $line;
+  background: $section-bg;
+  color: #1c3450;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section-head span {
+  margin-right: 0;
+}
+
+.section-head :deep(.el-button.is-text) {
+  color: $primary;
+  font-weight: 500;
+}
+
+.citizen-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 37px;
+  padding: 0 8px;
+  border-right: 1px solid $line;
+  border-bottom: 1px solid $line;
+  background: #fff;
+}
+
+.citizen-actions :deep(.el-button--small) {
+  height: 28px;
+  min-width: 54px;
+  margin: 0;
+  border-radius: 2px;
+  border-color: #cfddeb;
+  padding: 0 12px;
+  background: linear-gradient(#fff, #f5f8fb);
+  color: #243a50;
+  font-size: 14px;
+}
+
+.citizen-actions :deep(.el-button--success) {
+  color: #fff;
+  border-color: $green;
+  background: $green;
+}
+
+.side-panel {
+  min-height: 226px;
+}
+
+.panel-tabs {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  height: 46px;
+  padding: 6px 7px 0;
+  border-bottom: 1px solid #c9dcf1;
+  background: linear-gradient(180deg, #fafdff 0%, #edf6ff 100%);
+}
+
+.panel-tabs button {
+  position: relative;
+  min-width: 0;
+  height: 34px;
+  padding: 0 6px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  color: #36506b;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 34px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.panel-tabs button::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 10px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: transparent;
+  content: "";
+}
+
+.panel-tabs button.active {
+  border-color: #bdd4ee;
+  background: #fff;
+  color: #0b60c7;
+  font-weight: 700;
+  box-shadow: 0 -2px 8px rgba(31, 116, 216, 0.08);
+}
+
+.panel-tabs button.active::after {
+  background: linear-gradient(90deg, $primary, #48a5ff);
+}
+
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 12px;
+  border-top: 1px solid $line;
+  background: #f8fbfe;
+  box-shadow: none;
+}
+
+.fj-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+}
+
+.fj-list a {
+  color: $primary-dark;
+  font-size: 13px;
+}
+
+:deep(.addOrder .el-form) {
+  width: 100%;
+}
+
+:deep(.addOrder .el-row) {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
+:deep(.addOrder .el-col) {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+:deep(.addOrder .order-layout > .el-col) {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
+
+:deep(.info-section .el-form-item) {
+  min-height: 37px;
+  margin: 0;
+  border-right: 1px solid $line;
+  border-bottom: 1px solid $line;
+  background: #fff;
+}
+
+:deep(.info-section .el-row:last-child .el-form-item) {
+  border-bottom: 0;
+}
+
+:deep(.info-section .el-form-item__label) {
+  width: 80px !important;
+  min-height: 37px;
+  padding: 0;
+  border-right: 1px solid $line-soft;
+  background: #fbfdff;
+  color: #28425d;
+  font-size: 14px;
+  line-height: 37px;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+:deep(.info-section .el-form-item__content) {
+  min-width: 0;
+  min-height: 37px;
+  padding: 0;
+  line-height: 37px;
+  background: $control;
+}
+
+:deep(.info-section .el-input),
+:deep(.info-section .el-select),
+:deep(.info-section .el-cascader),
+:deep(.info-section .el-date-editor.el-input) {
+  width: 100%;
+  height: 37px;
+}
+
+:deep(.info-section .el-input__wrapper),
+:deep(.info-section .el-select__wrapper),
+:deep(.info-section .el-cascader .el-input__wrapper),
+:deep(.info-section .el-textarea__inner) {
+  height: 100%;
+  border-radius: 0;
+  background: $control;
+  box-shadow: none;
+}
+
+:deep(.info-section .el-input__wrapper:hover),
+:deep(.info-section .el-select__wrapper:hover),
+:deep(.info-section .el-cascader .el-input__wrapper:hover),
+:deep(.info-section .el-textarea__inner:hover) {
+  box-shadow: inset 0 0 0 1px #c5d7e8;
+}
+
+:deep(.info-section .el-input__wrapper.is-focus),
+:deep(.info-section .el-select__wrapper.is-focused),
+:deep(.info-section .el-cascader .el-input__wrapper.is-focus),
+:deep(.info-section .el-textarea__inner:focus) {
+  box-shadow: inset 0 0 0 1px $primary;
+}
+
+:deep(.info-section .el-input__inner),
+:deep(.info-section .el-select__placeholder),
+:deep(.info-section .el-date-editor .el-input__inner) {
+  height: 37px;
+  line-height: 37px;
+  color: $text;
+  font-size: 14px;
+}
+
+:deep(.info-section .el-input__wrapper) {
+  padding: 0 10px;
+}
+
+:deep(.info-section .el-input__count) {
+  right: 8px;
+  color: $muted;
+  background: transparent;
+}
+
+:deep(.info-section .el-button--small) {
+  height: 28px;
+  min-width: 54px;
+  padding: 0 12px;
+  border-radius: 2px;
+  border-color: #cfddeb;
+  background: linear-gradient(#fff, #f5f8fb);
+  color: #243a50;
+  font-size: 14px;
+}
+
+:deep(.info-section .el-form-item__content > .el-button) {
+  margin-left: 6px;
+}
+
+:deep(.citizen-section .el-form-item__content) {
+  flex-wrap: nowrap;
+}
+
+:deep(.citizen-section .el-form-item__content > .el-input) {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+:deep(.citizen-section .el-form-item__content > .el-button) {
+  flex: 0 0 auto;
+  min-width: 48px;
+  padding: 0 10px;
+}
+
+:deep(.order-section .el-textarea__inner) {
+  min-height: 150px !important;
+  padding: 9px 10px;
+  color: $text;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:deep(.handle-section .el-textarea__inner) {
+  height: 58px !important;
+  min-height: 58px !important;
+  padding: 8px 10px;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.main-col > .form-panel {
+  min-height: calc(100vh - 32px);
+}
+
+:deep(.side-panel > div[style*="padding:10px"]) {
+  padding: 8px !important;
+}
+
+:deep(.side-panel > div[style*="padding:10px"]:first-of-type) {
+  border-bottom: 1px solid $line;
+}
+
+:deep(.side-panel > div[style*="padding:10px"] > div[style*="display:flex"]) {
+  display: grid !important;
+  grid-template-columns: 1fr 62px;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+}
+
+:deep(.side-panel .el-table) {
+  --el-table-border-color: #d8e5f0;
+  --el-table-header-bg-color: #eef6ff;
+  margin: 0;
+  color: $text;
+  font-size: 14px;
+}
+
+:deep(.side-panel .el-table th.el-table__cell) {
+  height: 37px;
+  color: #22394f;
+  font-weight: 700;
+}
+
+:deep(.side-panel .el-table .el-table__cell) {
+  padding: 8px 0;
+}
+
+:deep(.side-panel .el-table__empty-block) {
+  min-height: 66px;
+  color: #6b7f94;
+}
+
+:deep(.side-panel .el-pagination) {
+  height: 32px;
+  margin-top: 0;
+  justify-content: flex-end;
+  color: #4e6378;
+}
+
+:deep(.side-panel .el-input__wrapper),
+:deep(.side-panel .el-date-editor.el-input__wrapper) {
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px #cfddeb;
+}
+
+:deep(.side-panel .el-button--primary) {
+  border-color: $primary;
+  background: $primary;
+}
+
+:deep(.el-button--success) {
+  border-color: $green;
+  background: $green;
+}
+
+:deep(.el-button--warning) {
+  border-color: $orange;
+  background: $orange;
+}
+
+:deep(.el-button--danger) {
+  border-color: $red;
+  background: $red;
+}
+
+:deep(.el-button--primary) {
+  border-color: $primary;
+  background: $primary;
+}
+
+:deep(.el-button--info) {
+  border-color: #7c8490;
+  background: #7c8490;
+}
+
+:deep(.form-actions .el-button) {
+  height: 28px;
+  min-width: 54px;
+  border-radius: 2px;
+  border-color: #cfddeb;
+  padding: 0 12px;
+  color: #243a50;
+  background: linear-gradient(#fff, #f5f8fb);
+  font-size: 14px;
+}
+
+:deep(.form-actions .el-button--warning) {
+  color: #fff;
+  border-color: $orange;
+  background: $orange;
+}
+
+:deep(.form-actions .el-button--success) {
+  color: #fff;
+  border-color: $green;
+  background: $green;
+}
+
+:deep(.form-actions .el-button--primary) {
+  color: #fff;
+  border-color: $primary-dark;
+  background: $primary-dark;
+}
+
+:deep(.form-actions .el-button--info) {
+  color: #fff;
+  border-color: #7c8490;
+  background: #7c8490;
+}
+
+:deep(.form-actions .el-checkbox) {
+  margin-right: 4px;
+  color: #445c74;
+}
+
+@media (max-width: 1500px) {
+  .order-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .side-panel {
+    margin-top: 12px;
+  }
+}
 </style>

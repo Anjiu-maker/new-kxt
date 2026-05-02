@@ -130,3 +130,12 @@
 - `Home.vue` 内部页签开始支持真实组件承载：`rolePageIndex` 指向已登记工作台时显示 `RoleWorkbench`，未迁移业务页仍保留占位提示。
 - `router/index.js` 增加 `/BlankPage`、`/ZxIndex`、`/FzgIndex` 等旧默认首页直达路由，兼容旧路径验证。
 - 构建验证：`npm run build` 通过，仍保留 Vite 大 chunk 和大字体资源警告。
+
+## 2026-05-02 通知公告/我的公告
+
+- 梳理旧项目通知公告入口：`src/router.js` 中 `notice/mine` 对应 `views/notice/NoticeMine`，`noticemine` 菜单入口会携带 `state=0` 打开未读公告；本轮只迁移阅读侧列表，不迁移 `NoticeManage`、短信发送、模板、发布/编辑流程。
+- 新增 `src/services/noticeService.js`，封装 `notice_announcement/mylist`、`notice_announcement/details`、`notice_announcement_o2m_userinfo/batch/read`、`dict/findTreeByDictCode?dictCode=notice`，继续走现有 `http` SM4/AES 兼容层。
+- 新增 `src/views/notice/NoticeMine.vue`：支持标题/类型/阅读状态/添加时间查询、分页、标题/类型/发布人/添加时间/到期时间/阅读状态展示、详情弹窗、单条已读和批量已读。
+- `Home.vue` 内部页签承载接入真实 `NoticeMine`，`workbenchRegistry` 识别 `/notice/mine`，保留 `noticemine` 首页铃铛入口和未读 `state=0` 参数；公告已读后会刷新首页未读数和菜单徽章。
+- `router/index.js` 增加 `/notice/mine` 直达路由，便于独立验证。
+- 构建验证：`npm run build` 通过，仍保留 Vite 大 chunk 和大字体资源提示。

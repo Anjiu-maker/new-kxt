@@ -38,6 +38,17 @@ const routes = [
       title: '首页'
     }
   },
+  {
+    path: '/notice/mine',
+    name: 'noticeMine',
+    component: () => import('@/views/notice/NoticeMine.vue'),
+    props: (route) => ({
+      query: route.query
+    }),
+    meta: {
+      title: '我的公告'
+    }
+  },
   ...workbenchPages.map((pageName) => ({
     path: `/${pageName}`,
     name: pageName,

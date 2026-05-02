@@ -16,7 +16,7 @@ import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import defaultAvatar from '@/assets/images/user.png'
 import { changePassword, findUser, getUserInfo, keepTelNum, keepUserOnline, logout } from '@/services/authService'
 import { findMenuBadge, readMenuBadge } from '@/services/homeService'
-import { http } from '@/services/http'
+import { getNoticeMineList, markNoticeRead as markNoticeRowsRead } from '@/services/noticeService'
 import { createNoticeSocket } from '@/services/noticeSocket'
 import { useAuthStore } from '@/stores/auth'
 import { useCtiStore } from '@/stores/cti'
@@ -89,7 +89,7 @@ const menus = computed(() => authStore.menus ?? [])
 const activeMenu = computed(() => menus.value.find((item) => item.id === activeMenuId.value) ?? menus.value[0])
 const submenus = computed(() => activeMenu.value?.submenu ?? [])
 const activeTab = computed(() => tabs.value.find((item) => item.id === activeTabId.value) ?? tabs.value[0])
-const activeInternalPage = computed(() => resolveInternalPageComponent(activeTab.value?.url || rolePageIndex.value))
+const activeInternalPage = computed(() => resolveInternalPageComponent(activeTab.value?.url || rolePageIndex.value, activeTab.value?.query ?? {}))
 const currentPage = computed(() => activeTab.value?.fullpath || activeSubmenu.value?.fullpath || activeSubmenu.value?.text || '欢迎首页')
 const rolePageIndex = computed(() => localStorage.getItem('rolePageIndex') || 'BlankPage')
 const footerTitle = computed(() => window.common?.bottomName || window.__KXT_CONFIG__?.bottomName || '')
@@ -592,13 +592,10 @@ async function loadNoticeList(options = {}) {
   noticeLoading.value = true
 
   try {
-    const response = await http.get('notice_announcement/mylist', {
-      params: {
-        pageNum: noticePage.pageNum,
-        pageSize: noticePage.pageSize,
-        flag: true,
-        state: 0
-      }
+    const response = await getNoticeMineList({
+      pageNum: noticePage.pageNum,
+      pageSize: noticePage.pageSize,
+      state: 0
     })
 
     if (response.data?.code === 200) {
@@ -619,13 +616,10 @@ async function loadNoticeList(options = {}) {
 
 async function loadNoticeCount() {
   try {
-    const response = await http.get('notice_announcement/mylist', {
-      params: {
-        pageNum: 1,
-        pageSize: 1,
-        flag: true,
-        state: 0
-      }
+    const response = await getNoticeMineList({
+      pageNum: 1,
+      pageSize: 1,
+      state: 0
     })
 
     if (response.data?.code === 200) {
@@ -817,13 +811,12 @@ async function markNoticeRead(rows) {
     return
   }
 
-  const response = await http.post('/notice_announcement_o2m_userinfo/batch/read', {
-    noticeAnnounceIds: ids
-  })
+  const response = await markNoticeRowsRead(ids)
 
   if (response.data?.code === 200) {
     ElMessage.success(response.data.message || '已标记为已读')
     await loadNoticeList()
+    await refreshBadge()
     if (activeNotice.value && rows.some((item) => item.id === activeNotice.value.id)) {
       noticeDetailVisible.value = false
       activeNotice.value = null
@@ -852,6 +845,11 @@ async function batchReadNotices() {
 function viewNotice(row) {
   activeNotice.value = row
   noticeDetailVisible.value = true
+}
+
+async function handleNoticeRead() {
+  await loadNoticeCount()
+  await refreshBadge()
 }
 
 async function loadUserFromServer() {
@@ -1141,8 +1139,9 @@ onUnmounted(() => {
       <component
         :is="activeInternalPage.component"
         v-else-if="activeInternalPage.component"
-        :key="activeTab.id + activeTab.refreshKey"
+        :key="`${activeTab?.id || rolePageIndex}_${activeTab?.refreshKey || 0}`"
         v-bind="activeInternalPage.props"
+        @notice-read="handleNoticeRead"
       />
 
       <section v-else class="welcome-panel">

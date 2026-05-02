@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Bell,
   Clock,
+  Close,
   Collection,
   DataLine,
   DocumentChecked,
@@ -505,33 +506,33 @@ onMounted(async () => {
 
 <template>
   <section class="zx-index" v-loading="loading">
-    <!-- ── 统计卡片 ── -->
-    <section class="metric-row">
-      <div class="metric-card card-blue" @click="totalNumber('zcsw')">
-        <span class="metric-label">暂存 <small>(个)</small></span>
-        <strong>{{ totals.zcgd }}</strong>
-      </div>
-      <div class="metric-card card-green" @click="totalNumber('fzgth')">
-        <span class="metric-label">退回 <small>(个)</small></span>
-        <strong>{{ totals.thgd }}</strong>
-      </div>
-      <div class="metric-card card-red" @click="totalNumber('tbgz')">
-        <span class="metric-label">特别关注 <small>(个)</small></span>
-        <strong>{{ totals.tbgzgd }}</strong>
-      </div>
-      <div class="metric-card card-cyan" @click="totalNumber('jrwcgd')">
-        <span class="metric-label">今日已完成 <small>(个)</small></span>
-        <strong>{{ totals.ywcgd }}</strong>
-      </div>
-      <div class="metric-card card-yellow" @click="totalNumber('zxycqgd')">
-        <span class="metric-label">预超期 <small>(个)</small></span>
-        <strong>{{ totals.ycqgd }}</strong>
-      </div>
-    </section>
-
     <div class="main-layout">
       <!-- ── 左侧主区域 ── -->
       <div class="main-left">
+        <!-- ── 统计卡片 ── -->
+        <section class="metric-row">
+          <div class="metric-card card-blue" @click="totalNumber('zcsw')">
+            <span class="metric-label">暂存 <small>(个)</small></span>
+            <strong>{{ totals.zcgd }}</strong>
+          </div>
+          <div class="metric-card card-green" @click="totalNumber('fzgth')">
+            <span class="metric-label">退回 <small>(个)</small></span>
+            <strong>{{ totals.thgd }}</strong>
+          </div>
+          <div class="metric-card card-red" @click="totalNumber('tbgz')">
+            <span class="metric-label">特别关注 <small>(个)</small></span>
+            <strong>{{ totals.tbgzgd }}</strong>
+          </div>
+          <div class="metric-card card-cyan" @click="totalNumber('jrwcgd')">
+            <span class="metric-label">今日已完成 <small>(个)</small></span>
+            <strong>{{ totals.ywcgd }}</strong>
+          </div>
+          <div class="metric-card card-yellow" @click="totalNumber('zxycqgd')">
+            <span class="metric-label">预超期 <small>(个)</small></span>
+            <strong>{{ totals.ycqgd }}</strong>
+          </div>
+        </section>
+
         <!-- 交互数据 -->
         <section class="panel interaction-panel">
           <header class="panel-header">
@@ -819,77 +820,107 @@ onMounted(async () => {
 <style scoped lang="scss">
 .zx-index {
   min-height: calc(100dvh - 300px);
-  padding: 18px;
+  padding: 22px 24px 32px;
+  background: #f3f8fb;
+  color: #263548;
 }
 
 // ── 统计卡片 ──
 .metric-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .metric-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 116px;
-  padding: 20px 16px;
-  border-radius: 10px;
+  justify-content: space-between;
+  min-height: 96px;
+  padding: 16px 20px 18px;
+  border-radius: 7px;
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(9, 41, 65, 0.16);
-  transition: transform 0.15s;
+  box-shadow: 0 5px 12px rgba(26, 69, 115, 0.16);
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto -30px -46px auto;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    pointer-events: none;
+  }
 
   &:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(26, 69, 115, 0.2);
   }
 
   small {
-    font-size: 13px;
+    font-size: 12px;
     opacity: 0.85;
   }
 
   .metric-label {
-    font-size: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
   }
 
   strong {
-    font-size: 36px;
-    font-weight: 400;
-    padding-left: 8px;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
   }
 }
 
-.card-blue  { background: linear-gradient(20deg, #208aed, #3aa0ff); }
-.card-green { background: linear-gradient(30deg, #13bd85, #15d496); }
-.card-red   { background: linear-gradient(20deg, #f3434f, #f85b66); }
-.card-cyan  { background: linear-gradient(20deg, #05afd4, #13cae1); }
-.card-yellow{ background: linear-gradient(20deg, #94ba13, #a5c340); }
+.card-blue  { background: linear-gradient(135deg, #238be8 0%, #3aa5ff 100%); }
+.card-green { background: linear-gradient(135deg, #10b878 0%, #18d19a 100%); }
+.card-red   { background: linear-gradient(135deg, #f33f4d 0%, #ff6270 100%); }
+.card-cyan  { background: linear-gradient(135deg, #08aed0 0%, #19c4dc 100%); }
+.card-yellow{ background: linear-gradient(135deg, #8dbb10 0%, #a7c72d 100%); }
 
 // ── 主布局 ──
 .main-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) clamp(320px, 24vw, 486px);
+  gap: 16px;
+  align-items: start;
+}
+
+.main-left {
+  min-width: 0;
 }
 
 .main-right {
   display: grid;
-  gap: 14px;
+  gap: 24px;
   align-content: start;
+
+  .panel + .panel {
+    margin-top: 0;
+  }
 }
 
 // ── 通用面板 ──
 .panel {
-  border: 1px solid #e6ecf0;
-  border-radius: 8px;
+  border: 1px solid #dfe8ef;
+  border-radius: 7px;
   background: #fff;
-  box-shadow: 0 8px 24px -16px rgba(49, 103, 221, 0.12);
+  box-shadow: 0 2px 10px rgba(57, 88, 117, 0.04);
+  overflow: hidden;
 
   + .panel {
-    margin-top: 14px;
+    margin-top: 12px;
   }
 }
 
@@ -897,46 +928,53 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid #f0f4f8;
+  min-height: 54px;
+  padding: 0 16px;
+  border-bottom: 1px solid #edf2f6;
 
   .panel-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #1c4886;
-    font-size: 15px;
+    color: #174b88;
+    font-size: 14px;
+    font-weight: 700;
+
+    .el-icon {
+      color: #2267b0;
+    }
   }
 
   .panel-extra {
-    color: #999;
-    font-size: 13px;
+    color: #7f8a96;
+    font-size: 12px;
 
     em {
-      color: #333;
+      color: #2d3c4f;
       font-style: normal;
       font-weight: 600;
     }
   }
 
   .panel-more {
-    color: #999;
-    font-size: 13px;
+    color: #818b97;
+    font-size: 12px;
     cursor: pointer;
 
-    &:hover { color: #3167dd; }
+    &:hover { color: #0f63b6; }
   }
 }
 
 // ── 交互数据 ──
 .interaction-panel {
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .interaction-wrap {
   display: flex;
   align-items: center;
-  padding: 12px 8px;
+  min-height: 128px;
+  padding: 10px 16px 24px;
   position: relative;
 }
 
@@ -947,20 +985,24 @@ onMounted(async () => {
 
 .interaction-track {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   white-space: nowrap;
   transition: transform 0.3s ease;
 }
 
 .source-card {
   flex: 0 0 auto;
-  width: 180px;
-  border: 1px solid #e6ecf0;
-  border-radius: 6px;
+  width: 148px;
+  border: 1px solid #dfe8ef;
+  border-radius: 5px;
   overflow: hidden;
+  background: #fff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(14, 40, 97, 0.12);
+    border-color: #bcd4ec;
+    box-shadow: 0 6px 14px rgba(25, 74, 122, 0.08);
+    transform: translateY(-1px);
   }
 }
 
@@ -969,8 +1011,8 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 80px;
-  padding: 12px;
+  height: 66px;
+  padding: 10px;
   cursor: default;
 
   &.clickable {
@@ -978,15 +1020,16 @@ onMounted(async () => {
   }
 
   .source-pending {
-    font-size: 22px;
-    font-weight: 600;
-    color: #333;
+    font-size: 21px;
+    font-weight: 700;
+    color: #2b3542;
+    line-height: 1;
   }
 
   small {
-    color: #666;
-    font-size: 13px;
-    margin-top: 2px;
+    color: #5d6875;
+    font-size: 12px;
+    margin-top: 6px;
   }
 }
 
@@ -994,22 +1037,26 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-top: 1px solid #e6ecf0;
+  min-height: 34px;
+  padding: 0 10px;
+  border-top: 1px solid #edf2f6;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
 
   .source-name {
-    color: #333;
+    color: #2f3d4e;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .source-done {
-    color: #666;
+    color: #596675;
+    flex-shrink: 0;
 
-    strong { color: #333; }
+    strong { color: #1d2d3f; }
   }
 
-  &:hover { background: #f8fafc; }
+  &:hover { background: #f7fbff; }
 }
 
 .arrow-btn {
@@ -1017,15 +1064,15 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 32px;
   border: none;
   background: none;
-  color: #999;
+  color: #c1c9d1;
   cursor: pointer;
   font-size: 16px;
 
-  &:hover:not(:disabled) { color: #333; }
+  &:hover:not(:disabled) { color: #0f63b6; }
   &:disabled { opacity: 0.3; cursor: default; }
 }
 
@@ -1033,46 +1080,72 @@ onMounted(async () => {
 .order-panel {
   .order-tabs {
     display: flex;
+    padding-left: 14px;
     border-bottom: 1px solid #e6ecf0;
   }
 
   .tab-btn {
     flex: 0 0 auto;
-    width: 120px;
-    height: 40px;
+    width: 100px;
+    height: 36px;
     border: none;
-    border-left: 1px solid #e6ecf0;
-    border-top: 1px solid #e6ecf0;
-    background: #fafcfd;
-    color: #666;
-    font-size: 14px;
+    border-right: 1px solid #e6ecf0;
+    background: #fbfdff;
+    color: #627083;
+    font-size: 13px;
     cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
 
-    &:first-child { border-left: none; }
+    &:first-child { border-left: 1px solid #e6ecf0; }
 
     &.active {
-      background: #f1f7ff;
-      color: #1c4886;
+      background: #eef6ff;
+      color: #174b88;
       font-weight: 600;
     }
   }
 
   :deep(.el-table) {
     margin-top: 0;
+    color: #2f3d4e;
+    font-size: 12px;
+  }
+
+  :deep(.el-table__header th) {
+    height: 39px;
+    background: #f4f8fc;
+    color: #2b4058;
+    font-weight: 700;
+  }
+
+  :deep(.el-table__row) {
+    height: 30px;
+  }
+
+  :deep(.el-button.is-round) {
+    height: 24px;
+    padding: 0 14px;
+    background: #0067ad;
+    border-color: #0067ad;
+    font-weight: 600;
   }
 }
 
 // ── 快捷功能 ──
+.kj-panel {
+  min-height: 150px;
+}
+
 .kj-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 16px;
+  gap: 10px 12px;
+  padding: 20px 16px 18px;
 }
 
 .kj-item {
   position: relative;
-  width: 70px;
+  width: 54px;
   text-align: center;
 
   &:hover .kj-close {
@@ -1089,27 +1162,34 @@ onMounted(async () => {
   height: 18px;
   padding: 0;
   border: none;
-  background: #ddd;
+  background: #d9e1e8;
   border-radius: 50%;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  color: #666;
+  color: #657285;
   z-index: 1;
 }
 
 .kj-icon {
-  width: 36px;
-  height: 36px;
-  margin: 8px auto 0;
-  background: #5b83dc;
-  border: 1px solid #c2c5cc;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto;
+  background: #2f73bd;
+  border: 1px solid #d3dbe4;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  color: #fff;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(47, 115, 189, 0.2);
+  }
 
   img {
     width: 24px;
@@ -1120,14 +1200,14 @@ onMounted(async () => {
 
 .kj-add {
   background: none;
-  border: 1px dashed #c2c5cc;
-  color: #c2c5cc;
+  border: 1px dashed #c2cad3;
+  color: #b3bdc8;
 }
 
 .kj-text {
-  margin: 6px 0 0;
+  margin: 7px 0 0;
   font-size: 12px;
-  color: #333;
+  color: #2f3d4e;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1138,15 +1218,16 @@ onMounted(async () => {
 .knowledge-list {
   list-style: none;
   margin: 0;
-  padding: 12px 16px;
+  padding: 8px 14px 12px;
 
   li {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 0;
-    border-bottom: 1px dashed #dedede;
-    font-size: 13px;
+    gap: 6px;
+    min-height: 36px;
+    padding: 7px 0;
+    border-bottom: 1px dashed #dce3ea;
+    font-size: 12px;
 
     &:last-child {
       border-bottom: none;
@@ -1160,7 +1241,7 @@ onMounted(async () => {
     height: 18px;
     line-height: 18px;
     text-align: center;
-    background: #2acc97;
+    background: #25c69a;
     color: #fff;
     border-radius: 50%;
     font-size: 11px;
@@ -1171,15 +1252,15 @@ onMounted(async () => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #333;
+    color: #2f3d4e;
     cursor: pointer;
 
-    &:hover { color: #3167dd; }
+    &:hover { color: #0f63b6; }
   }
 
   .k-badge-new {
     flex-shrink: 0;
-    background: #df0024;
+    background: #e4002b;
     color: #fff;
     font-size: 10px;
     padding: 1px 5px;
@@ -1188,8 +1269,8 @@ onMounted(async () => {
 
   .k-date {
     flex-shrink: 0;
-    color: #999;
-    font-size: 12px;
+    color: #8a96a4;
+    font-size: 11px;
   }
 }
 
@@ -1197,15 +1278,16 @@ onMounted(async () => {
 .notice-list {
   list-style: none;
   margin: 0;
-  padding: 12px 16px;
+  padding: 8px 14px 12px;
 
   li {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: baseline;
     gap: 4px 8px;
-    padding: 12px 0;
-    border-bottom: 1px dashed #dedede;
+    min-height: 36px;
+    padding: 7px 0;
+    border-bottom: 1px dashed #dce3ea;
     cursor: pointer;
 
     &:last-child {
@@ -1213,19 +1295,19 @@ onMounted(async () => {
       padding-bottom: 0;
     }
 
-    &:hover { color: #3167dd; }
+    &:hover { color: #0f63b6; }
 
     span:first-child {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: 13px;
-      color: #333;
+      font-size: 12px;
+      color: #2f3d4e;
     }
   }
 
   .k-badge-new {
-    background: #df0024;
+    background: #e4002b;
     color: #fff;
     font-size: 10px;
     padding: 1px 5px;
@@ -1235,8 +1317,8 @@ onMounted(async () => {
 
   .n-date {
     grid-column: 1 / -1;
-    font-size: 12px;
-    color: #999;
+    font-size: 11px;
+    color: #8a96a4;
   }
 }
 

@@ -2,10 +2,10 @@ var common = {
     // baseApi: "http://192.168.0.133:9133",//张
     // readApi:"http://192.168.0.133:9133",
     ywBaseApi:"aHR0cDovLzE5Mi4xNjguMC4xMzM6OTk5OA==",
-    // baseApi: "aHR0cDovLzIyMi44OS42OS4xODA6OTAwMA==",//正式
-    // readApi:"aHR0cDovLzIyMi44OS42OS4xODA6OTAwMA==",
-    baseApi: "aHR0cDovLzIyMi44OS42OS4xODA6OTAwNQ==",//测试
-    readApi:"aHR0cDovLzIyMi44OS42OS4xODA6OTAwNQ==",
+    baseApi: "aHR0cDovLzIyMi44OS42OS4xODA6OTAwMA==",//正式
+    readApi:"aHR0cDovLzIyMi44OS42OS4xODA6OTAwMA==",
+    // baseApi: "aHR0cDovLzIyMi44OS42OS4xODA6OTAwNQ==",//测试
+    // readApi:"aHR0cDovLzIyMi44OS42OS4xODA6OTAwNQ==",
     ctiBaseAPi:'webrtc.call12345.com',
     cti_webSocketBaseApi:'webrtc.call12345',
     systemTitle:"Xin Xiang",

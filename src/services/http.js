@@ -149,7 +149,7 @@ http.interceptors.request.use((config) => {
     config.headers.token = token
   }
 
-  encryptRequest(config)
+  // encryptRequest(config)
 
   if (!includesUrl(url, noQsUrl) && config.data && typeof config.data !== 'string') {
     config.data = stringifyFormData(config.data)

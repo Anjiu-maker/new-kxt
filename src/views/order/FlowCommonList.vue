@@ -104,6 +104,8 @@ const methodConfig = computed(() => {
     dbspz: { title: '班长督办', form: 'bzDsp', handler: 'dbspz' },
     spt_dcdb: { title: '省平台督查', form: 'sptDb', handler: 'spt_dcdb' },
     spt_jcdb: { title: '省平台监察', form: 'sptDb', handler: 'spt_jcdb' },
+    lhhf: { title: '联合回访', form: null, handler: 'lhhf' },
+    hf_csdhfgd: { title: '超时待回访', form: null, handler: 'hf_csdhfgd' },
     hsz: { title: '回收站', form: null, handler: 'hsz' }, myOrder: { title: '我的历史工单', form: null, handler: 'myOrder' }
   }
   return m[method.value] || { title: method.value, form: null, handler: method.value }
@@ -159,7 +161,19 @@ function handleDataFiled() {
   if (m === 'remindersRed') ins(9, { label: '催办次数', model: 'isPhoneRemindersCount', width: 100, show: true })
   if (m === 'agent') ins(9, { label: '当前处理人', model: 'userName', width: 100, show: true })
   if (['spt_dcdb', 'spt_jcdb'].includes(m)) fd.push({ label: '是否反馈', model: 'isFeedback', width: 100, show: true })
+  if (m === 'lhhf') { const si = fd.findIndex(o => o.model === 'orderSubStateName'); if (si >= 0) fd.splice(si, 1, { label: '办理进度', model: 'progress', width: 90, show: true, tip: true }) }
+  if (m === 'hf_csdhfgd') { const ci = fd.findIndex(o => o.model === 'createTime'); if (ci >= 0) { fd[ci].label = '限制回访时间'; fd[ci].model = 'lastRestrictCallbackTime' } }
   if (m === 'hfrwc') { if (!fd.find(o => o.model === 'callbackerName')) fd.push({ label: '指派回访人', model: 'callbackerName', width: 100, show: true }) }
+}
+
+// 操作列：""查看"" vs ""处理"" 行级判断
+function showDetailLink(row) {
+  if (!handlerShow.value) return true
+  if (row.isThApprovalComplete === 1 && ['djs', 'dfk', 'thgd'].includes(method.value)) return true
+  if (row.fz !== row.fm) return true  // 非本级
+  if (method.value === 'dbgd_yjdb') return true
+  if (row.isInstructionsToComplete && method.value === 'dfp') return true
+  return false
 }
 
 // ── 工具 ──
@@ -445,7 +459,7 @@ onMounted(async () => {
                 <el-link v-if="!isDBRole" type="primary" :underline="false" @click="printD(row, 'print')">打印</el-link>
                 <el-link v-if="!isDBRole" type="primary" :underline="false" style="margin-left:3px" @click="printD(row, 'zprint')">交办打印</el-link>
                 <el-link v-if="isDBRole" type="primary" :underline="false" @click="printD(row, 'dbprint')">督办打印</el-link>
-                <el-link v-if="!handlerShow" type="primary" :underline="false" style="margin-left:3px" @click="ckDispose(row)">查看</el-link>
+                <el-link v-if="showDetailLink(row)" type="primary" :underline="false" style="margin-left:3px" @click="ckDispose(row)">查看</el-link>
                 <el-link v-else type="primary" :underline="false" style="margin-left:3px" @click="handle(row)">处理</el-link>
                 <el-link v-if="method === 'myOrder' && isShowHistoryOrderHandle" type="primary" :underline="false" style="margin-left:3px" @click="handle(row)">处理</el-link>
                 <el-link v-if="method === 'hsz'" type="success" :underline="false" style="margin-left:3px" @click="restoreOrder(row)">恢复</el-link>

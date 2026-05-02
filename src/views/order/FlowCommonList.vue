@@ -13,6 +13,11 @@ import { ElMessage } from 'element-plus'
 import SqdbForm from '@/views/workbench/SqdbForm.vue'
 import EcdbForm from '@/views/workbench/EcdbForm.vue'
 import DgdForm from '@/views/workbench/DgdForm.vue'
+import DfpForm from '@/views/order/form/DfpForm.vue'
+import DfkForm from '@/views/order/form/DfkForm.vue'
+import DjsForm from '@/views/order/form/DjsForm.vue'
+import DhfAndYyhfForm from '@/views/order/form/DhfAndYyhfForm.vue'
+import ShswForm from '@/views/order/form/ShswForm.vue'
 
 const props = defineProps({
   pageName: { type: String, default: '' },
@@ -40,6 +45,11 @@ const selectRows = ref([])
 const sqdbVisible = ref(false)
 const ecdbVisible = ref(false)
 const dgdVisible = ref(false)
+const dfpVisible = ref(false)
+const dfkVisible = ref(false)
+const djsVisible = ref(false)
+const dhfVisible = ref(false)
+const shswVisible = ref(false)
 
 const params = reactive({ pageNum: 1, pageSize: 10 })
 const pageInfo = reactive({ total: 0 })
@@ -53,15 +63,17 @@ const queryFields = [
 // ── 根据 method 动态加载配置 ──
 const methodConfig = computed(() => {
   const map = {
-    dfp: { title: '待分派', form: null, handler: 'dfp' },
-    djs: { title: '待接收', form: null, handler: 'djs' },
-    dfk: { title: '待反馈', form: null, handler: 'dfk' },
-    shsw: { title: '审核事务', form: null, handler: 'shsw' },
+    dfp: { title: '待分派', form: 'dfp', handler: 'dfp' },
+    djs: { title: '待接收', form: 'djs', handler: 'djs' },
+    dfk: { title: '待反馈', form: 'dfk', handler: 'dfk' },
+    shsw: { title: '审核事务', form: 'shsw', handler: 'shsw' },
+    shswYn: { title: '审核疑难', form: 'shsw', handler: 'shswYn' },
     cbsw: { title: '重办事务', form: null, handler: 'cbsw' },
     xjyq: { title: '下级延期', form: null, handler: 'xjyq' },
-    dhf: { title: '待回访', form: null, handler: 'dhf' },
-    yyhf: { title: '预约回访', form: null, handler: 'yyhf' },
+    dhf: { title: '待回访', form: 'dhf', handler: 'dhf' },
+    yyhf: { title: '预约回访', form: 'dhf', handler: 'yyhf' },
     dgd: { title: '待归档', form: 'dgd', handler: 'dgd' },
+    dgdYn: { title: '待归档疑难', form: 'dgd', handler: 'dgdYn' },
     hsz: { title: '回收站', form: null, handler: 'hsz' },
     myOrder: { title: '我的历史工单', form: null, handler: 'myOrder' }
   }
@@ -123,10 +135,14 @@ async function printD(row, mode) {
 // ── 表单操作 ──
 function openForm(row, formType) {
   currentRow.value = row
-  if (formType === 'sqdb') sqdbVisible.value = true
-  else if (formType === 'ecdb') ecdbVisible.value = true
-  else if (formType === 'dgd') dgdVisible.value = true
-  else forwordAddOrder(row)
+  const formMap = {
+    dfp: dfpVisible, dfk: dfkVisible, djs: djsVisible,
+    dhf: dhfVisible, shsw: shswVisible,
+    sqdb: sqdbVisible, ecdb: ecdbVisible, dgd: dgdVisible
+  }
+  const target = formMap[formType]
+  if (target) { target.value = true; return }
+  forwordAddOrder(row)
 }
 
 function onFormSuccess() { loadData() }
@@ -172,6 +188,11 @@ onMounted(() => {
     <SqdbForm :visible="sqdbVisible" :row="currentRow" @update:visible="sqdbVisible = $event" @success="onFormSuccess" />
     <EcdbForm :visible="ecdbVisible" :row="currentRow" @update:visible="ecdbVisible = $event" @success="onFormSuccess" />
     <DgdForm :visible="dgdVisible" :row="currentRow" @update:visible="dgdVisible = $event" @success="onFormSuccess" />
+    <DfpForm :visible="dfpVisible" :row="currentRow" @update:visible="dfpVisible = $event" @success="onFormSuccess" />
+    <DfkForm :visible="dfkVisible" :row="currentRow" @update:visible="dfkVisible = $event" @success="onFormSuccess" />
+    <DjsForm :visible="djsVisible" :row="currentRow" @update:visible="djsVisible = $event" @success="onFormSuccess" />
+    <DhfAndYyhfForm :visible="dhfVisible" :row="currentRow" @update:visible="dhfVisible = $event" @success="onFormSuccess" />
+    <ShswForm :visible="shswVisible" :row="currentRow" @update:visible="shswVisible = $event" @success="onFormSuccess" />
   </Container>
 </template>
 

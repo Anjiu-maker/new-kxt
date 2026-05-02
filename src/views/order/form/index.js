@@ -1,0 +1,5 @@
+export { default as DfpForm } from './DfpForm.vue'
+export { default as DjsForm } from './DjsForm.vue'
+export { default as DfkForm } from './DfkForm.vue'
+export { default as ShswForm } from './ShswForm.vue'
+export { default as DhfAndYyhfForm } from './DhfAndYyhfForm.vue'

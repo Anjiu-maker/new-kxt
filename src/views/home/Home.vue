@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Bell,
@@ -587,6 +587,25 @@ function openMenuByCode(code, beforeOpen) {
   selectSubmenu(submenu)
   return true
 }
+
+function openCustomTab(id, title, url, fullpath, query = {}) {
+  openTab(
+    makeTabFromMenu(null, {
+      id,
+      title,
+      url,
+      fullpath: fullpath || title,
+      closable: true,
+      query,
+      skipLegacyQuery: true
+    })
+  )
+}
+
+provide('workbenchNav', {
+  openMenuByCode,
+  openCustomTab
+})
 
 function addHomeTab() {
   openTab(

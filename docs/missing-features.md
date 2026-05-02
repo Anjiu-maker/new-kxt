@@ -1,4 +1,57 @@
-# 角色首页迁移 — 暂未迁移功能清单
+# 暂未迁移功能清单
+
+> 最后更新: 工单模块迁移完成后
+
+---
+
+## AddOrder 暂未迁移功能
+
+旧 `AddOrder.vue` 8038 行 → 新版本已覆盖核心功能，以下 4 项因依赖外部 SDK/服务暂不迁移：
+
+### 1. 高德地图 (AMap)
+
+**旧代码：** `loadAMapScript()` + `<div id="allmap">` 地图标记
+**用途：** 事发地址在地图上标记、点击取坐标、逆地理编码
+**阻塞项：** 需加载 AMap JS SDK (`@/utils/AMap`)，旧项目代码已从百度地图迁移为高德
+
+### 2. 小爱机器人 (iBot)
+
+**旧代码：** `awakeIbot()` → `extractInfo` 事件 → `autoFill()` / `fillEach()`
+**用途：** 机器人对话结束后自动填充表单（摘要/标题/类型/热点/地址/内容）
+**阻塞项：** 需要机器人服务 WebSocket 连接和 `$store.state.dialogueSummaryText` 等 Vuex 状态
+
+### 3. 语音识别 (STT)
+
+**旧代码：** `changeClass1()` / `changeClass2()` 按钮切换，调用语音识别接口
+**用途：** 坐席口述转文字填入内容区
+**阻塞项：** 语音识别 API 接口未确认，旧代码中标记为 "TODO"
+
+### 4. 视频播放器 (vue-video-player)
+
+**旧代码：** `<video-player>` 组件 + `vue-video-player` / `video.js`
+**用途：** 附件中的视频文件播放
+**阻塞项：** `vue-video-player` 包无 Vue 3 版本，需替换为 `video.js` 原生或 `@element-plus` 方案
+
+---
+
+## 已完成的工单模块
+
+| 类别 | 完成数 | 说明 |
+|------|--------|------|
+| 列表页 | 6/6 | Fzgth, Cfdb, Zcsw, ZcswAll, ZcswSpecial, Rwfpmx |
+| 表单页 | 3/3 | AddOrder, AddOrder-quick, AddOrder-special (AddOrderSso 跳过) |
+| 流转页 | 1/1 | FlowCommonList (30+ 流程映射) |
+| 表单组件 | 28/28 | 全部 form/*.vue |
+| 共享组件 | 7/7 | Container, Panel, Audio, OrderQuery, Orderinfo, PrintExport, SelectDeptOrUser |
+| 基础设施 | 4/4 | orderService, useGlobal, flowApiMapping, integratedQuery |
+
+---
+
+## 已完成的首批缺失功能
+
+### 1. 打印预览组件 (PrintExport) ✅ 已完成
+
+**旧项目位置：** `src/components/PrintExport.vue`
 
 ## 1. 打印预览组件 (PrintExport) ✅ 已完成
 

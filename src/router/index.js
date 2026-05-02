@@ -4,6 +4,19 @@ import 'nprogress/nprogress.css'
 
 NProgress.configure({ showSpinner: false })
 
+const workbenchPages = [
+  'BlankPage',
+  'ZxIndex',
+  'CbgIndex',
+  'DbzxIndex',
+  'LdspgIndex',
+  'FzgIndex',
+  'ZnjIndex',
+  'ZnjddzxIndex',
+  'HfIndex',
+  'BjshIndex'
+]
+
 const routes = [
   {
     path: '/login',
@@ -25,6 +38,17 @@ const routes = [
       title: '首页'
     }
   },
+  ...workbenchPages.map((pageName) => ({
+    path: `/${pageName}`,
+    name: pageName,
+    component: () => import('@/views/workbench/RoleWorkbench.vue'),
+    props: {
+      pageName
+    },
+    meta: {
+      title: '工作台'
+    }
+  })),
   {
     path: '/migration',
     component: () => import('@/layouts/AppLayout.vue'),

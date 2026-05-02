@@ -120,3 +120,13 @@
   - 事后处理 → `ElMessageBox.confirm` 二选一：空闲→清定时器并示闲，小休→打开小休选择弹窗。
   - 忙碌/小休 → 清所有定时器并示闲。
 - 构建验证：`npm run build` 通过（Home chunk 45.98KB → 49.14KB）。
+
+## 2026-05-02 角色首页/默认工作台
+
+- 梳理旧项目 `rolePageIndex`：旧路由会按 `views/yht/{rolePageIndex}.vue` 动态加载，常见首页包括 `ZxIndex`、`CbgIndex`、`DbzxIndex`、`LdspgIndex`、`FzgIndex`、`ZnjIndex`、`ZnjddzxIndex`、`HfIndex`、`BjshIndex`、`BlankPage`。
+- 新增 `src/views/workbench/RoleWorkbench.vue`：先承接各角色首页的核心统计卡片、预警列表、待办预览、通知公告，不一次性搬迁旧 ECharts/地图/快捷菜单等重依赖。
+- 新增 `src/views/workbench/workbenchConfig.js`：把不同角色首页的统计接口和预警接口配置化，便于后续逐项补齐。
+- 新增 `src/services/workbenchService.js`：封装工作台统计、列表、公告接口。
+- `Home.vue` 内部页签开始支持真实组件承载：`rolePageIndex` 指向已登记工作台时显示 `RoleWorkbench`，未迁移业务页仍保留占位提示。
+- `router/index.js` 增加 `/BlankPage`、`/ZxIndex`、`/FzgIndex` 等旧默认首页直达路由，兼容旧路径验证。
+- 构建验证：`npm run build` 通过，仍保留 Vite 大 chunk 和大字体资源警告。

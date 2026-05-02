@@ -27,6 +27,7 @@ import CtiToolbar from './CtiToolbar.vue'
 import CtiBlackDialog from './CtiBlackDialog.vue'
 import CtiCallDialog from './CtiCallDialog.vue'
 import CtiRestDialog from './CtiRestDialog.vue'
+import { resolveInternalPageComponent } from '@/views/workbench/workbenchRegistry'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -88,6 +89,7 @@ const menus = computed(() => authStore.menus ?? [])
 const activeMenu = computed(() => menus.value.find((item) => item.id === activeMenuId.value) ?? menus.value[0])
 const submenus = computed(() => activeMenu.value?.submenu ?? [])
 const activeTab = computed(() => tabs.value.find((item) => item.id === activeTabId.value) ?? tabs.value[0])
+const activeInternalPage = computed(() => resolveInternalPageComponent(activeTab.value?.url || rolePageIndex.value))
 const currentPage = computed(() => activeTab.value?.fullpath || activeSubmenu.value?.fullpath || activeSubmenu.value?.text || '欢迎首页')
 const rolePageIndex = computed(() => localStorage.getItem('rolePageIndex') || 'BlankPage')
 const footerTitle = computed(() => window.common?.bottomName || window.__KXT_CONFIG__?.bottomName || '')
@@ -1135,6 +1137,13 @@ onUnmounted(() => {
         :src="activeTab.realPath || activeTab.url"
         :title="activeTab.title"
       ></iframe>
+
+      <component
+        :is="activeInternalPage.component"
+        v-else-if="activeInternalPage.component"
+        :key="activeTab.id + activeTab.refreshKey"
+        v-bind="activeInternalPage.props"
+      />
 
       <section v-else class="welcome-panel">
         <div>

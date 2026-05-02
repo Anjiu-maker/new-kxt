@@ -26,6 +26,7 @@ import CtiTopBar from './CtiTopBar.vue'
 import CtiToolbar from './CtiToolbar.vue'
 import CtiBlackDialog from './CtiBlackDialog.vue'
 import CtiCallDialog from './CtiCallDialog.vue'
+import CtiRestDialog from './CtiRestDialog.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -918,6 +919,12 @@ async function doLogout() {
   isLogout = true
   closeNoticeSocket()
 
+  if (ctiStore.showTel) {
+    await new Promise((resolve) => {
+      ctiStore.ctiLogout(() => resolve())
+    })
+  }
+
   try {
     if (token) {
       await logout(token)
@@ -926,6 +933,7 @@ async function doLogout() {
     localStorage.clear()
     sessionStorage.clear()
     authStore.resetAuth()
+    ctiStore.resetCti()
     router.replace('/login')
   }
 }
@@ -970,6 +978,29 @@ onMounted(async () => {
   loadNoticeCount()
   startHeartbeatTimers()
   connectNoticeSocket()
+
+  if (ctiStore.showTel && authStore.userInfo?.deptId !== -1 && telNum.value) {
+    const flag = sessionStorage.getItem('isQianRuCTI') || 'true'
+    if (flag === 'true') {
+      nextTick(() => {
+        ctiStore.ctiLogin(
+          {
+            telNum: telNum.value,
+            user: authStore.userInfo,
+            dlsm: ctiStore.showDlsm
+          },
+          () => {},
+          (data) => {
+            if (data?.data === 404) {
+              ctiStore.setCtiState(ctiStore.toolbarStateText.weidenglu)
+            } else {
+              ctiStore.setCtiState(ctiStore.toolbarStateText.txyc)
+            }
+          }
+        )
+      })
+    }
+  }
 })
 
 onUnmounted(() => {
@@ -1056,7 +1087,7 @@ onUnmounted(() => {
       </time>
     </section>
 
-    <CtiTopBar @quick-dial="ctiCallDialogVisible = true" />
+    <CtiTopBar />
 
     <section class="workspace-bar">
       <div class="location-bar">
@@ -1271,6 +1302,7 @@ onUnmounted(() => {
 
     <CtiBlackDialog v-model:visible="ctiBlackDialogVisible" />
     <CtiCallDialog v-model:visible="ctiCallDialogVisible" />
+    <CtiRestDialog />
   </div>
 </template>
 

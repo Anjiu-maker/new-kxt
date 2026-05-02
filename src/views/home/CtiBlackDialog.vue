@@ -19,9 +19,15 @@ function submit() {
     ElMessage.warning('请输入加入黑名单的原因')
     return
   }
-  // Placeholder: Not connected to real API yet
-  ElMessage.info('黑名单功能暂未接入 CTI')
+  submitting.value = true
+  ctiStore.ctiHeimingdan({
+    opt: 'ADD',
+    type: 0,
+    tel: ctiStore.ctiCurrentTel,
+    remarks: remark.value
+  })
   visible.value = false
+  submitting.value = false
 }
 
 defineExpose({ open })

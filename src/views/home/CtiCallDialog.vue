@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useCtiStore } from '@/stores/cti'
+
+const ctiStore = useCtiStore()
 
 const visible = defineModel('visible', { type: Boolean, default: false })
 const phoneNumber = ref('')
@@ -15,9 +18,13 @@ function submit() {
     ElMessage.warning('请输入要呼叫的号码')
     return
   }
-  // Placeholder: Not connected to real API yet
-  ElMessage.info('呼叫功能暂未接入 CTI')
-  visible.value = false
+  if (ctiStore.ctiState === ctiStore.toolbarStateText.tonghua) {
+    ElMessage.warning('当前正在通话中，无法发起新呼叫')
+    return
+  }
+  ctiStore.ctiHujiao({ tel: phoneNumber.value }, () => {
+    visible.value = false
+  })
 }
 
 defineExpose({ open })

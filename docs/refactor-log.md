@@ -56,3 +56,67 @@
 - 集成到 `Home.vue`：`CtiToolbar` 放在 `main` 之后 footer 之前，`CtiBlackDialog`/`CtiCallDialog` 放在模板末尾。
 - 本轮所有按钮仅做 UI 状态切换占位，不调用真实 `cti_shimang`/`cti_shixian`/`cti_baochi` 等 API，等第三阶段接入 CTI WebSocket 后再打通。
 - 构建验证：`npm run build` 通过。
+
+## 2026-05-02 CTI 第三阶段
+
+- 创建 `src/services/ctiSocket.js`：WebSocket 连接管理器，封装建连/断连/心跳/订阅/消息收发。
+  - 从 `window.common` 读取 `ctiBaseAPi` + `cti_webSocketBaseApi`，拼接 HTTP/WS 地址。
+  - 30 秒心跳定时发送 `SUBSCRIBE` 消息，`disconnect` 时发送 `expires:0` 取消订阅。
+  - `isManualClose` 标记区分主动/被动断线。
+- 重写 `src/stores/cti.js`，补齐 CTI 核心操作：
+  - **登录** `ctiLogin`：`SET_WORKER_ID` → 成功后建 WebSocket → `onopen` 调用 `doCtiSubscribe` 设置初始忙/闲状态。
+  - **登出** `ctiLogout`：取消订阅 → 关 WebSocket → `SET_WORKER_ID` 写 `8888` 清空工号。
+  - **示忙** `ctiShimang` / **示闲** `ctiShixian`：`SET_EXT_PRESENCE_STATE` → 更新本地状态 + 写操作日志。
+  - **保持** `ctiBaochi` / **去保持** `ctiUnbaochi`：`PLAY_VOICE_IN_CALL` / `STOP_VOICE_IN_CALL`。
+  - **日志** `ctiLog`：`/cti/log` 写操作日志。`updateUserCtiState`：`/user/updateUserCitState` 同步座席状态。
+  - **消息处理** `handleCtiSocketMessage`：`presence` 清空顶部状态提示，`queue` 解析排队人数/明细更新到 `ctiCurrentWaitNum/List`。
+  - **工具栏操作** `toggleShimangShixian` / `toggleBaochi`：状态保护（通话中不能示忙示闲、非通话不能保持）+ 调用真实 API。
+  - `secondsFormat` 工具函数：秒数 → `MM:SS` 或 `HH:MM:SS`。
+- 更新 `CtiToolbar.vue`：示忙示闲按钮改为调用 `ctiStore.toggleShimangShixian()`，保持按钮改为 `ctiStore.toggleBaochi()`，不再做本地假切换。
+- 更新 `Home.vue`：
+  - `onMounted`：`showTel && deptId != -1 && telNum` 时调用 `ctiLogin`，传入 `dlsm` 标记。
+  - `doLogout`：先调 `ctiLogout`（含 WebSocket 断开），再清 storage 和 reset store。
+- **未接**：来电弹屏（ringing→addTabs）、事后处理倒计时、小休类型选择、断线重连状态恢复、小爱 STT 语音识别。这些属于第四/五阶段。
+- 构建验证：`npm run build` 通过（Home chunk 34.47KB → 42.13KB）。
+
+## 2026-05-02 CTI 第四+第五阶段
+
+- **外呼** `ctiHujiao`：`CLICK_TO_DIAL` → 成功提示 + 回调；486→"对方正在忙碌中"；403→"黑名单号码，禁止拨打"；含 `hi_task/addHiTask` 呼叫记录。
+- **挂断** `ctiGuaduan`：`CLICK_TO_HUNGUP`，500→"挂断失败"。
+- **黑名单** `ctiHeimingdan`：`BLACK_LIST_ADD/RMV` 和 `VIP_LIST_ADD/RMV` → `bridge/jsoncfg`；成功后 `addBlackList` 写 `playwithtel/option` 后端记录。
+- **快捷拨号** `quickDial`：通话中拦截，否则调 `ctiHujiao`。
+- **WebSocket 来电/外呼消息处理** `handleCtiSocketMessage`：
+  - `incoming + ringing`：清除事后定时器 → 示忙 → 设状态"通话" → 记录来电号码 → 写日志。
+  - `incoming/outgoing + talking`：设状态"通话" + 写日志。
+  - `incoming/outgoing + hungup`：`handleCallHungup`。
+- **事后处理倒计时** `handleCallHungup`：
+  - `dlsm` 模式：清定时器 → 示忙。
+  - 普通模式：设状态"事后处理" → 按 `common.telKongXianSeconds`（默认60秒）倒计时 → 归零后示闲。
+  - 定时器保存在 `postCallTimer`，支持 `clearPostCallTimer` 清理。
+- **接入对话框**：
+  - `CtiCallDialog` → `ctiStore.ctiHujiao({ tel })` 真实外呼。
+  - `CtiBlackDialog` → `ctiStore.ctiHeimingdan({ type: 0, ... })` 真实黑名单。
+  - `CtiTopBar` 快捷拨号 → `ctiStore.quickDial(tel)`。
+  - 移除 Home.vue 中 CtiTopBar 的 `@quick-dial` 事件桥接，组件直接调 store。
+- 新增 state：`ctiCaller` / `ctiCallee` / `ctiCallId` 三项通话身份字段。
+- **未接**：来电弹屏自动开事务登记页签（依赖工单模块）、小休类型选择弹窗、断线重连完整状态恢复、三方通话/盲转/内呼/强插等高级呼叫操作、小爱 STT。这些按后续业务需求逐步迁移。
+- 构建验证：`npm run build` 通过（Home chunk 42.13KB → 45.98KB）。
+
+## 2026-05-02 CTI 补充：断线重连 + 小休选择
+
+- **断线重连状态恢复** `doCtiSubscribe`：WebSocket `onopen` 时检查 `ctiLastState`，按断线前状态分支恢复。
+  - 空闲 → 示闲 + 清定时器 + 写 dxcl 日志。
+  - 事后处理 → 若仍有事后定时器则维持示忙，已结束则示闲。
+  - 通话 → 维持示忙。
+  - 其他（忙碌/小休）→ 维持示忙。
+- **小休类型选择弹窗** `CtiRestDialog.vue`：
+  - 从 `window.common.rest_type_time` 读取小休选项列表（JSON `{option: [{type, time}]}`）。
+  - `restLabel` 格式化"类型-1小时5分钟30秒"展示。
+  - 确认后 `startRestTimer(restMinutes, typeTitle)`：示忙→设状态"小休"→倒计时→归零后示闲（通话中跳过）。
+  - 定时器独立管理（`restTimer`），`resetCti` 时清理。
+- **工具栏操作增强** `toggleShimangShixian`：
+  - 空闲 + 有小休配置 → 显示 `CtiRestDialog`（通过 store 的 `showRestDialog` ref 控制）。
+  - 空闲 + 无配置 → 直接示忙。
+  - 事后处理 → `ElMessageBox.confirm` 二选一：空闲→清定时器并示闲，小休→打开小休选择弹窗。
+  - 忙碌/小休 → 清所有定时器并示闲。
+- 构建验证：`npm run build` 通过（Home chunk 45.98KB → 49.14KB）。

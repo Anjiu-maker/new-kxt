@@ -37,11 +37,11 @@ function onSxbdk() {
 }
 
 function onSmsx() {
-  ctiStore.updateToolbarBtnState({ shixian: !shixian.value })
+  ctiStore.toggleShimangShixian()
 }
 
 function onThqx() {
-  ctiStore.updateToolbarBtnState({ baochi: !baochi.value })
+  ctiStore.toggleBaochi()
 }
 
 function onHeimingdan() {

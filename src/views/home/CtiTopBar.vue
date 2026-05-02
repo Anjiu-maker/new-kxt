@@ -6,8 +6,6 @@ import { useCtiStore } from '@/stores/cti'
 const authStore = useAuthStore()
 const ctiStore = useCtiStore()
 
-const emit = defineEmits(['quick-dial'])
-
 const userInfo = computed(() => authStore.userInfo ?? {})
 const showTel = computed(() => ctiStore.showTel.value && userInfo.value.deptId !== -1)
 const showSxbdk = computed(() => ctiStore.showSxbdk.value && userInfo.value.deptId !== -1)
@@ -22,7 +20,7 @@ function formatTel(value) {
 }
 
 function onQuickDial(tel) {
-  emit('quick-dial', tel)
+  ctiStore.quickDial(tel)
 }
 </script>
 

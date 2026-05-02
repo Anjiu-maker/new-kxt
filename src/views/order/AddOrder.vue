@@ -449,7 +449,6 @@ onMounted(async () => {
       <el-row class="order-layout" :gutter="12">
         <el-col class="main-col" :span="14">
           <div class="form-panel">
-            <div class="panel-head"><span>{{ isEdit ? '编辑工单' : '新增工单' }}</span></div>
             <div v-if="audioWinMaster" style="margin:8px"><Audio :the-url="audioUrlMaster" :call-i-d="audioCallId" @soundError="audioWinMaster = false" /><el-button size="small" @click="audioWinMaster = false">关闭</el-button></div>
 
             <!-- 市民信息 -->

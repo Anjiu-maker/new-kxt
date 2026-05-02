@@ -1207,7 +1207,7 @@ onUnmounted(() => {
               @contextmenu="tabContextVisible = tab.id"
             >
               <span>{{ tab.title }}</span>
-              <el-icon v-if="tab.closable" @click.stop="closeTab(tab)"><Close /></el-icon>
+              <el-icon v-if="tab.closable" @click.stop="closeTab(tab)" style=""><Close /></el-icon>
             </button>
             <template #dropdown>
               <el-dropdown-menu>
@@ -1449,8 +1449,8 @@ onUnmounted(() => {
 
   strong {
     font-family: "SourceHanSansSC-Medium", "Microsoft YaHei", sans-serif;
-    overflow: hidden;
-    font-size: 20px;
+    // overflow: hidden;
+    font-size: 22px;
     font-weight: 800;
     letter-spacing: 0;
     line-height: 1;
@@ -1489,7 +1489,7 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.86);
   cursor: pointer;
   font-family: "Microsoft YaHei", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   white-space: nowrap;
   transition:
@@ -1506,21 +1506,9 @@ onUnmounted(() => {
     content: "";
   }
 
-  &::after {
-    position: absolute;
-    right: 16px;
-    bottom: 0;
-    left: 16px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: transparent;
-    content: "";
-  }
-
   img,
   svg {
-    width: 18px;
-    height: 18px;
+    width: 30px;
   }
 
   &.active,
@@ -1563,6 +1551,7 @@ onUnmounted(() => {
   display: grid;
   width: 28px;
   height: 36px;
+  font-size: 20px;
   padding: 0;
   place-items: center;
   border: 0;
@@ -1626,7 +1615,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 39px;
+  min-height: 45px;
   padding: 0 38px;
   border-bottom: 1px solid var(--kxt-line);
   background: linear-gradient(90deg, rgba(72, 132, 240, 0.98), rgba(78, 139, 244, 0.96));
@@ -1846,7 +1835,7 @@ onUnmounted(() => {
 .tabs-strip {
   display: flex;
   gap: 0;
-  min-height: 40px;
+  min-height: 50px;
   padding: 0 38px;
   overflow-x: auto;
   border-bottom: 1px solid var(--kxt-line);
@@ -1870,6 +1859,10 @@ onUnmounted(() => {
   white-space: nowrap;
 
   span {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -1880,9 +1873,9 @@ onUnmounted(() => {
     font-weight: 700;
   }
 
-  &.active::after {
+  &.active span::after {
     position: absolute;
-    right: 20px;
+    right: 0;
     bottom: 3px;
     left: 0;
     height: 4px;

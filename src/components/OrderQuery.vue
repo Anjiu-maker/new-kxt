@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref, watch } from 'vue'
 import { http } from '@/services/http'
 import { useGlobal } from '@/composables/useGlobal'
+import queryData from '@/utils/integratedQuery'
 
 const props = defineProps({ method: { type: String, default: '' } })
 const emit = defineEmits(['search', 'reset'])
@@ -152,11 +153,8 @@ function setFieldData(code) {
         }
       }); break
     default:
-      // Static dict codes via integratedQuery data
-      import('@/utils/integratedQuery').then(mod => {
-        const queryData = mod.default || mod
-        if (queryData[code]) setData(code, queryData[code])
-      }).catch(() => {})
+      if (queryData[code]) setData(code, queryData[code])
+      break
   }
 }
 
@@ -166,8 +164,13 @@ async function loadUserGroups() {
 }
 
 // ── 初始化 ──
-onMounted(async () => {
+async function init() {
   loadUserGroups()
+  // 清除上次的参数和更多条件
+  Object.keys(params).forEach(k => delete params[k])
+  moreItemList.value = [{ code: '', label: '', orderby: 1, type: 1, typeName: '输入框' }]
+  showMore.value = false
+
   try {
     const res = await http.get('/queryItem/query_list')
     if (res.data?.code === 200) {
@@ -184,24 +187,29 @@ onMounted(async () => {
       const defaultCodes = ['orderNo', 'callTel', 'name', 'title']
       const withTime = [...defaultCodes, 'createTime']
 
-      // method 特定预设
+      // method 特定预设（带日期默认值 + 自动查询）
       if (['dgd', 'remindersRed', 'gdsw', 'dfp', 'znjth'].includes(props.method)) {
         const codes = props.method === 'dfp' ? ['orderNo', 'callTel', 'title', 'createTime'] : withTime
         defaultItemList.value = allFields.filter(o => codes.includes(o.code))
         itemList.value = allFields.filter(o => !codes.includes(o.code))
         params.createTime = [formatDate(getMonthStartEnd(0)[0]) + ' 00:00:00', formatDate(getMonthStartEnd(0)[1]) + ' 23:59:59']
+        handleSearch()
       } else if (['reBack', 'reAssign', 'emphasis'].includes(props.method)) {
         defaultItemList.value = allFields.filter(o => withTime.includes(o.code))
         itemList.value = allFields.filter(o => !withTime.includes(o.code))
         const d = new Date()
         params.createTime = [formatDate(new Date(d.getTime() - 7 * 86400000)) + ' 00:00:00', formatDate(d) + ' 23:59:59']
+        handleSearch()
       } else {
         defaultItemList.value = allFields.filter(o => defaultCodes.includes(o.code))
         itemList.value = allFields.filter(o => !defaultCodes.includes(o.code))
       }
     }
   } catch {}
-})
+}
+
+onMounted(() => init())
+watch(() => props.method, () => init())
 </script>
 
 <template>

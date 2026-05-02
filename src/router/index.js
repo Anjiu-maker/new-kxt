@@ -41,6 +41,12 @@ const routes = [
     ]
   },
   {
+    path: '/flow/order/:md',
+    name: 'flowOrder',
+    component: () => import('@/views/order/FlowCommonList.vue'),
+    meta: { title: '流转列表' }
+  },
+  {
     path: '/order/fzgth',
     name: 'fzgth',
     component: () => import('@/views/order/Fzgth.vue'),

@@ -5,7 +5,7 @@ import Container from '@/components/Container.vue'
 import Orderinfo from '@/components/Orderinfo.vue'
 import Audio from '@/components/Audio.vue'
 import SelectDeptOrUser from '@/components/SelectDeptOrUser.vue'
-import { saveOrder, getOrderDetail, getOrderList, getDeptList, getDeptTree } from '@/services/orderService'
+import { saveOrder, getOrderDetail, getOrderList, getDeptTree } from '@/services/orderService'
 import { useAuthStore } from '@/stores/auth'
 import { useGlobal } from '@/composables/useGlobal'
 import { useCtiStore } from '@/stores/cti'
@@ -94,19 +94,115 @@ const fmtT = v => { if (!v) return '-'; const d = new Date(v); if (Number.isNaN(
 // ── 字典加载 ──
 async function loadDicts() {
   try {
-    const [origins, types, levels, wtsdRes, ywdwRes, hotspots, specialWorks, ageRanges, emotions, portraits] = await Promise.all([
-      getDictByCode(true, 'orderOrigin'), getDictByCode(true, 'orderType'), getDictByCode(false, 'orderLevel'),
-      getDeptTree(true), getDeptTree(false), getDictByCode(true, 'hotspot'), getDictByCode(false, 'specialWork'),
-      getDictByCode(false, 'ageRange'), getDictByCode(false, 'emotion'), getDictByCode(false, 'rwhx')
+    const [originRes, types, levelRes, wtsdRes, ywdwRes, hotspots, specialWorks, ageRanges, emotions, portraits] = await Promise.all([
+      http.get('/user/getCurrentUserChannel'),
+      getDictByCode(false, 'swlx'),
+      http.get('/order_level/list', { params: { flag: false } }),
+      http.get('/dept/tree_nodetype', { params: { nodetype: 1, isHeader: false } }),
+      getDeptTree(false),
+      getDictByCode(true, 'rdfl'),
+      getDictByCode(false, 'zxgz'),
+      getDictByCode(false, 'ageRange'),
+      getDictByCode(false, 'qzqx'),
+      getDictByCode(false, 'rwhx')
     ])
-    swlyOptions.value = origins || []; orderTypeOptions.value = types || []; orderLevelOptions.value = levels || []
+    swlyOptions.value = originRes?.data?.code === 200 ? originRes.data.data || [] : []
+    swlyOptions.value.forEach(item => { if (item.dictId === 2362) item.disabled = true })
+    orderTypeOptions.value = types || []
+    orderLevelOptions.value = levelRes?.data?.code === 200 ? levelRes.data.data || [] : []
     wtsdOptions.value = wtsdRes?.data?.data || []; ywdwOptions.value = ywdwRes?.data?.data || []
     hotspotOptions.value = hotspots || []; specialWorkOptions.value = specialWorks || []
     ageRangeOptions.splice(0, ageRangeOptions.length, ...(ageRanges || []).map(d => ({ label: d.dictName, value: d.dictId })))
     emotionOptions.splice(0, emotionOptions.length, ...(emotions || []).map(d => ({ label: d.dictName, value: d.dictId })))
     portraitOptions.splice(0, portraitOptions.length, ...(portraits || []).map(d => ({ label: d.dictName, value: d.dictId })))
+    if (!props.query?.orderId) {
+      if (!model.orderOrigin && swlyOptions.value.length) model.orderOrigin = getDefaultOriginPath(swlyOptions.value)
+      if (!model.orderType && orderTypeOptions.value.length) model.orderType = orderTypeOptions.value[0].dictId
+      if (!model.emotion && emotionOptions.length) model.emotion = emotionOptions[0].value
+      if (!model.orderLevel && orderLevelOptions.value.length) await changeOrderLevel(orderLevelOptions.value[0].levelId)
+    }
     await nextTick(); if (deptAndUserRef.value) deptAndUserRef.value.setDeptData({ deptOptions: ywdwOptions.value })
   } catch {}
+}
+
+// ── 选项/提交数据同步 ──
+function getDefaultOriginPath(options) {
+  const first = options?.[0]
+  if (!first) return []
+  return first.children?.[0] ? [first.dictId, first.children[0].dictId] : [first.dictId]
+}
+
+function normalizeSelectedPath(value) {
+  return Array.isArray(value) ? value.filter(v => v !== '' && v !== null && v !== undefined) : (value ? [value] : [])
+}
+
+function leafValue(value) {
+  const path = normalizeSelectedPath(value)
+  return path.length ? path[path.length - 1] : ''
+}
+
+function findTreePath(tree, ids, idKey = 'dictId') {
+  const idList = normalizeSelectedPath(ids)
+  if (!idList.length) return []
+  const walk = (nodes, depth = 0, path = []) => {
+    for (const node of nodes || []) {
+      if (node?.[idKey] == idList[depth]) {
+        const nextPath = [...path, node]
+        if (depth === idList.length - 1) return nextPath
+        const childPath = walk(node.children, depth + 1, nextPath)
+        if (childPath.length) return childPath
+      }
+    }
+    return []
+  }
+  return walk(tree)
+}
+
+async function changeOrderLevel(levelId) {
+  model.orderLevel = levelId || ''
+  const level = orderLevelOptions.value.find(item => item.levelId == levelId)
+  model.orderLevelName = level?.levelName || ''
+  model.orderLevelValue = level?.handleDays || ''
+  if (!levelId || !level?.handleDays) return
+  try {
+    const startTime = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    const res = await http.get('/orderInfo/getHandleEndTime', { params: { startTime, orderLevelValue: level.handleDays, orderLevel: levelId } })
+    if (res.data?.code === 200) model.handleEndTime = res.data.data || ''
+  } catch {}
+}
+
+function buildSubmitPayload(extra = {}) {
+  const payload = { ...model, ...extra }
+
+  const originPath = normalizeSelectedPath(model.orderOrigin)
+  const originNodes = findTreePath(swlyOptions.value, originPath)
+  ;[0, 1, 2].forEach(i => {
+    const suffix = i ? i + 1 : ''
+    payload[`orderOrigin${suffix}`] = originPath[i] || ''
+    payload[`orderOrigin${suffix}Name`] = originNodes[i]?.dictName || ''
+  })
+
+  const hotspotPath = normalizeSelectedPath(model.hotspot1)
+  const hotspotNodes = findTreePath(hotspotOptions.value, hotspotPath)
+  for (let i = 0; i < 5; i++) {
+    payload[`hotspot${i + 1}`] = hotspotPath[i] || ''
+    payload[`hotspot${i + 1}Name`] = hotspotNodes[i]?.dictName || ''
+  }
+
+  const deptPath = normalizeSelectedPath(model.deptId)
+  const deptNodes = findTreePath(wtsdOptions.value, deptPath, 'deptId')
+  payload.deptId = leafValue(model.deptId) || payload.deptId
+  payload.deptName = deptNodes[deptNodes.length - 1]?.deptName || payload.deptName || ''
+  for (let i = 0; i < 5; i++) payload[`dept${i + 1}Id`] = deptPath[i] || ''
+
+  const orderType = orderTypeOptions.value.find(item => item.dictId == model.orderType)
+  const level = orderLevelOptions.value.find(item => item.levelId == model.orderLevel)
+  payload.orderTypeName = orderType?.dictName || payload.orderTypeName || ''
+  payload.orderLevelName = level?.levelName || payload.orderLevelName || ''
+  payload.orderLevelValue = level?.handleDays || payload.orderLevelValue || ''
+  payload.handleTypeName = handleTypeOptions.find(item => item.value == model.handleType)?.label || payload.handleTypeName || ''
+  payload.transferInfoName = transferInfoOptions.find(item => item.value == model.transferInfo)?.label || payload.transferInfoName || ''
+  return payload
 }
 
 // ── 来电弹屏模式检测 ──
@@ -153,6 +249,10 @@ async function loadOrderData() {
       fields.forEach(f => { if (d[f] !== undefined) model[f] = d[f] })
       model.orderId = d.orderId || ''; model.orderNo = d.orderNo || ''
       model.isNameSecurity = d.isNameSecurity === 1 ? 1 : 0
+      model.orderOrigin = [d.orderOrigin, d.orderOrigin2, d.orderOrigin3].filter(v => v !== undefined && v !== null && v !== '')
+      model.hotspot1 = [d.hotspot1, d.hotspot2, d.hotspot3, d.hotspot4, d.hotspot5].filter(v => v !== undefined && v !== null && v !== '')
+      const deptPath = [d.dept1Id, d.dept2Id, d.dept3Id, d.dept4Id, d.dept5Id].filter(v => v !== undefined && v !== null && v !== '')
+      if (deptPath.length) model.deptId = deptPath
       if (model.callTel) { getlsgdList(); getblxxList() }
     }
   } catch {}
@@ -169,7 +269,7 @@ async function handleSubmit(continueAccept = false) {
   if (!model.callerContent) { ElMessage.warning('请输入内容'); return }
   try {
     submitLoading.value = true
-    const payload = { ...model, isTelAddZero: isTelAddZero.value }
+    const payload = buildSubmitPayload({ isTelAddZero: isTelAddZero.value })
     if (isEdit.value) payload.orderId = orderId.value
     payload.isContinueAccept = continueAccept ? 1 : 0; payload.isSubmit = continueAccept ? '' : '1'
     payload.isSendMassMessage = sendMessage.value
@@ -252,13 +352,13 @@ function handleUploadSuccess(r) { if (r?.code === 200 || r?.data?.code === 200) 
 async function loadFjList() { try { const r = await http.get('/orderAttachmentRecoding/list', { params: { orderId: orderId.value || 0, pageSize: 20 } }); if (r.data?.code === 200) fjList.value = r.data.data?.records || [] } catch { fjList.value = [] } }
 
 // ── 智能推荐 ──
-async function recommendedDept() { if (!model.hotspot1) return; try { const r = await http.get('/hotspotDept/recommend', { params: { hotspot: model.hotspot1 } }); if (r.data?.code === 200) { groupOptions.value = r.data.data || []; recommendedDeptActive.value = true } } catch {} }
+async function recommendedDept() { const hotspot = leafValue(model.hotspot1); if (!hotspot) return; try { const r = await http.get('/hotspotDept/recommend', { params: { hotspot } }); if (r.data?.code === 200) { groupOptions.value = r.data.data || []; recommendedDeptActive.value = true } } catch {} }
 function selectRecommendedDept(dept) { model.handlerDeptId = dept.deptId; model.handlerDeptName = dept.deptName; deptAndUserRef.value?.setCurrentDept(dept.deptId, dept.deptName); recommendedDeptActive.value = false; getDeptTels(dept.deptId) }
 async function getDeptTels(deptId) { try { const r = await http.get('/dept/find', { params: { deptId } }); if (r.data?.code === 200) { tel1.value = r.data.data?.tel || ''; tel2.value = r.data.data?.tel2 || '' } } catch { tel1.value = ''; tel2.value = '' } }
 
 // ── 热点绑定部门 ──
 async function getBindDept(hotspot) { if (!hotspot) return; try { const r = await http.get('/dict/getBindDept', { params: { hotspot } }); if (r.data?.code === 200 && r.data.data?.deptId) { model.handlerDeptId = r.data.data.deptId; model.handlerDeptName = r.data.data.deptName; deptAndUserRef.value?.setCurrentDept(r.data.data.deptId, r.data.data.deptName); getDeptTels(r.data.data.deptId) } } catch {} }
-watch(() => model.hotspot1, val => { if (val) getBindDept(val) })
+watch(() => model.hotspot1, val => { const hotspot = leafValue(val); if (hotspot) getBindDept(hotspot) })
 
 // ── AI 智能提取 ──
 async function intelligentExtraction() { if (!model.callerContent) return; try { const r = await http.get('/externalInterface/getExtraction', { params: { content: model.callerContent } }); if (r.data?.code === 200) { const d = r.data.data || {}; if (d.name && !model.name) model.name = d.name; if (d.addr && !model.addr) model.addr = d.addr; if (d.title && !model.title) model.title = d.title; ElMessage.success('智能提取完成') } } catch { ElMessage.warning('智能提取失败') } }
@@ -292,7 +392,7 @@ function tcts() {
 // ── 直派模式 ──
 async function directDispatch() {
   if (!model.title) { ElMessage.warning('请输入标题'); return }
-  try { await ElMessageBox.confirm('确认直派吗?', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }); submitLoading.value = true; const r = await http.post('/orderInfo/save', { ...model, isSubmit: '1', dispatchMode: 'zp' }); if (r.data?.code === 200) { ElMessage.success('直派成功'); workbenchNav?.openMenuByCode('zcsw') } else ElMessage.error(r.data?.message || '操作失败') } catch {} finally { submitLoading.value = false }
+  try { await ElMessageBox.confirm('确认直派吗?', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }); submitLoading.value = true; const r = await http.post('/orderInfo/save', buildSubmitPayload({ isSubmit: '1', dispatchMode: 'zp' })); if (r.data?.code === 200) { ElMessage.success('直派成功'); workbenchNav?.openMenuByCode('zcsw') } else ElMessage.error(r.data?.message || '操作失败') } catch {} finally { submitLoading.value = false }
 }
 
 // ── 知识库申请 + 缺失登记 ──
@@ -407,7 +507,7 @@ onMounted(async () => {
               <el-form label-width="90px" size="small">
                 <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="办理方式"><el-select v-model="model.handleType"><el-option v-for="h in handleTypeOptions" :key="h.value" :label="h.label" :value="h.value" /></el-select></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="级别"><el-select v-model="model.orderLevel" clearable><el-option v-for="o in orderLevelOptions" :key="o.dictId" :label="o.dictName" :value="o.dictId" /></el-select></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="级别"><el-select v-model="model.orderLevel" clearable @change="changeOrderLevel"><el-option v-for="o in orderLevelOptions" :key="o.levelId" :label="`${o.levelName} (${o.handleDays}日)`" :value="o.levelId" /></el-select></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="办理时限"><el-date-picker v-model="model.handleEndTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" /></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">

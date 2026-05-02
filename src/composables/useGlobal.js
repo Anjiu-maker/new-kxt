@@ -58,7 +58,8 @@ export function useDict() {
   getDictCache()
 
   async function getDictByCode(isTree, code) {
-    const cached = dictCache.value[code]
+    const cacheKey = `${isTree ? 'tree' : 'son'}:${code}`
+    const cached = dictCache.value[cacheKey]
     const config = window.common || window.__KXT_CONFIG__ || {}
     const validity = (config.dictValidityTime || 7) * 1000 * 60 * 60 * 24
     const now = Date.now()
@@ -66,9 +67,10 @@ export function useDict() {
       return cached.data
     }
     try {
-      const res = await http.get('/dict/findTreeByDictCode', { params: { dictCode: code } })
+      const api = isTree ? '/dict/findTreeByDictCode' : '/dict/findSonByDictCode'
+      const res = await http.get(api, { params: { dictCode: code } })
       const data = res.data?.code === 200 ? res.data.data : []
-      dictCache.value[code] = { startTime: now, data }
+      dictCache.value[cacheKey] = { startTime: now, data }
       localStorage.setItem('dictData', JSON.stringify(dictCache.value))
       return data
     } catch {

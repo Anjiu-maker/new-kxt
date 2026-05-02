@@ -1,6 +1,5 @@
 <script setup>
 import { computed, inject, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
 import Container from '@/components/Container.vue'
 import OrderQuery from '@/components/OrderQuery.vue'
 import Orderinfo from '@/components/Orderinfo.vue'
@@ -8,14 +7,20 @@ import PrintExport from '@/components/PrintExport.vue'
 import { getOrderList, getOrderDetail } from '@/services/orderService'
 import flowApiMapping from '@/utils/flowApiMapping'
 import { useAuthStore } from '@/stores/auth'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 
 // ── 已迁移的表单组件 ──
 import SqdbForm from '@/views/workbench/SqdbForm.vue'
 import EcdbForm from '@/views/workbench/EcdbForm.vue'
 import DgdForm from '@/views/workbench/DgdForm.vue'
 
-const route = useRoute()
+const props = defineProps({
+  pageName: { type: String, default: '' },
+  query: { type: Object, default: () => ({}) },
+  md: { type: String, default: '' },
+  rawPath: { type: String, default: '' }
+})
+
 const authStore = useAuthStore()
 const workbenchNav = inject('workbenchNav', null)
 
@@ -129,7 +134,9 @@ function onFormSuccess() { loadData() }
 function getTableHeight(h) { tableHeight.value = h - 154 }
 
 onMounted(() => {
-  method.value = route.params.md || route.query.md || 'dfp'
+  // md 来源优先级：props.md > props.query.md > rawPath 解析 > 默认
+  const fromPath = props.rawPath?.startsWith('flow/order/') ? props.rawPath.replace('flow/order/', '') : ''
+  method.value = props.md || props.query?.md || fromPath || 'dfp'
   loadData()
 })
 </script>

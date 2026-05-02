@@ -1,6 +1,5 @@
 <script setup>
 import { computed, inject, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import Container from '@/components/Container.vue'
 import Orderinfo from '@/components/Orderinfo.vue'
@@ -9,7 +8,11 @@ import { saveOrder, getOrderDetail, getOrderList, getDeptList } from '@/services
 import { useAuthStore } from '@/stores/auth'
 import { useGlobal } from '@/composables/useGlobal'
 
-const route = useRoute()
+const props = defineProps({
+  pageName: { type: String, default: '' },
+  query: { type: Object, default: () => ({}) }
+})
+
 const authStore = useAuthStore()
 const workbenchNav = inject('workbenchNav', null)
 const { getDictByCode } = useGlobal()
@@ -55,11 +58,11 @@ async function loadDicts() {
 }
 
 async function loadOrderData() {
-  const oid = route.query.orderId
+  const oid = props.query?.orderId
   if (!oid) return
   isEdit.value = true; orderId.value = oid
   try {
-    const res = await getOrderDetail(route.query.orderNo || '', authStore.hasPermission('lookOrderInfo', 1))
+    const res = await getOrderDetail(props.query?.orderNo || '', authStore.hasPermission('lookOrderInfo', 1))
     if (res.data?.code === 200) {
       const d = res.data.data
       Object.assign(model, {

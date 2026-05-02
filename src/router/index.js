@@ -4,27 +4,12 @@ import 'nprogress/nprogress.css'
 
 NProgress.configure({ showSpinner: false })
 
-const workbenchPages = [
-  'BlankPage',
-  'ZxIndex',
-  'CbgIndex',
-  'DbzxIndex',
-  'LdspgIndex',
-  'FzgIndex',
-  'ZnjIndex',
-  'ZnjddzxIndex',
-  'HfIndex',
-  'BjshIndex'
-]
-
 const routes = [
   {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
-    meta: {
-      title: '登录'
-    }
+    meta: { title: '登录' }
   },
   {
     path: '/',
@@ -34,32 +19,15 @@ const routes = [
     path: '/home',
     name: 'home',
     component: () => import('@/views/home/Home.vue'),
-    meta: {
-      title: '首页'
-    }
+    meta: { title: '首页' }
   },
   {
     path: '/notice/mine',
     name: 'noticeMine',
     component: () => import('@/views/notice/NoticeMine.vue'),
-    props: (route) => ({
-      query: route.query
-    }),
-    meta: {
-      title: '我的公告'
-    }
+    props: (route) => ({ query: route.query }),
+    meta: { title: '我的公告' }
   },
-  ...workbenchPages.map((pageName) => ({
-    path: `/${pageName}`,
-    name: pageName,
-    component: () => import('@/views/workbench/RoleWorkbench.vue'),
-    props: {
-      pageName
-    },
-    meta: {
-      title: '工作台'
-    }
-  })),
   {
     path: '/migration',
     component: () => import('@/layouts/AppLayout.vue'),
@@ -68,11 +36,13 @@ const routes = [
         path: '',
         name: 'migration-dashboard',
         component: () => import('@/views/migration/Dashboard.vue'),
-        meta: {
-          title: '重构工作台'
-        }
+        meta: { title: '重构工作台' }
       }
     ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/home'
   }
 ]
 
@@ -88,9 +58,7 @@ router.beforeEach((to) => {
   if (to.path !== '/login' && !token) {
     return {
       path: '/login',
-      query: {
-        redirect: to.fullPath
-      }
+      query: { redirect: to.fullPath }
     }
   }
 

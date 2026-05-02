@@ -22,10 +22,29 @@ const migratedComponents = {
   BjshIndex
 }
 
-export function resolveInternalPageComponent(path = '', query = {}) {
-  const pageName = path.replace(/^\//, '').split('?')[0] || 'BlankPage'
+// 旧路由路径 → 新组件名（后端 roleIndexPage 返回的是旧路由路径如 zx/index）
+const legacyPathAliases = {
+  'zx/index': 'ZxIndex',
+  'fzg/index': 'FzgIndex',
+  'cbg/index': 'CbgIndex',
+  'dbzx/index': 'DbzxIndex',
+  'ldspg/index': 'LdspgIndex',
+  'znj/index': 'ZnjIndex',
+  'znjddzx/index': 'ZnjddzxIndex',
+  'hf/index': 'HfIndex',
+  'bjsh/index': 'BjshIndex',
+  'admin/index': 'BlankPage'
+}
 
-  if (pageName === 'notice/mine') {
+function resolvePageName(rawPath) {
+  const cleaned = rawPath.replace(/^\//, '').split('?')[0] || 'BlankPage'
+  return legacyPathAliases[cleaned] || cleaned
+}
+
+export function resolveInternalPageComponent(path = '', query = {}) {
+  const pageName = resolvePageName(path)
+
+  if (pageName === 'notice/mine' || path.includes('notice/mine')) {
     return {
       component: NoticeMine,
       props: { query }

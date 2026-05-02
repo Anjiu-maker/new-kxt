@@ -143,5 +143,3 @@ export function useGlobal() {
     getListApi
   }
 }
-
-import { ref } from 'vue'

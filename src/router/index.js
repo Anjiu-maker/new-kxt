@@ -41,6 +41,30 @@ const routes = [
     ]
   },
   {
+    path: '/order/addOrder',
+    name: 'addOrder',
+    component: () => import('@/views/order/AddOrder.vue'),
+    meta: { title: '新增工单' }
+  },
+  {
+    path: '/order/editOrder',
+    name: 'editOrder',
+    component: () => import('@/views/order/AddOrder.vue'),
+    meta: { title: '编辑工单' }
+  },
+  {
+    path: '/order/quickAddOrder',
+    name: 'quickAddOrder',
+    component: () => import('@/views/order/AddOrder-quick.vue'),
+    meta: { title: '快速受理' }
+  },
+  {
+    path: '/order/specialAddOrder',
+    name: 'specialAddOrder',
+    component: () => import('@/views/order/AddOrder-special.vue'),
+    meta: { title: '专项诉求' }
+  },
+  {
     path: '/flow/order/:md',
     name: 'flowOrder',
     component: () => import('@/views/order/FlowCommonList.vue'),

@@ -268,6 +268,7 @@ async function getMindTitle() { if (!model.callerContent) return; try { const r 
 // ── 高危词检测 ──
 async function highRiskSign() { if (!model.callerContent) return; try { const r = await http.get('/highRisk/sign', { params: { content: model.callerContent } }); if (r.data?.code === 200 && r.data.data) { ElMessage.warning('检测到高危词: ' + r.data.data) } } catch {} }
 watch(() => model.callerContent, () => { if (model.callerContent && model.callerContent.length > 20) highRiskSign() })
+watch(() => model.title, () => { if (model.title && model.title.length >= 3) checkTitleRepetition() })
 
 // ── 短信模板 ──
 async function loadMessageTemplates() { try { const r = await http.get('/notice_sms_template/findByPurpose', { params: { purpose: '不予受理' } }); if (r.data?.code === 200) { messageTemplateOptions.value = r.data.data || []; messageTemplateVisible.value = true } } catch { ElMessage.warning('暂无可用模板') } }
@@ -281,6 +282,53 @@ function ckDispose(row) { gdxqwin.value = true; orderInfoRef.value?.reloadDataBy
 function playOrderSound() { const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || ''; audioUrlMaster.value = baseApi + model.haveSoundName; audioWinMaster.value = true }
 function computeSecrecy(hs) { return model.isNameSecurity ? 0 : hs }
 
+// ── 题词推送 ──
+function tcts() {
+  const data = { title: model.title, content: model.callerContent, name: model.name, callTel: model.callTel, addr: model.addr, orderOrigin: model.orderOrigin }
+  localStorage.setItem('kxt_tcts_data', JSON.stringify(data))
+  ElMessage.success('已推送到题词')
+}
+
+// ── 直派模式 ──
+async function directDispatch() {
+  if (!model.title) { ElMessage.warning('请输入标题'); return }
+  try { await ElMessageBox.confirm('确认直派吗?', '提示', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }); submitLoading.value = true; const r = await http.post('/orderInfo/save', { ...model, isSubmit: '1', dispatchMode: 'zp' }); if (r.data?.code === 200) { ElMessage.success('直派成功'); workbenchNav?.openMenuByCode('zcsw') } else ElMessage.error(r.data?.message || '操作失败') } catch {} finally { submitLoading.value = false }
+}
+
+// ── 知识库申请 + 缺失登记 ──
+const zsdApplyVisible = ref(false); const zsdApplyForm = reactive({ title: '', content: '' })
+async function applyKnowledge() {
+  if (!zsdApplyForm.title) { ElMessage.warning('请输入标题'); return }
+  try { const r = await http.post('/knowledgeBase/zsdApply', { title: zsdApplyForm.title, content: zsdApplyForm.content || model.callerContent }); if (r.data?.code === 200) { ElMessage.success('申请成功'); zsdApplyVisible.value = false } else ElMessage.error(r.data?.message || '申请失败') } catch { ElMessage.error('申请失败') }
+}
+const missingKlgVisible = ref(false); const missingKlgForm = reactive({ title: '', reason: '' })
+async function registerMissing() {
+  if (!missingKlgForm.title) { ElMessage.warning('请输入缺失知识点标题'); return }
+  try { const r = await http.post('/klKnowledgeDeletion/save', { title: missingKlgForm.title, reason: missingKlgForm.reason }); if (r.data?.code === 200) { ElMessage.success('登记成功'); missingKlgVisible.value = false } else ElMessage.error(r.data?.message || '登记失败') } catch { ElMessage.error('登记失败') }
+}
+
+// ── 通话记录标记 ──
+async function markCallRecordHandled() { if (!model.callTel) return; try { await http.get('/incomeinfor/setCallRecordHandled', { params: { tel: model.callTel } }) } catch {} }
+async function markRecordHandled() { if (!model.callTel) return; try { await http.get('/recordinfor/setRecordHandled', { params: { tel: model.callTel } }) } catch {} }
+
+// ── 110工单检查 ──
+const is110Checked = ref(false)
+async function check110Order() { if (!model.callTel) return; try { const r = await http.get('/channelHandledOrderInfo/getHandledOrder110', { params: { tel: model.callTel } }); if (r.data?.code === 200 && r.data.data) { is110Checked.value = true; ElMessage.warning('该号码在110平台有分派记录，请确认是否继续分派110平台') } } catch {} }
+
+// ── 标题重复检查 ──
+async function checkTitleRepetition() { if (!model.title || model.title.length < 3) return; try { const r = await http.get('/knowledgeBase/titleRepetition', { params: { title: model.title } }); if (r.data?.code === 200 && r.data.data) { ElMessage.warning('标题与已有知识点重复，请确认') } } catch {} }
+
+// ── 受理人分派 ──
+const assignVisible = ref(false); const assignUserId = ref(''); const assignUserList = ref([])
+async function openAssignDialog() { try { const r = await http.get('/dept/list/current_user', { params: { isUser: true } }); if (r.data?.code === 200) assignUserList.value = r.data.data || []; assignVisible.value = true } catch { ElMessage.warning('获取人员列表失败') } }
+async function doAssign() { if (!assignUserId.value) { ElMessage.warning('请选择受理人'); return }; try { await http.post('/orderInfo/assign/personnel', { orderId: model.orderId || orderId.value, userId: assignUserId.value }); ElMessage.success('分派成功'); assignVisible.value = false } catch { ElMessage.error('分派失败') } }
+
+// ── 录音文件查询 ──
+async function findSoundByOrderId() { if (!model.orderId && !orderId.value) return; try { const r = await http.post('/orderInfo/findSoundByOrderId', { orderId: model.orderId || orderId.value }); if (r.data?.code === 200 && r.data.data) { const d = r.data.data; model.haveSoundName = d.haveSoundName || ''; model.haveSound = d.haveSound || 0; if (model.haveSoundName && model.haveSoundName !== '无') { const baseApi = window.common?.baseApi || ''; audioUrlMaster.value = baseApi + model.haveSoundName; audioWinMaster.value = true } } } catch {} }
+
+// 来电弹屏模式下自动标记通话记录
+async function autoHandleCallRecords() { await markCallRecordHandled(); await markRecordHandled() }
+
 // ── 初始化 ──
 onMounted(async () => {
   await loadDicts()
@@ -289,6 +337,9 @@ onMounted(async () => {
   if (mode === 'telpop' || mode === 'editTel') getlsgdList()
   getblxxList(); searchOrigin(); searchLost(); loadRxList()
   if (!isEdit.value && !model.incidentTime) model.incidentTime = new Date().toISOString().slice(0, 19).replace('T', ' ')
+  if (['telpop', 'callRecord', 'lostCall'].includes(mode)) autoHandleCallRecords()
+  if (mode === 'lostCall' && model.callId) { http.get('/orderInfo/getOrderIdByCallId', { params: { callId: model.callId } }).then(r => { if (r.data?.code === 200 && r.data.data) orderId.value = r.data.data }) }
+  if (model.callTel) check110Order()
 })
 </script>
 
@@ -384,7 +435,14 @@ onMounted(async () => {
             <div class="form-actions">
               <el-checkbox v-model="sendMessage">群众短信</el-checkbox>
               <el-button @click="openMailList">通讯录</el-button>
+              <el-button @click="tcts">题词推送</el-button>
+              <el-button v-if="isEdit" @click="openAssignDialog">分派受理人</el-button>
+              <el-button type="warning" @click="zsdApplyVisible = true">申请知识点</el-button>
+              <el-button type="info" @click="missingKlgVisible = true">登记缺失</el-button>
+              <el-button v-if="isEdit" @click="findSoundByOrderId">查录音</el-button>
               <el-button v-if="model.relevantOrderNode" @click="qxgl">取消关联: {{ model.relevantOrderNode }}</el-button>
+              <el-tag v-if="is110Checked" type="danger" size="small">110平台已分派</el-tag>
+              <el-button type="primary" :loading="submitLoading" @click="directDispatch">直派</el-button>
               <el-button type="success" :loading="submitLoading" @click="handleSubmit(true)">继续受理</el-button>
               <el-button type="primary" :loading="submitLoading" @click="handleSubmit(false)">提交</el-button>
               <el-button @click="workbenchNav?.openMenuByCode('zcsw')">返回列表</el-button>
@@ -424,6 +482,12 @@ onMounted(async () => {
     <el-dialog v-model="isShowFj" title="附件列表" width="600px" append-to-body @opened="loadFjList"><ul v-if="fjList.length" class="fj-list"><li v-for="(fj, fi) in fjList" :key="fi"><a :href="fj.filePath || fj.url" target="_blank">{{ fj.fileName || '附件' + (fi + 1) }}</a></li></ul><el-empty v-else description="暂无附件" :image-size="48" /><template #footer><el-button @click="isShowFj = false">关闭</el-button></template></el-dialog>
     <!-- 短信模板 -->
     <el-dialog v-model="messageTemplateVisible" title="短信模板" width="500px" append-to-body><el-table :data="messageTemplateOptions" size="small" border max-height="400"><el-table-column prop="name" label="模板名称" /><el-table-column prop="content" label="内容" show-overflow-tooltip /><el-table-column label="操作" width="60"><template #default="{ row }"><el-button link type="primary" @click="selectMessageTemplate(row)">选择</el-button></template></el-table-column></el-table><template #footer><el-button @click="messageTemplateVisible = false">关闭</el-button></template></el-dialog>
+    <!-- 申请知识点 -->
+    <el-dialog v-model="zsdApplyVisible" title="申请知识点" width="500px" append-to-body><el-form size="small" label-width="80px"><el-form-item label="标题"><el-input v-model="zsdApplyForm.title" /></el-form-item><el-form-item label="内容"><el-input v-model="zsdApplyForm.content" type="textarea" :autosize="{ minRows:3 }" /></el-form-item></el-form><template #footer><el-button @click="zsdApplyVisible = false">取消</el-button><el-button type="primary" @click="applyKnowledge">申请</el-button></template></el-dialog>
+    <!-- 登记缺失知识点 -->
+    <el-dialog v-model="missingKlgVisible" title="登记缺失知识点" width="500px" append-to-body><el-form size="small" label-width="80px"><el-form-item label="标题"><el-input v-model="missingKlgForm.title" /></el-form-item><el-form-item label="原因"><el-input v-model="missingKlgForm.reason" type="textarea" :autosize="{ minRows:2 }" /></el-form-item></el-form><template #footer><el-button @click="missingKlgVisible = false">取消</el-button><el-button type="primary" @click="registerMissing">登记</el-button></template></el-dialog>
+    <!-- 受理人分派 -->
+    <el-dialog v-model="assignVisible" title="分派受理人" width="450px" append-to-body><el-form size="small"><el-form-item label="受理人"><el-select v-model="assignUserId" filterable placeholder="选择受理人" style="width:100%"><el-option v-for="u in assignUserList" :key="u.userId || u.id" :label="u.userName || u.label" :value="u.userId || u.id" /></el-select></el-form-item></el-form><template #footer><el-button @click="assignVisible = false">取消</el-button><el-button type="primary" @click="doAssign">确认分派</el-button></template></el-dialog>
   </Container>
 </template>
 

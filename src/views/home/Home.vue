@@ -1017,6 +1017,7 @@ onUnmounted(() => {
   }
 
   closeNoticeSocket()
+  ctiStore.resetCti()
 })
 </script>
 

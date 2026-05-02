@@ -11,16 +11,19 @@ import BjshIndex from './BjshIndex.vue'
 import NoticeMine from '@/views/notice/NoticeMine.vue'
 
 const migratedComponents = {
-  ZxIndex,
-  CbgIndex,
-  DbzxIndex,
-  LdspgIndex,
-  FzgIndex,
-  ZnjIndex,
-  ZnjddzxIndex,
-  HfIndex,
-  BjshIndex
+  ZxIndex, CbgIndex, DbzxIndex, LdspgIndex, FzgIndex,
+  ZnjIndex, ZnjddzxIndex, HfIndex, BjshIndex,
+  Fzgth: null, Cfdb: null, Zcsw: null, ZcswAll: null, ZcswSpecial: null, Rwfpmx: null
 }
+// 以下页面通过路由直接加载
+import Fzgth from '@/views/order/Fzgth.vue'
+import Cfdb from '@/views/order/Cfdb.vue'
+import Zcsw from '@/views/order/Zcsw.vue'
+import ZcswAll from '@/views/order/ZcswAll.vue'
+import ZcswSpecial from '@/views/order/ZcswSpecial.vue'
+import Rwfpmx from '@/views/order/Rwfpmx.vue'
+const orderPages = { Fzgth, Cfdb, Zcsw, ZcswAll, ZcswSpecial, Rwfpmx }
+Object.assign(migratedComponents, orderPages)
 
 // 旧路由路径 → 新组件名（后端 roleIndexPage 返回的是旧路由路径如 zx/index）
 const legacyPathAliases = {

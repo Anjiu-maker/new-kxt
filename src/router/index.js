@@ -41,6 +41,42 @@ const routes = [
     ]
   },
   {
+    path: '/order/fzgth',
+    name: 'fzgth',
+    component: () => import('@/views/order/Fzgth.vue'),
+    meta: { title: '分转岗退回' }
+  },
+  {
+    path: '/order/cfdb',
+    name: 'cfdb',
+    component: () => import('@/views/order/Cfdb.vue'),
+    meta: { title: '重复督办' }
+  },
+  {
+    path: '/order/zcsw',
+    name: 'zcsw',
+    component: () => import('@/views/order/Zcsw.vue'),
+    meta: { title: '暂存事务' }
+  },
+  {
+    path: '/order/zcswAll',
+    name: 'zcswAll',
+    component: () => import('@/views/order/ZcswAll.vue'),
+    meta: { title: '全部暂存事务' }
+  },
+  {
+    path: '/order/zcswSpecial',
+    name: 'zcswSpecial',
+    component: () => import('@/views/order/ZcswSpecial.vue'),
+    meta: { title: '专项暂存事务' }
+  },
+  {
+    path: '/xxcx/rwfpmx',
+    name: 'rwfpmx',
+    component: () => import('@/views/order/Rwfpmx.vue'),
+    meta: { title: '任务分配明细' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/home'
   }

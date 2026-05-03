@@ -14,6 +14,7 @@ import Container from "@/components/Container.vue";
 import Orderinfo from "@/components/Orderinfo.vue";
 import Audio from "@/components/Audio.vue";
 import SelectDeptOrUser from "@/components/SelectDeptOrUser.vue";
+import AddOrderKnowledgePanel from "./components/AddOrderKnowledgePanel.vue";
 import {
   saveOrder,
   getOrderDetail,
@@ -1017,11 +1018,17 @@ watch(
 );
 
 // ── 右侧面板 ──
-async function searchZsk() {
+async function searchZsk(isSearch = false) {
+  const title = (zskKeyword.value || "").replace(/\s*/g, "");
+  if (isSearch) {
+    activeClass.value = 0;
+    zskPageInfo.pageNum = 1;
+    zskPageInfo.pageSize = 9;
+  }
   try {
     const r = await http.get("/knowledgeBase/findHistoryOrderByTitle", {
       params: {
-        title: zskKeyword.value || "",
+        title,
         pageNum: zskPageInfo.pageNum,
         pageSize: zskPageInfo.pageSize,
       },
@@ -1029,10 +1036,23 @@ async function searchZsk() {
     if (r.data?.code === 200) {
       zskList.value = r.data.data?.records || [];
       zskPageInfo.total = r.data.data?.total || 0;
+      zskPageInfo.pageNum = r.data.data?.current || zskPageInfo.pageNum;
+      zskPageInfo.pageSize = r.data.data?.size || zskPageInfo.pageSize;
+      if (!zskList.value.length && title && isSearch) {
+        addKnowledgeDeletion(title);
+      }
     }
   } catch {
     zskList.value = [];
   }
+}
+function handleZskSearch() {
+  searchZsk(true);
+}
+function handleZskPagination({ page, limit }) {
+  zskPageInfo.pageNum = page;
+  zskPageInfo.pageSize = limit;
+  searchZsk();
 }
 async function getblxxList() {
   try {
@@ -1102,14 +1122,50 @@ async function loadRxList() {
     rxList.value = [];
   }
 }
+function getKnowledgeId(item) {
+  return item.knowledge_id || item.klKnowledgeId || item.id;
+}
+function replaceKnowledgeImageUrl(contentHtml) {
+  if (!contentHtml) return contentHtml;
+  let html = contentHtml;
+  if (html.includes("<a") && !html.includes("target='_blank'") && !html.includes('target="_blank"')) {
+    html = html.replace(/<a/g, "<a target='_blank'");
+  }
+  const baseApi = window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || "";
+  return html.includes("@#knowledgeImageUrl#") ? html.replace(/@#knowledgeImageUrl#/g, baseApi) : html;
+}
+async function addKnowledgeDeletion(title) {
+  try {
+    const operator = userInfo.value?.userName || userInfo.value?.account || "";
+    const r = await http.post("/klKnowledgeDeletion/save", {
+      title,
+      operator,
+      type: "登记",
+    });
+    if (r.data?.code === 200) ElMessage.success("已添加至缺失知识点！");
+  } catch {
+    // 缺失知识点登记失败不阻断搜索结果展示。
+  }
+}
 function zskViewDetail(item) {
+  const id = getKnowledgeId(item);
+  if (!id) {
+    ElMessage.warning("知识点编号缺失，无法查看详情");
+    return;
+  }
   http
     .get("/knowledgeBase/zsk_knowledge_one", {
-      params: { id: item.klKnowledgeId || item.id, isSave: 1 },
+      params: { id, isSave: 1 },
     })
     .then((r) => {
       if (r.data?.code === 200) {
-        zsdDetail.value = r.data.data || {};
+        const detail = r.data.data || item || {};
+        zsdDetail.value = {
+          ...item,
+          ...detail,
+          htmlContent: replaceKnowledgeImageUrl(detail.htmlContent || item.htmlContent),
+          content: replaceKnowledgeImageUrl(detail.content || item.content),
+        };
         zsdDetailVisible.value = true;
       }
     });
@@ -2208,26 +2264,17 @@ onBeforeUnmount(() => {
                 {{ tab }}
               </button>
             </div>
-            <div class="side-search">
-              <el-input v-model="zskKeyword"  placeholder="可输入标题、电话、受理单编号" @keyup.enter="searchZsk" />
-              <el-radio-group v-model="recommendedDeptActive">
-                <el-radio :value="true">查看自己</el-radio>
-                <el-radio :value="false">查看所有</el-radio>
-              </el-radio-group>
-              <el-button type="primary"  @click="searchZsk">搜索</el-button>
-            </div>
-            <div v-show="activeClass === 0" style="padding: 10px">
-              <el-table :data="zskList"  border max-height="400"><el-table-column type="index"
-                  width="90" label="编号" /><el-table-column prop="title" label="标题" min-width="150"
-                  show-overflow-tooltip /><el-table-column prop="content" label="内容" min-width="160"
-                  show-overflow-tooltip /><el-table-column prop="createUserName" label="登记人员"
-                  width="90" /><el-table-column prop="statusName" label="状态"
-                  width="80" /><el-table-column label="操作" width="90"><template #default="{ row }"><el-button
-                      link type="primary" 
-                      @click="zskViewDetail(row)">查看</el-button></template></el-table-column></el-table>
-              <el-pagination small background layout="total, prev, next" :total="zskPageInfo.total"
-                :page-size="zskPageInfo.pageSize" style="margin-top: 6px; justify-content: flex-end" />
-            </div>
+            <AddOrderKnowledgePanel
+              v-show="activeClass === 0"
+              v-model:keyword="zskKeyword"
+              :list="zskList"
+              :total="zskPageInfo.total"
+              :page="zskPageInfo.pageNum"
+              :page-size="zskPageInfo.pageSize"
+              @search="handleZskSearch"
+              @pagination="handleZskPagination"
+              @view-detail="zskViewDetail"
+            />
             <div v-show="activeClass === 1" style="padding: 10px">
               <el-table :data="blxxList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"

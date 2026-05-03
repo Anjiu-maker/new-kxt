@@ -39,7 +39,7 @@ const loading = ref(false);
 const submitLoading = ref(false);
 const isEdit = ref(false);
 const orderId = ref("");
-const qzbz = ref(false);
+const qzbz = ref(true);
 const activeClass = ref(0);
 const audioWinMaster = ref(false);
 const audioUrlMaster = ref("");
@@ -1239,10 +1239,18 @@ onMounted(async () => {
 
             <!-- 市民信息 -->
             <div class="info-section citizen-section">
-              <div class="section-head">
-                <span>市民信息</span><el-button text type="primary"  @click="qzbz = !qzbz">{{ qzbz ? "收起" : "展开"
-                  }}</el-button><el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" 
-                  @click="playOrderSound">通话录音</el-button>
+              <div class="section-head citizen-head">
+                <div class="section-title">
+                  <span>市民信息</span>
+                  <span class="dial-title">市民拨打号码:</span>
+                </div>
+                <div class="section-actions">
+                  <button class="expand-toggle" type="button" @click="qzbz = !qzbz">
+                    <span>{{ qzbz ? "收起" : "展开" }}</span>
+                    <span class="expand-arrow" :class="{ expanded: qzbz }"></span>
+                  </button><el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" 
+                    @click="playOrderSound">通话录音</el-button>
+                </div>
               </div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
@@ -1250,50 +1258,55 @@ onMounted(async () => {
                         clearable /></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="呼叫号码"><el-input v-model="model.callTel" placeholder="呼叫号码"
                         maxlength="12" show-word-limit clearable @keyup.enter="getlsgdList" /></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="性别"><el-select v-model="model.sex" placeholder="选择"
-                        clearable><el-option v-for="s in sexOptions" :key="s.value" :label="s.label"
-                          :value="s.value" /></el-select></el-form-item></el-col>
+                  <el-col :span="8">
+                    <div class="citizen-actions">
+                      <el-button  @click="add0Click">{{ isTelAddZero ? "去0" : "加0" }}</el-button>
+                      <el-button  @click="model.isNameSecurity = model.isNameSecurity ? 0 : 1">保密</el-button>
+                      <el-button  @click="getlsgdList">查询</el-button>
+                      <el-button  type="success" @click="hujiao(model.callTel)">呼叫</el-button>
+                    </div>
+                  </el-col>
                 </el-row>
                 <el-row :gutter="12" v-show="qzbz">
+                  <el-col :span="8"><el-form-item label="性别"><el-select v-model="model.sex" placeholder="请选择性别"
+                        clearable><el-option v-for="s in sexOptions" :key="s.value" :label="s.label"
+                          :value="s.value" /></el-select></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="年龄"><el-select v-model="model.ageRange" clearable><el-option
                           v-for="a in ageRangeOptions" :key="a.value" :label="a.label"
                           :value="a.value" /></el-select></el-form-item></el-col>
-                  <el-col :span="10"><el-form-item label="短信接收号"><el-input v-model="model.shotMessageNumber"
+                  <el-col :span="8"><el-form-item label="接收短信号码"><el-input v-model="model.shotMessageNumber"
                         maxlength="11" clearable /></el-form-item></el-col>
-                  <el-col :span="6"><el-form-item label="普通话"><el-select v-model="model.isBzpth"><el-option
-                          v-for="b in bzpthOptions" :key="b.value" :label="b.label"
-                          :value="b.value" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12" v-show="qzbz">
-                  <el-col :span="12"><el-form-item label="人像"><el-select v-model="model.portrait" multiple
+                  <el-col :span="8"><el-form-item label="标准普通话"><el-radio-group v-model="model.isBzpth"><el-radio
+                          v-for="b in bzpthOptions" :key="b.value" :label="b.label"
+                          :value="b.value" /></el-radio-group></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="人物画像"><el-select v-model="model.portrait" multiple
                         placeholder="最多3项" :multiple-limit="3"><el-option v-for="p in portraitOptions" :key="p.value"
                           :label="p.label" :value="p.value" /></el-select></el-form-item></el-col>
-                  <el-col :span="12"><el-form-item label="本地人"><el-select v-model="model.isNative"><el-option
+                  <el-col :span="8"><el-form-item label="本地人"><el-radio-group v-model="model.isNative"><el-radio
                           v-for="b in isNativeOptions" :key="b.value" :label="b.label"
-                          :value="b.value" /></el-select></el-form-item></el-col>
+                          :value="b.value" /></el-radio-group></el-form-item></el-col>
                 </el-row>
-                <el-row :gutter="12"><el-col :span="16"><el-form-item label="群众地址"><el-input v-model="model.addr"
-                        clearable /></el-form-item></el-col><el-col :span="8" v-show="!qzbz">
-                    <div class="citizen-actions">
-                      <el-button  @click="getlsgdList">查询</el-button><el-button  type="success"
-                        @click="hujiao(model.callTel)">呼叫</el-button><el-button  @click="add0Click">{{
-                          isTelAddZero ? "去0" : "加0"
-                        }}</el-button>
-                    </div>
-                  </el-col><el-col :span="8" v-show="qzbz"><el-form-item label="身份证"><el-input v-model="model.idcard"
+                <el-row :gutter="12" v-show="qzbz"><el-col :span="16"><el-form-item label="群众备注"><el-input
+                        v-model="model.massesRemarks" clearable /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="身份证"><el-input v-model="model.idcard"
                         maxlength="18" clearable /></el-form-item></el-col></el-row>
-                <el-row :gutter="12" v-show="qzbz"><el-col :span="24"><el-form-item label="群众备注"><el-input
-                        v-model="model.massesRemarks" clearable /></el-form-item></el-col></el-row>
+                <el-row :gutter="12"><el-col :span="24"><el-form-item label="群众地址"><el-input v-model="model.addr"
+                        clearable /></el-form-item></el-col></el-row>
               </el-form>
             </div>
 
             <!-- 受理单信息 -->
             <div class="info-section order-section">
-              <div class="section-head">
-                <span>受理单信息</span><el-button  @click="uploadFileWin = true">上传附件</el-button><el-button
-                   @click="isShowFj = true">查看附件</el-button><el-button  type="warning"
-                  @click="intelligentExtraction">智能提取</el-button><el-button 
-                  @click="getHotType">推荐热点</el-button><el-button  @click="getMindTitle">推荐标题</el-button>
+              <div class="section-head order-head">
+                <span>受理单信息</span>
+                <div class="section-actions">
+                  <el-button  @click="uploadFileWin = true">上传附件</el-button><el-button
+                     @click="isShowFj = true">查看附件</el-button><el-button  type="warning"
+                    @click="intelligentExtraction">智能提取</el-button><el-button 
+                    @click="getHotType">推荐热点</el-button><el-button  @click="getMindTitle">推荐标题</el-button>
+                </div>
               </div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
@@ -1332,19 +1345,28 @@ onMounted(async () => {
                         }" clearable filterable style="width: 100%" /></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="12"><el-form-item label="标题"><el-input v-model="model.title" placeholder="请输入工单标题"
+                  <el-col :span="12"><el-form-item label="事发地址"><el-input v-model="model.orderAddr" placeholder="请输入事发地址"
+                        clearable /></el-form-item></el-col>
+                  <el-col :span="12"><el-form-item label="专项工作"><el-select v-model="model.specialWork" clearable
+                        filterable placeholder="请选择专项工作"><el-option v-for="s in specialWorkOptions" :key="s.dictId" :label="s.dictName"
+                          :value="s.dictId" /></el-select></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="12">
+                  <el-col :span="24"><el-form-item label="标题"><el-input v-model="model.title" placeholder="请输入标题"
                         maxlength="200" show-word-limit @change="searchOrigin" /></el-form-item></el-col>
-                  <el-col :span="12"><el-form-item label="事发时间"><el-date-picker v-model="model.incidentTime"
-                        type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
-                        style="width: 100%" /></el-form-item></el-col>
                 </el-row>
                 <el-form-item label="反映内容"><el-input v-model="model.callerContent" type="textarea"
-                    :autosize="{ minRows: 4, maxRows: 12 }" placeholder="请输入反映内容" maxlength="2000"
+                    :autosize="{ minRows: 9, maxRows: 12 }" placeholder="请输入反映内容" maxlength="3000"
                     show-word-limit /></el-form-item>
                 <el-row :gutter="12">
                   <el-col :span="12"><el-form-item label="保密信息"><el-input v-model="model.secrecyInfo"
                         clearable /></el-form-item></el-col>
-                  <el-col :span="12"><el-form-item label="备注"><el-input v-model="model.contentRemark"
+                  <el-col :span="12"><el-form-item label="事发时间"><el-date-picker v-model="model.incidentTime"
+                        type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
+                        style="width: 100%" /></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="12">
+                  <el-col :span="24"><el-form-item label="备注"><el-input v-model="model.contentRemark"
                         clearable /></el-form-item></el-col>
                 </el-row>
               </el-form>
@@ -1355,9 +1377,12 @@ onMounted(async () => {
               <div class="section-head"><span>办理信息</span></div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="办理方式"><el-select v-model="model.handleType"><el-option
-                          v-for="h in handleTypeOptions" :key="h.value" :label="h.label"
-                          :value="h.value" /></el-select></el-form-item></el-col>
+                  <el-col :span="24"><el-form-item label="办理方式"><el-radio-group v-model="model.handleType">
+                        <el-radio v-for="h in handleTypeOptions.slice(0, 5)" :key="h.value" :value="h.value">{{ h.label
+                          }}</el-radio>
+                      </el-radio-group></el-form-item></el-col>
+                </el-row>
+                <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="级别"><el-select v-model="model.orderLevel" clearable
                         @change="changeOrderLevel"><el-option v-for="o in orderLevelOptions" :key="o.levelId"
                           :label="`${o.levelName} (${o.handleDays}日)`"
@@ -1365,9 +1390,11 @@ onMounted(async () => {
                   <el-col :span="8"><el-form-item label="办理时限"><el-date-picker v-model="model.handleEndTime"
                         type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
                         style="width: 100%" /></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="单位电话"><el-input v-model="tel1"
+                        clearable /></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="12"><el-form-item label="办理部门">
+                  <el-col :span="8"><el-form-item label="承办单位">
                       <div v-if="recommendedDeptActive && groupOptions.length" style="margin-bottom: 4px">
                         <el-tag v-for="(g, gi) in groupOptions" :key="gi"  type="success"
                           style="cursor: pointer; margin: 2px" @click="selectRecommendedDept(g)">{{ g.deptName
@@ -1377,10 +1404,9 @@ onMounted(async () => {
                       <SelectDeptOrUser ref="deptAndUserRef" v-model="model.handlerDeptId" :show-tabs="['dept']"
                         :is-filter="true" />
                     </el-form-item></el-col>
-                  <el-col :span="12">
-                    <div style="display: flex; gap: 4px; align-items: center">
-                      <span style="white-space: nowrap">电话1:</span><el-input v-model="tel1" 
-                        style="width: 100px" /><el-button  type="success"
+                  <el-col :span="16">
+                    <div class="phone-actions">
+                      <span>电话1:</span><el-input v-model="tel1" /><el-button  type="success"
                         @click="hujiao(tel1)">呼叫</el-button><el-button  type="danger"
                         @click="guaduan(tel1)">挂断</el-button><el-button 
                         @click="createThreeCall(tel1)">三方</el-button><el-button 
@@ -1403,9 +1429,7 @@ onMounted(async () => {
                   <el-col :span="8"><el-form-item label="转接情况"><el-select v-model="model.transferInfo"
                         clearable><el-option v-for="t in transferInfoOptions" :key="t.value" :label="t.label"
                           :value="t.value" /></el-select></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="专项工作"><el-select v-model="model.specialWork" clearable
-                        filterable><el-option v-for="s in specialWorkOptions" :key="s.dictId" :label="s.dictName"
-                          :value="s.dictId" /></el-select></el-form-item></el-col>
+                  <el-col :span="8"><el-form-item label="通讯录"><el-button @click="openMailList">通讯录</el-button></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="回访方式"><el-select v-model="model.hffs" clearable><el-option
                           v-for="h in hffsOptions" :key="h.value" :label="h.label"
                           :value="h.value" /></el-select></el-form-item></el-col>
@@ -1414,7 +1438,7 @@ onMounted(async () => {
                     readonly /><el-button  @click="loadMessageTemplates">选择模板</el-button><el-input
                     v-model="model.messageContent" style="margin-top: 4px" /></el-form-item>
                 <el-form-item label="处理意见"><el-input v-model="model.acceptCenterIdea" type="textarea"
-                    :autosize="{ minRows: 3, maxRows: 8 }" maxlength="500" show-word-limit /></el-form-item>
+                    :autosize="{ minRows: 5, maxRows: 8 }" placeholder="请输入处理意见，最多输入3000字" maxlength="3000" show-word-limit /></el-form-item>
                 <el-form-item v-if="model.handleType === 6" label="组长意见"><el-input v-model="model.groupLeaderOpinion"
                     type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" maxlength="500"
                     show-word-limit /></el-form-item>
@@ -1446,24 +1470,31 @@ onMounted(async () => {
           <div class="form-panel side-panel">
             <div class="panel-tabs">
               <button v-for="(tab, ti) in [
-                '知识库',
+                '知识库信息',
                 '办理信息',
-                '历史单',
-                '重复单',
-                '失物单',
-                '热线',
+                '历史受理单',
+                '重复受理单',
+                '失物受理单',
+                '热线整合',
               ]" :key="ti" :class="{ active: activeClass === ti }" @click="activeClass = ti">
                 {{ tab }}
               </button>
             </div>
+            <div class="side-search">
+              <el-input v-model="zskKeyword"  placeholder="可输入标题、电话、受理单编号" @keyup.enter="searchZsk" />
+              <el-radio-group v-model="recommendedDeptActive">
+                <el-radio :value="true">查看自己</el-radio>
+                <el-radio :value="false">查看所有</el-radio>
+              </el-radio-group>
+              <el-button type="primary"  @click="searchZsk">搜索</el-button>
+            </div>
             <div v-show="activeClass === 0" style="padding: 10px">
-              <div style="display: flex; gap: 6px; margin-bottom: 8px">
-                <el-input v-model="zskKeyword"  placeholder="关键字" @keyup.enter="searchZsk" /><el-button
-                  type="primary"  @click="searchZsk">搜索</el-button>
-              </div>
               <el-table :data="zskList"  border max-height="400"><el-table-column type="index"
-                  width="40" /><el-table-column prop="title" label="标题" min-width="160"
-                  show-overflow-tooltip /><el-table-column label="操作" width="60"><template #default="{ row }"><el-button
+                  width="90" label="编号" /><el-table-column prop="title" label="标题" min-width="150"
+                  show-overflow-tooltip /><el-table-column prop="content" label="内容" min-width="160"
+                  show-overflow-tooltip /><el-table-column prop="createUserName" label="登记人员"
+                  width="90" /><el-table-column prop="statusName" label="状态"
+                  width="80" /><el-table-column label="操作" width="90"><template #default="{ row }"><el-button
                       link type="primary" 
                       @click="zskViewDetail(row)">查看</el-button></template></el-table-column></el-table>
               <el-pagination small background layout="total, prev, next" :total="zskPageInfo.total"
@@ -1610,7 +1641,7 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 
 .addOrder {
   min-height: 900px;
-  padding: 6px 18px 18px;
+  padding: 10px 4px 18px;
   color: $text;
   background:
     linear-gradient(90deg, rgba(23, 103, 185, 0.035) 1px, transparent 1px) 0 0 / 48px 48px,
@@ -1622,8 +1653,8 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 
 .order-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(640px, 828px);
-  gap: 10px;
+  grid-template-columns: minmax(760px, 58%) minmax(560px, 42%);
+  gap: 6px;
   align-items: flex-start;
 }
 
@@ -1637,9 +1668,9 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 .form-panel {
   overflow: hidden;
   border: 1px solid $line;
-  border-radius: 3px;
+  border-radius: 0;
   background: $panel;
-  box-shadow: $shadow;
+  box-shadow: none;
 }
 
 .panel-head {
@@ -1662,6 +1693,7 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 .section-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 18px;
   min-height: 37px;
   padding: 0 12px;
@@ -1676,6 +1708,58 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
   margin-right: 0;
 }
 
+.section-title,
+.section-actions {
+  display: flex;
+  align-items: center;
+}
+
+.section-title {
+  gap: 32px;
+}
+
+.section-actions {
+  gap: 10px;
+}
+
+.expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 37px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: #1f2d3d;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 37px;
+  cursor: pointer;
+}
+
+.expand-toggle:hover {
+  color: #0f4f93;
+}
+
+.expand-arrow {
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 0.15s ease;
+}
+
+.expand-arrow.expanded {
+  transform: rotate(225deg) translateY(-1px);
+}
+
+.dial-title {
+  color: #1c3450;
+  font-weight: 700;
+}
+
 .section-head :deep(.el-button.is-text) {
   color: $primary;
   font-weight: 500;
@@ -1684,12 +1768,13 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 .citizen-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: flex-start;
+  gap: 10px;
   height: 37px;
-  padding: 0 8px;
+  padding: 0 10px;
   border-right: 1px solid $line;
   border-bottom: 1px solid $line;
-  background: #fff;
+  background: $control;
 }
 
 .citizen-actions :deep(.el-button--small) {
@@ -1711,32 +1796,33 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 }
 
 .side-panel {
-  min-height: 226px;
+  min-height: calc(100vh - 32px);
 }
 
 .panel-tabs {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
+  gap: 0;
   height: 46px;
-  padding: 6px 7px 0;
+  padding: 0 0 0 0;
   border-bottom: 1px solid #c9dcf1;
-  background: linear-gradient(180deg, #fafdff 0%, #edf6ff 100%);
+  background: #fff;
 }
 
 .panel-tabs button {
   position: relative;
   min-width: 0;
-  height: 34px;
-  padding: 0 6px;
-  border: 1px solid transparent;
-  border-bottom: 0;
-  border-radius: 4px 4px 0 0;
-  background: transparent;
-  color: #36506b;
+  height: 45px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid $line;
+  border-bottom: 1px solid $line;
+  border-radius: 0;
+  background: linear-gradient(180deg, #fafdff 0%, #f1f8ff 100%);
+  color: #2868b7;
   font-size: 14px;
   font-weight: 600;
-  line-height: 34px;
+  line-height: 45px;
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -1756,27 +1842,48 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 }
 
 .panel-tabs button.active {
-  border-color: #bdd4ee;
-  background: #fff;
+  border-color: $line;
+  background: #eef6ff;
   color: #0b60c7;
   font-weight: 700;
-  box-shadow: 0 -2px 8px rgba(31, 116, 216, 0.08);
+  box-shadow: none;
 }
 
 .panel-tabs button.active::after {
   background: linear-gradient(90deg, $primary, #48a5ff);
 }
 
+.side-search {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid $line;
+  background: #fff;
+}
+
+.side-search :deep(.el-input) {
+  width: 260px;
+  flex: 0 0 260px;
+}
+
+.side-search :deep(.el-button) {
+  min-width: 66px;
+}
+
 .form-actions {
-  position: sticky;
+  position: static;
   bottom: 0;
   z-index: 2;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  min-height: 48px;
-  padding: 0 12px;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 12px;
   border-top: 1px solid $line;
   background: #f8fbfe;
   box-shadow: none;
@@ -1832,7 +1939,7 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
   padding: 0;
   border-right: 1px solid $line-soft;
   background: #fbfdff;
-  color: #28425d;
+  color: #3d4d5d;
   font-size: 14px;
   line-height: 37px;
   justify-content: center;
@@ -1929,7 +2036,7 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 }
 
 :deep(.order-section .el-textarea__inner) {
-  min-height: 150px !important;
+  min-height: 260px !important;
   padding: 9px 10px;
   color: $text;
   font-size: 14px;
@@ -1937,8 +2044,8 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 }
 
 :deep(.handle-section .el-textarea__inner) {
-  height: 58px !important;
-  min-height: 58px !important;
+  height: auto !important;
+  min-height: 160px !important;
   padding: 8px 10px;
   font-size: 14px;
   line-height: 24px;
@@ -1946,6 +2053,27 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 
 .main-col>.form-panel {
   min-height: calc(100vh - 32px);
+}
+
+.phone-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 37px;
+  padding: 0 10px;
+  border-right: 1px solid $line;
+  border-bottom: 1px solid $line;
+  background: $control;
+}
+
+.phone-actions span {
+  flex: 0 0 auto;
+  color: #1c3450;
+}
+
+.phone-actions :deep(.el-input) {
+  width: 110px;
+  flex: 0 0 110px;
 }
 
 :deep(.side-panel > div[style*="padding:10px"]) {

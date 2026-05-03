@@ -61,6 +61,21 @@ const groupOptions = ref([]);
 const tel1 = ref("");
 const tel2 = ref("");
 const sendMessage = ref(false);
+const dictCodeWssl = ref(false);
+const szXxShow = ref(false);
+const szXxMessage = ref(false);
+const tempHandleType = ref(0);
+const isDisabledFpMassMessage = ref(false);
+const isDisabledFpDeptMessage = ref(false);
+const isSendMassMessage = ref(false);
+const isSendDeptMessage = ref(false);
+const lsgdLoading = ref(false);
+const lsgdPageInfo = reactive({ pageSize: 10, total: 0 });
+const taskData = computed(() => props.query || {});
+
+// 常用内容
+const restaurants = ref([]);
+const cynrVisible = ref(false);
 
 // ── 表单模型 ──
 const initModel = () => ({
@@ -141,8 +156,8 @@ const initModel = () => ({
 const model = reactive(initModel());
 
 const sexOptions = [
-  { label: "男", value: "1" },
-  { label: "女", value: "0" },
+  { label: "男", value: 1 },
+  { label: "女", value: 0 },
 ];
 const ageRangeOptions = [];
 const portraitOptions = [];
@@ -305,6 +320,7 @@ async function loadDicts() {
     await nextTick();
     if (deptAndUserRef.value)
       deptAndUserRef.value.setDeptData({ deptOptions: ywdwOptions.value });
+    getCynr();
   } catch { }
 }
 
@@ -354,15 +370,20 @@ async function changeOrderLevel(levelId) {
   model.orderLevelValue = level?.handleDays || "";
   if (!levelId || !level?.handleDays) return;
   try {
-    const startTime = new Date().toISOString().slice(0, 19).replace("T", " ");
-    const res = await http.get("/orderInfo/getHandleEndTime", {
+    const now = new Date();
+    const p = (n) => String(n).padStart(2, "0");
+    const startTime = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+    const res = await http.get("/holiday/compute", {
       params: {
-        startTime,
-        orderLevelValue: level.handleDays,
-        orderLevel: levelId,
+        fromDate: startTime,
+        days: level.handleDays,
+        levelId: levelId,
       },
     });
-    if (res.data?.code === 200) model.handleEndTime = res.data.data || "";
+    if (res.data?.code === 200) {
+      model.handleEndTime = res.data.data || "";
+      doSptTime();
+    }
   } catch { }
 }
 
@@ -675,6 +696,14 @@ async function handleSubmit(continueAccept = false) {
   }
   fillNames();
   model.isSendMassMessage = !sendMessage.value !== false && sendMessage.value;
+  // 内容校验：纯数字符号/纯空格/纯换行不可提交
+  if (model.callerContent) {
+    const trimmed = model.callerContent.replace(/[\s\d\W_]/g, "");
+    if (!trimmed || /^[\s\n\r]+$/.test(model.callerContent)) {
+      ElMessage.error("内容不能为纯数字、符号、空格或换行");
+      return;
+    }
+  }
   if (!checkOutOrder()) return;
   const handleType = model.handleType;
   const typeNameMap = { 1: "直接答复", 2: "交办", 3: "不予受理", 4: "无效电话", 5: "其他", 6: "申请疑难", 7: "关联", 10: "退回省平台", 11: "退回110" };
@@ -690,6 +719,13 @@ async function handleSubmit(continueAccept = false) {
   }
   if ([3, 4, 5].includes(handleType) && !model.acceptCenterIdea) {
     ElMessage.error(name + "处理意见为必填项！"); return;
+  }
+  // 交办额外校验
+  if (handleType === 2) {
+    if ((model.handlerDeptName === "省12345" || model.handlerDeptId === 861) && !model.contentRemark) {
+      ElMessage.error("承办单位选择省12345时，备注为必填");
+      return;
+    }
   }
   try {
     await ElMessageBox.confirm("您确认" + name + "此受理单吗?", "提示", {
@@ -776,6 +812,148 @@ function blindTransferFn(tel) {
   ElMessage.info("盲转功能待后续接入");
 }
 
+// ── 办理方式切换 ──
+function changeType(val) {
+  model.messageCode = "";
+  model.messageName = "";
+  if (val === 4) {
+    // 无效电话：自动填充默认值
+    model.name = "市民";
+    model.orderAddr = "其他";
+    model.handlerDeptId = 802;
+    model.title = "无效电话";
+    if (!model.callerContent) {
+      model.callerContent = "无效内容";
+    }
+    model.acceptCenterIdea = "无效内容，故归档";
+    model.orderType = 133;
+    // 默认热点
+    const defaultHotspot = [13880, 13962, 14402, 15870];
+    model.hotspot1 = defaultHotspot;
+    for (let i = 0; i < 5; i++) {
+      model[`hotspot${i + 1}`] = defaultHotspot[i] || 0;
+      model[`hotspot${i + 1}Name`] = "";
+    }
+    model.deptId = [802];
+  } else {
+    if (tempHandleType.value === 4) {
+      if (val !== 3) {
+        model.orderAddr = "";
+        model.handlerDeptId = null; // config.zwrxId
+        model.title = "";
+        model.callerContent = "";
+        model.acceptCenterIdea = "";
+        model.orderType = orderTypeOptions.value.length
+          ? orderTypeOptions.value[0].dictId
+          : "";
+        model.hotspot1 = [];
+        model.deptId = [];
+        for (let i = 0; i < 5; i++) {
+          model[`hotspot${i + 1}`] = 0;
+          model[`hotspot${i + 1}Name`] = "";
+        }
+      }
+    }
+  }
+  // 短信启用状态
+  if (val === 1) {
+    if (dictCodeWssl.value) {
+      sendMessage.value = true;
+    } else {
+      sendMessage.value = false;
+    }
+    smsIsDisabled(authStore.authCode?.smsCode?.orderTransferAnswerMasses, (res) => {
+      sendMsgIsDisabled.value = res;
+    });
+    if (!model.handlerDeptId) model.handlerDeptId = null; // config.zwrxId
+  } else if (val === 2) {
+    sendMsgIsDisabled.value = true;
+    sendMessage.value = true;
+    smsIsDisabled(authStore.authCode?.smsCode?.addOrderMasses, (res) => {
+      sendMsgIsDisabled.value = res;
+    });
+  } else {
+    sendMessage.value = true;
+    sendMsgIsDisabled.value = true;
+  }
+  if (szXxShow.value || szXxMessage.value) {
+    sendMessage.value = false;
+  }
+  tempHandleType.value = val;
+}
+
+function smsIsDisabled(code, callback) {
+  if (!code) {
+    callback(true);
+    return;
+  }
+  http
+    .get("/sys/params/find", { params: { code } })
+    .then((res) => {
+      callback(res.data?.data?.value !== "true");
+    })
+    .catch(() => callback(true));
+}
+
+// ── 短信开关状态 ──
+function setSendMsgIsDisablde() {
+  http
+    .get("/sys/params/find", {
+      params: { code: authStore.authCode?.dictCode?.createOrderSms },
+    })
+    .then((res) => {
+      if (
+        res.data?.data?.value === "true" &&
+        !szXxShow.value &&
+        !szXxMessage.value
+      ) {
+        sendMessage.value = true;
+      } else {
+        sendMessage.value = false;
+      }
+    })
+    .catch(() => {
+      sendMessage.value = false;
+    });
+}
+
+function setIsDisabledSendMessage() {
+  // 查询催办时群众短信是否被禁用
+  smsIsDisabled(authStore.authCode?.smsCode?.orderTransferAnswerMasses, (res) => {
+    isDisabledFpMassMessage.value = res;
+  });
+  // 查询催办时部门短信是否被禁用
+  smsIsDisabled(authStore.authCode?.smsCode?.addOrderMasses, (res) => {
+    isDisabledFpDeptMessage.value = res;
+  });
+}
+
+function setDefaultCheck() {
+  // 设置发送短信框是否默认勾选
+  isSendMassMessage.value = !isDisabledFpMassMessage.value;
+  isSendDeptMessage.value = !isDisabledFpDeptMessage.value;
+  http
+    .get("/sys/params/find", {
+      params: { code: authStore.authCode?.dictCode?.defaultMassMessage },
+    })
+    .then((res) => {
+      if (res.data?.data?.value === "true") {
+        isSendMassMessage.value = true;
+      }
+    })
+    .catch(() => {});
+  http
+    .get("/sys/params/find", {
+      params: { code: authStore.authCode?.dictCode?.defaultDeptMessage },
+    })
+    .then((res) => {
+      if (res.data?.data?.value === "true") {
+        isSendDeptMessage.value = true;
+      }
+    })
+    .catch(() => {});
+}
+
 // ── 服务渠道变更监听 ──
 function doSptTime() {
   try {
@@ -790,16 +968,51 @@ function doSptTime() {
   } catch { splHandleTimeDisabled.value = false; }
 }
 watch([() => model.handleType, () => model.handleEndTime, sptHandleTime], () => doSptTime());
+// 办理方式切换时触发 changeType
+watch(() => model.handleType, (val) => {
+  changeType(val);
+});
+
+// 承办部门变更时获取电话
+watch(() => model.handlerDeptId, (value) => {
+  if (!value) return;
+  getDeptTels(value);
+});
 watch(
   () => model.orderOrigin,
   (val) => {
     if (!val || !Array.isArray(val) || !val.length) return;
+    const originId = val[0];
     const originName =
-      swlyOptions.value.find((o) => o.dictId === val[0])?.dictName || "";
+      swlyOptions.value.find((o) => o.dictId === originId)?.dictName || "";
     isSpt.value = originName === "省平台渠道";
     is110.value = originName === "110平台";
-    isMustSl.value = originName === "省平台渠道";
+    isMustSl.value = false;
+    szXxMessage.value = false;
+    if (originName === "市长信箱") {
+      szXxMessage.value = true;
+    }
     if (originName === "省平台渠道") model.hffs = 6;
+    // 查询是否必须受理 及 渠道回访方式
+    http.get("/dict/findById?id=" + originId).then((res) => {
+      if (res.data?.data?.bxsl == 1) isMustSl.value = true;
+      if (
+        res.data?.data?.dictCode == "swly_wsslqd" ||
+        res.data?.data?.dictCode == "swly_gzhqd"
+      ) {
+        dictCodeWssl.value = true;
+      } else {
+        dictCodeWssl.value = false;
+      }
+      changeType(model.handleType);
+      if (val[1]) {
+        http.get("/dict/findById?id=" + val[1]).then((r) => {
+          model.hffs = r.data?.data?.hffs;
+        });
+      } else {
+        model.hffs = res.data?.data?.hffs;
+      }
+    });
   },
 );
 
@@ -830,16 +1043,28 @@ async function getblxxList() {
   }
 }
 async function getlsgdList() {
-  if (!model.callTel) return;
+  if (!model.callTel) {
+    ElMessage.error("请输入呼叫号码！");
+    return;
+  }
+  activeClass.value = 2;
+  lsgdLoading.value = true;
   try {
     const r = await getOrderList("/orderInfo/findHistoryOrderByCallTel", {
       callTel: model.callTel,
       pageSize: 10,
     });
-    if (r.data?.code === 200) lsgdList.value = r.data.data?.records || [];
+    if (r.data?.code === 200) {
+      lsgdList.value = r.data.data?.records || [];
+      lsgdPageInfo.pageSize = r.data.data?.size || 10;
+      lsgdPageInfo.total = r.data.data?.total || 0;
+    }
   } catch {
     lsgdList.value = [];
+  } finally {
+    lsgdLoading.value = false;
   }
+  queryCitizen(model.callTel);
 }
 async function searchOrigin() {
   try {
@@ -916,24 +1141,99 @@ function setGlDisabled(row) {
   );
 } // 归档/逾期/暂存不能关联
 
+// ── 引用已有工单数据 ──
+function sendOrderInfo(row) {
+  const startStr = (row.orderNo || "").substring(0, 4) * 1;
+  if (startStr < 2025) {
+    model.hotspot1 = [];
+  } else {
+    const hotspot_ = [];
+    if (row.hotspot1) hotspot_.push(row.hotspot1);
+    if (row.hotspot2) hotspot_.push(row.hotspot2);
+    if (row.hotspot3) hotspot_.push(row.hotspot3);
+    if (row.hotspot4) hotspot_.push(row.hotspot4);
+    if (row.hotspot5) hotspot_.push(row.hotspot5);
+    model.hotspot1 = hotspot_;
+    for (let i = 0; i < 5; i++)
+      model[`hotspot${i + 1}`] = hotspot_[i] || "";
+  }
+  const deptId_ = [];
+  if (row.dept1Id) deptId_.push(row.dept1Id);
+  if (row.dept2Id) deptId_.push(row.dept2Id);
+  if (row.dept3Id) deptId_.push(row.dept3Id);
+  if (row.dept4Id) deptId_.push(row.dept4Id);
+  if (row.dept5Id) deptId_.push(row.dept5Id);
+  model.deptId = deptId_;
+  for (let i = 0; i < 5; i++)
+    model[`dept${i + 1}Id`] = deptId_[i] || "";
+  model.orderAddr = row.orderAddr;
+  model.orderTypeName = row.orderTypeName;
+  model.orderType = row.orderType;
+  model.title = row.title;
+  model.orderTagName = row.orderTagName;
+  if (row.specialWork) model.specialWork = Number(row.specialWork);
+  model.callerContent = row.callerContent;
+  model.secrecyInfo = row.secrecyInfo;
+  model.contentRemark = row.contentRemark;
+}
+
+// ── 专项工作变更 ──
+function changeZxgz(v) {
+  if (v === 3497) {
+    // 住房公积金
+    model.deptId = [801];
+    model.name = "市民";
+    model.title = "关于咨询住房公积金业务的问题";
+    model.orderAddr = "新乡市";
+    model.acceptCenterIdea = "已解答";
+    model.handleType = 1;
+    model.handlerDeptId = 30;
+    model.orderType = 131;
+  }
+}
+
+// ── 工单类型选择 ──
+function selectType(item) {
+  if (item === 131 && !model.title && !model.orderAddr) {
+    model.deptId = [801];
+    model.title = "关于咨询";
+    model.orderAddr = "新乡市";
+  }
+}
+
+// ── 呼叫号码同步 ──
+function changeCallTel(tel) {
+  model.shotMessageNumber = tel;
+}
+watch(() => model.callTel, (tel) => {
+  if (tel) changeCallTel(tel);
+});
+
 // ── 催办 ──
 function cbClick(row) {
+  setIsDisabledSendMessage();
+  setDefaultCheck();
   cbModel.orderId = row.orderId;
   cbModel.urgeContent = "";
   cbFormVisible.value = true;
 }
 async function cbSubmit() {
+  const isSendMassMessage = !isDisabledFpMassMessage.value && isSendMassMessage.value;
+  const isSendDeptMessage = !isDisabledFpDeptMessage.value && isSendDeptMessage.value;
   try {
     const r = await http.get("/orderInfo/addUrgeSupervise", {
       params: {
         orderId: cbModel.orderId,
         urgeContent: cbModel.urgeContent,
         isSendMessage: cbModel.isSendMessage,
+        isSendMassMessage,
+        isSendDeptMessage,
       },
     });
     if (r.data?.code === 200) {
       ElMessage.success("催办成功");
       cbFormVisible.value = false;
+      getlsgdList();
     } else ElMessage.error(r.data?.message || "催办失败");
   } catch {
     ElMessage.error("催办失败");
@@ -956,6 +1256,40 @@ function handleUploadSuccess(r) {
   if (r?.code === 200 || r?.data?.code === 200) {
     ElMessage.success("上传成功");
     loadFjList();
+  }
+}
+function handleExceed() {
+  ElMessage.warning("文件数量超出限制，最多上传50个文件");
+}
+function handlePreview(file) {
+  const url = file.url || file.response?.data?.url;
+  if (url) window.open(url);
+}
+async function handleRemove(file) {
+  try {
+    const fileId = file.id || file.response?.data?.id;
+    if (fileId) {
+      await http.delete("/orderAttachmentRecoding/delete/" + fileId);
+    }
+    loadFjList();
+  } catch {
+    ElMessage.error("删除失败");
+  }
+}
+async function beforeRemove() {
+  // 校验是否有删除权限
+  return true;
+}
+function handleFj(url) {
+  const baseApi = window.common?.baseApi || "";
+  if (!url.startsWith("http")) url = baseApi + "/static/" + url;
+  if (/\.(mp4|avi)$/i.test(url)) {
+    // 视频播放 — 打开新窗口
+    window.open(url);
+  } else if (/\.(png|jpg|jpeg|gif)$/i.test(url)) {
+    window.open(url);
+  } else {
+    window.open(url);
   }
 }
 async function loadFjList() {
@@ -1084,6 +1418,18 @@ function applyHotspotPath(path) {
   }
 }
 
+const callerContentHighlighted = ref("");
+const showHighlighted = ref(false);
+
+function highlightKeyword(text, keyword) {
+  if (!text || !keyword) return text;
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(
+    new RegExp(escaped, "g"),
+    "<span style='color:rgb(133,206,97)'>" + keyword + "</span>",
+  );
+}
+
 async function intelligentExtraction() {
   if (!model.callerContent) {
     ElMessage.warning("请输入内容后进行智能提取");
@@ -1110,6 +1456,36 @@ async function intelligentExtraction() {
       if (event && !model.title) model.title = event;
       if (org && !model.handlerDeptName) model.handlerDeptName = org;
       applyOrderTypeByText(type);
+      // 关键词高亮
+      let highlighted = model.callerContent;
+      if (addr && d["地址"]?.length) {
+        highlighted = highlightKeyword(highlighted, d["地址"][0].text);
+      }
+      if (name && d["姓名"]?.length) {
+        d["姓名"].forEach((item) => {
+          highlighted = highlightKeyword(highlighted, item.text);
+        });
+      }
+      if (org && d["组织机构"]?.length) {
+        d["组织机构"].forEach((item) => {
+          highlighted = highlightKeyword(highlighted, item.text);
+        });
+      }
+      if (d["时间"]?.length) {
+        d["时间"].forEach((item) => {
+          highlighted = highlightKeyword(highlighted, item.text);
+        });
+      }
+      if (d["事件"]?.length) {
+        d["事件"].forEach((item) => {
+          highlighted = highlightKeyword(highlighted, item.text);
+        });
+      }
+      if (type && d["类型"]?.length) {
+        highlighted = highlightKeyword(highlighted, d["类型"][0].text);
+      }
+      callerContentHighlighted.value = highlighted;
+      showHighlighted.value = true;
       ElMessage.success("智能提取完成");
     }
   } catch {
@@ -1173,6 +1549,32 @@ watch(
     if (model.callerContent && model.callerContent.length > 20) highRiskSign();
   },
 );
+// ── 常用内容 ──
+function getCynr() {
+  getDictByCode(false, "cynr").then((res) => {
+    restaurants.value = res || [];
+  });
+}
+
+function openRestaurants() {
+  if (!model.callerContent && restaurants.value.length) {
+    cynrVisible.value = true;
+  }
+}
+
+function closeRestaurants() {
+  cynrVisible.value = false;
+  if (model.callerContent && model.callerContent.length > 3000) {
+    ElMessage.warning("字数不能超过3000");
+    model.callerContent = model.callerContent.slice(0, 3000);
+  }
+}
+
+function rowClick(row) {
+  model.callerContent = (row.dictName || "") + (model.callerContent || "");
+  cynrVisible.value = false;
+}
+
 watch(
   () => model.title,
   () => {
@@ -1212,11 +1614,63 @@ function ckDispose(row) {
   orderInfoRef.value?.reloadDataByOrderId(row.orderId);
 }
 function playOrderSound() {
-  const baseApi =
-    window.common?.baseApi || window.__KXT_CONFIG__?.baseApi || "";
-  audioUrlMaster.value = baseApi + model.haveSoundName;
-  audioWinMaster.value = true;
+  if (model.isRecordSupplement === 1) {
+    // 留言补录的工单：直接用callId转换URL
+    transPrefix(model.callId, model.callId);
+  } else if (model.recordFile) {
+    // 从历史通话记录来的：用recordFile
+    transPrefix(model.recordFile, model.callId);
+  } else {
+    // 普通播放：通过orderId查询录音
+    http
+      .post("/orderInfo/findSoundByOrderId", { id: model.orderId })
+      .then((res) => {
+        if (res.data?.code === 200 && res.data.data) {
+          cti_recordVoice(res.data.data);
+        }
+      });
+  }
 }
+
+function cti_recordVoice(callId) {
+  http.post("/incomeinfor/find", { callId }).then((res) => {
+    if (res.data?.code === "200" && res.data.data != null) {
+      const oldUrl = res.data.data.recordFile;
+      if (oldUrl) {
+        transPrefix(oldUrl, callId);
+      }
+    } else {
+      ElMessage.error(res.data?.message || "获取录音失败");
+    }
+  });
+}
+
+function transPrefix(oldUrl, callId) {
+  audioCallId.value = callId;
+  // 关闭组件以重新加载录音
+  audioWinMaster.value = false;
+  setTimeout(() => {
+    let url = oldUrl;
+    // 尝试从ctiStore或全局获取CTI baseApi
+    const ctiBaseApi =
+      ctiStore?.cti_baseApi ||
+      window.__CTI_CONFIG__?.baseApi ||
+      window.common?.baseApi ||
+      "";
+    if (ctiBaseApi) {
+      url = ctiBaseApi + oldUrl;
+    }
+    audioUrlMaster.value = url;
+    audioWinMaster.value = true;
+    // 尝试在话机播放录音
+    try {
+      if (ctiStore?.playCallLogInCall) {
+        ctiStore.playCallLogInCall(callId, 0);
+      }
+    } catch { /* CTI not connected */ }
+  }, 1000);
+}
+
 function computeSecrecy(hs) {
   return model.isNameSecurity ? 0 : hs;
 }
@@ -1241,6 +1695,18 @@ async function directDispatch() {
     ElMessage.warning("请输入标题");
     return;
   }
+  if (model.handleType === 2 && model.handlerDeptId === null) {
+    ElMessage.error("对于转办事务,业务单位不能选择政务热线受理中心！");
+    return;
+  }
+  // 110平台重复分派校验
+  if (
+    (model.handlerDeptName === "110平台" || model.handlerDeptId === 832) &&
+    model.orderId
+  ) {
+    const flag = await judge110();
+    if (flag) return;
+  }
   try {
     await ElMessageBox.confirm("确认直派吗?", "提示", {
       confirmButtonText: "确定",
@@ -1248,9 +1714,11 @@ async function directDispatch() {
       type: "warning",
     });
     submitLoading.value = true;
+    fillNames();
+    model.isNameSecurity = model.isNameSecurity ? 1 : 0;
     const r = await http.post(
       "/orderInfo/save",
-      buildSubmitPayload({ isSubmit: "1", dispatchMode: "zp" }),
+      buildSubmitPayload({ isSubmit: "1", dispatchMode: "zp", isZxAssign: true }),
     );
     if (r.data?.code === 200) {
       ElMessage.success("直派成功");
@@ -1337,6 +1805,25 @@ async function check110Order() {
   } catch { }
 }
 
+// 110平台重复分派校验（交办+直派到110时调用）
+async function judge110() {
+  try {
+    const r = await http.get("/channelHandledOrderInfo/getHandledOrder110", {
+      params: {
+        orderId: model.orderId || orderId.value,
+        handlerDeptId: model.handlerDeptId,
+      },
+    });
+    if (r.data?.code === 200 && r.data.data) {
+      ElMessage.warning("110平台分派的工单不能再次分派给110");
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 // ── 标题重复检查 ──
 async function checkTitleRepetition() {
   if (!model.title || model.title.length < 3) return;
@@ -1418,6 +1905,8 @@ onMounted(async () => {
   searchOrigin();
   searchLost();
   loadRxList();
+  setSendMsgIsDisablde();
+  changeType(model.handleType);
   if (!isEdit.value && !model.incidentTime)
     model.incidentTime = new Date()
       .toISOString()
@@ -1435,6 +1924,10 @@ onMounted(async () => {
       });
   }
   if (model.callTel) check110Order();
+});
+
+onBeforeUnmount(() => {
+  localStorage.removeItem("robotCallId");
 });
 </script>
 
@@ -1530,7 +2023,7 @@ onMounted(async () => {
                           expandTrigger: 'hover',
                         }" clearable filterable style="width: 100%" /></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="类型" required><el-select v-model="model.orderType" clearable filterable
-                        style="width: 100%"><el-option v-for="o in orderTypeOptions" :key="o.dictId" :label="o.dictName"
+                        style="width: 100%" @change="selectType"><el-option v-for="o in orderTypeOptions" :key="o.dictId" :label="o.dictName"
                           :value="o.dictId" /></el-select></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="群众情绪" required><el-select v-model="model.emotion" clearable><el-option
                           v-for="e in emotionOptions" :key="e.value" :label="e.label"
@@ -1560,7 +2053,7 @@ onMounted(async () => {
                   <el-col :span="12"><el-form-item label="事发地址" required><el-input v-model="model.orderAddr" placeholder="请输入事发地址"
                         clearable /></el-form-item></el-col>
                   <el-col :span="12"><el-form-item label="专项工作"><el-select v-model="model.specialWork" clearable
-                        filterable placeholder="请选择专项工作"><el-option v-for="s in specialWorkOptions" :key="s.dictId" :label="s.dictName"
+                        filterable placeholder="请选择专项工作" @change="changeZxgz"><el-option v-for="s in specialWorkOptions" :key="s.dictId" :label="s.dictName"
                           :value="s.dictId" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
@@ -1568,11 +2061,21 @@ onMounted(async () => {
                         maxlength="200" show-word-limit @change="searchOrigin" /></el-form-item></el-col>
                 </el-row>
                 <el-form-item class="caller-content-item" required><template #label>
-                    <div class="caller-content-label"><span>反映内容</span><el-link style="display: block;" underline="never" type="primary" 
+                    <div class="caller-content-label"><span>反映内容</span><el-link style="display: block;" underline="never" type="primary"
                         @click="intelligentExtraction">智能提取</el-link></div>
-                  </template><el-input v-model="model.callerContent" type="textarea"
-                    :autosize="{ minRows: 9, maxRows: 12 }" placeholder="请输入反映内容" maxlength="3000"
-                    show-word-limit /></el-form-item>
+                  </template><div style="position: relative; width: 100%">
+                    <el-input v-model="model.callerContent" type="textarea"
+                      :autosize="{ minRows: 9, maxRows: 12 }" placeholder="请输入反映内容" maxlength="3000"
+                      show-word-limit @focus="openRestaurants" @blur="closeRestaurants" />
+                    <div v-if="cynrVisible && restaurants.length" class="cynr-dropdown"
+                      style="position: absolute; top: 100%; left: 0; right: 0; z-index: 2000; max-height: 200px; overflow: auto; background: #fff; border: 1px solid #d8e5f0; border-radius: 0 0 4px 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.12)">
+                      <div v-for="(r, ri) in restaurants" :key="ri" class="cynr-item"
+                        style="padding: 6px 12px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid #eef5f9"
+                        @mousedown.prevent="rowClick(r)">
+                        {{ r.dictName }}
+                      </div>
+                    </div>
+                  </div></el-form-item>
                 <el-row :gutter="12">
                   <el-col :span="12"><el-form-item label="保密信息"><el-input v-model="model.secrecyInfo"
                         clearable /></el-form-item></el-col>
@@ -1732,15 +2235,16 @@ onMounted(async () => {
                   show-overflow-tooltip /></el-table>
             </div>
             <div v-show="activeClass === 2" style="padding: 10px">
-              <el-table :data="lsgdList"  border max-height="400"><el-table-column type="index"
+              <el-table :data="lsgdList" v-loading="lsgdLoading" border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="120"
                   show-overflow-tooltip /><el-table-column label="时间" width="140"><template #default="{ row }">{{
                     fmtT(row.createTime)
-                    }}</template></el-table-column><el-table-column label="操作" width="120"><template
-                    #default="{ row }"><el-link underline="never" type="primary" 
-                      @click="ckDispose(row)">查看</el-link><el-link underline="never" type="warning" 
-                      @click="cbClick(row)">催办</el-link></template></el-table-column></el-table>
+                    }}</template></el-table-column><el-table-column label="操作" width="170"><template
+                    #default="{ row }"><el-link underline="never" type="primary"
+                      @click="ckDispose(row)">查看</el-link><el-link underline="never" type="warning"
+                      @click="cbClick(row)">催办</el-link><el-link underline="never" type="success"
+                      @click="sendOrderInfo(row)">引用</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 3" style="padding: 10px">
               <div style="display: flex; gap: 6px; margin-bottom: 8px">
@@ -1752,17 +2256,19 @@ onMounted(async () => {
               <el-table :data="xggdList"  border max-height="350"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
-                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-link underline="never"
+                  show-overflow-tooltip /><el-table-column label="操作" width="130"><template #default="{ row }"><el-link underline="never"
                       type="primary"  :disabled="setGlDisabled(row)"
-                      @click="glRow(row)">关联</el-link></template></el-table-column></el-table>
+                      @click="glRow(row)">关联</el-link><el-link underline="never" type="success"
+                      @click="sendOrderInfo(row)">引用</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 4" style="padding: 10px">
               <el-table :data="lostgdList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
-                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-link underline="never"
-                      type="primary" 
-                      @click="glRow(row)">关联</el-link></template></el-table-column></el-table>
+                  show-overflow-tooltip /><el-table-column label="操作" width="130"><template #default="{ row }"><el-link underline="never"
+                      type="primary"
+                      @click="glRow(row)">关联</el-link><el-link underline="never" type="success"
+                      @click="sendOrderInfo(row)">引用</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 5" style="padding: 10px">
               <el-tag v-for="(rx, rxi) in rxList" :key="rxi"  style="margin: 3px; cursor: pointer"
@@ -2298,6 +2804,11 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 :deep(.order-section .caller-content-item .el-form-item__content) {
   min-height: 260px;
   line-height: normal;
+}
+
+:deep(.cynr-item:hover) {
+  background: #eef6ff;
+  color: #0f4f93;
 }
 
 :deep(.caller-content-label) {

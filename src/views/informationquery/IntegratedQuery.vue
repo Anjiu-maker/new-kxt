@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, nextTick, onMounted } from 'vue'
+import { ref, reactive, computed, nextTick, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { http } from '@/services/http'
@@ -8,10 +8,11 @@ import { useAuthStore } from '@/stores/auth'
 import Container from '@/components/Container.vue'
 import Orderinfo from '@/components/Orderinfo.vue'
 import PrintExport from '@/components/PrintExport.vue'
-import DbspForm2 from '@/views/order/form/DbspForm2.vue'
 import sqcfForm from '@/views/order/form/sqcfForm.vue'
 import tableStyle from './tableStyle.vue'
 import queryData from '@/utils/integratedQuery'
+
+const DbspForm2 = defineAsyncComponent(() => import('@/views/order/form/DbspForm2.vue'))
 
 const route = useRoute()
 const authStore = useAuthStore()

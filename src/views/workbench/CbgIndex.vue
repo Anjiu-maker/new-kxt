@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, inject, onMounted, reactive, ref, watch } from 'vue'
 import {
   Bell, Close, Collection, DataLine, DocumentChecked, Microphone, Plus,
   Printer, Refresh, Star, StarFilled, Tickets, View
@@ -13,7 +13,7 @@ import {
 } from '@/services/workbenchService'
 import { useAuthStore } from '@/stores/auth'
 import PrintExport from '@/components/PrintExport.vue'
-import SqdbForm from './SqdbForm.vue'
+const SqdbForm = defineAsyncComponent(() => import('./SqdbForm.vue'))
 
 defineProps({ pageName: { type: String, default: 'CbgIndex' } })
 const authStore = useAuthStore()

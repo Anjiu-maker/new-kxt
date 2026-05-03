@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, onMounted, reactive, ref } from 'vue'
+import { computed, defineAsyncComponent, inject, onMounted, reactive, ref } from 'vue'
 import { Bell, Close, Collection, DataLine, DocumentChecked, Microphone, Plus, Printer, Star, StarFilled, Tickets } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import {
@@ -10,7 +10,7 @@ import {
 } from '@/services/workbenchService'
 import { useAuthStore } from '@/stores/auth'
 import PrintExport from '@/components/PrintExport.vue'
-import EcdbForm from './EcdbForm.vue'
+const EcdbForm = defineAsyncComponent(() => import('./EcdbForm.vue'))
 
 defineProps({ pageName: { type: String, default: 'DbzxIndex' } })
 const authStore = useAuthStore()

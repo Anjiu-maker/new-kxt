@@ -54,6 +54,8 @@ const isMustSl = ref(false);
 const sptDisabled = ref(false);
 const sptHandleTime = ref("");
 const dockingId = ref(null);
+const splHandleTimeDisabled = ref(false);
+const sendMsgIsDisabled = ref(true);
 const recommendedDeptActive = ref(false);
 const groupOptions = ref([]);
 const tel1 = ref("");
@@ -775,6 +777,19 @@ function blindTransferFn(tel) {
 }
 
 // ── 服务渠道变更监听 ──
+function doSptTime() {
+  try {
+    const originLeaf = leafValue(model.orderOrigin);
+    if ((model.handleType === 2 || model.handleType === 0) && String(originLeaf) === "2362") {
+      const localTime = +new Date(model.handleEndTime);
+      const sptTime = +new Date(sptHandleTime.value);
+      splHandleTimeDisabled.value = localTime > sptTime;
+    } else {
+      splHandleTimeDisabled.value = false;
+    }
+  } catch { splHandleTimeDisabled.value = false; }
+}
+watch([() => model.handleType, () => model.handleEndTime, sptHandleTime], () => doSptTime());
 watch(
   () => model.orderOrigin,
   (val) => {
@@ -1647,7 +1662,7 @@ onMounted(async () => {
             </div>
 
             <div class="form-actions">
-              <el-checkbox v-model="sendMessage">群众短信</el-checkbox>
+              <el-checkbox v-model="sendMessage" :disabled="sendMsgIsDisabled" :title="sendMsgIsDisabled ? '短信模板已经禁用，无法发送短信' : ''">群众短信</el-checkbox>
               <el-button @click="openMailList">通讯录</el-button>
               <el-button @click="tcts">题词推送</el-button>
               <el-button v-if="isEdit" @click="openAssignDialog">分派受理人</el-button>
@@ -1656,9 +1671,20 @@ onMounted(async () => {
               <el-button v-if="isEdit" @click="findSoundByOrderId">查录音</el-button>
               <el-button v-if="model.relevantOrderNode" @click="qxgl">取消关联: {{ model.relevantOrderNode }}</el-button>
               <el-tag v-if="is110Checked" type="danger" >110平台已分派</el-tag>
-              <el-button type="primary" :loading="submitLoading" @click="directDispatch">直派</el-button>
+              <el-button
+                v-if="model.handleType === 2 && (userInfo.roleCode === 'wsslqd' || userInfo.roleCode === 'rszy')"
+                type="primary"
+                :loading="submitLoading"
+                :disabled="splHandleTimeDisabled"
+                :title="splHandleTimeDisabled ? '限办时间不能大于省平台限办时间;省平台限办时间:' + sptHandleTime : ''"
+                @click="directDispatch">直派</el-button>
               <el-button type="success" :loading="submitLoading" @click="handleSubmit(true)">继续受理</el-button>
-              <el-button type="primary" :loading="submitLoading" @click="handleSubmit(false)">提交</el-button>
+              <el-button
+                type="primary"
+                :loading="submitLoading"
+                :disabled="splHandleTimeDisabled"
+                :title="splHandleTimeDisabled ? '限办时间不能大于省平台限办时间;省平台限办时间:' + sptHandleTime : ''"
+                @click="handleSubmit(false)">提交</el-button>
               <el-button @click="workbenchNav?.openMenuByCode('zcsw')">返回列表</el-button>
             </div>
           </div>

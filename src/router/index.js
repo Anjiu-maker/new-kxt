@@ -106,6 +106,73 @@ const routes = [
     component: () => import('@/views/order/Rwfpmx.vue'),
     meta: { title: '任务分配明细' }
   },
+  // ── informationquery (综合查询) ──
+  {
+    path: '/query',
+    component: () => import('@/layouts/AppLayout.vue'),
+    children: [
+      {
+        path: 'integratedQuery',
+        name: 'integratedQuery',
+        component: () => import('@/views/informationquery/IntegratedQuery.vue'),
+        meta: { title: '综合查询' }
+      },
+      {
+        path: 'myOrder',
+        name: 'myOrder',
+        component: () => import('@/views/informationquery/MyOrder.vue'),
+        meta: { title: '我的工单' }
+      },
+      {
+        path: 'citizen',
+        name: 'citizen',
+        component: () => import('@/views/informationquery/Citizen.vue'),
+        meta: { title: '群众信息' }
+      },
+      {
+        path: 'caseOpen',
+        name: 'caseOpen',
+        component: () => import('@/views/informationquery/CaseOpen.vue'),
+        meta: { title: '案例公开' }
+      },
+      {
+        path: 'addressBook',
+        name: 'addressBook',
+        component: () => import('@/views/informationquery/AddressBook.vue'),
+        meta: { title: '通讯录' }
+      },
+      {
+        path: 'reportDataQuery',
+        name: 'reportDataQuery',
+        component: () => import('@/views/informationquery/ReportDataQuery.vue'),
+        meta: { title: '报表数据' }
+      },
+      {
+        path: 'queryItem',
+        name: 'queryItem',
+        component: () => import('@/views/informationquery/QueryItem.vue'),
+        meta: { title: '查询条件项' }
+      },
+      {
+        path: 'queryTemplate',
+        name: 'queryTemplate',
+        component: () => import('@/views/informationquery/QueryTemplate.vue'),
+        meta: { title: '查询模板' }
+      },
+      {
+        path: 'queryReportItem',
+        name: 'queryReportItem',
+        component: () => import('@/views/informationquery/QueryReportItem.vue'),
+        meta: { title: '导出字段' }
+      },
+      {
+        path: 'SampleLibrary',
+        name: 'SampleLibrary',
+        component: () => import('@/views/informationquery/IntegratedQuery.vue'),
+        meta: { title: '样本库' }
+      }
+    ]
+  },
   {
     path: '/:pathMatch(.*)*',
     redirect: '/home'

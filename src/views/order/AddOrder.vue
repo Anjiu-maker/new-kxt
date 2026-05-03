@@ -1451,7 +1451,7 @@ onMounted(async () => {
               </div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="市民姓名"><el-input v-model="model.name" placeholder="请输入"
+                  <el-col :span="8"><el-form-item label="市民姓名" required><el-input v-model="model.name" placeholder="请输入"
                         clearable /></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="呼叫号码"><el-input v-model="model.callTel" placeholder="呼叫号码"
                         maxlength="12" show-word-limit clearable @keyup.enter="getlsgdList" /></el-form-item></el-col>
@@ -1506,32 +1506,32 @@ onMounted(async () => {
               </div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="服务渠道"><el-cascader v-model="model.orderOrigin"
+                  <el-col :span="8"><el-form-item label="服务渠道" required><el-cascader v-model="model.orderOrigin"
                         :options="swlyOptions" :props="{
                           value: 'dictId',
                           label: 'dictName',
                           children: 'children',
                           expandTrigger: 'hover',
                         }" clearable filterable style="width: 100%" /></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="类型"><el-select v-model="model.orderType" clearable filterable
+                  <el-col :span="8"><el-form-item label="类型" required><el-select v-model="model.orderType" clearable filterable
                         style="width: 100%"><el-option v-for="o in orderTypeOptions" :key="o.dictId" :label="o.dictName"
                           :value="o.dictId" /></el-select></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="群众情绪"><el-select v-model="model.emotion" clearable><el-option
+                  <el-col :span="8"><el-form-item label="群众情绪" required><el-select v-model="model.emotion" clearable><el-option
                           v-for="e in emotionOptions" :key="e.value" :label="e.label"
                           :value="e.value" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="热点分类"><el-cascader v-model="model.hotspot1"
+                  <el-col :span="8"><el-form-item label="热点分类" required><el-cascader v-model="model.hotspot1"
                         :options="hotspotOptions" :props="{
                           value: 'dictId',
                           label: 'dictName',
                           children: 'children',
                         }" placeholder="请选择" clearable filterable style="width: 100%"
                         @change="recommendedDept" /></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="诉求类型"><el-select v-model="model.orderTagName"><el-option
+                  <el-col :span="8"><el-form-item label="诉求类型" required><el-select v-model="model.orderTagName"><el-option
                           v-for="o in orderTagOptions" :key="o.value" :label="o.label"
                           :value="o.value" /></el-select></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="问题属地"><el-cascader v-model="model.deptId"
+                  <el-col :span="8"><el-form-item label="问题属地" required><el-cascader v-model="model.deptId"
                         :options="wtsdOptions" :props="{
                           value: 'deptId',
                           label: 'deptName',
@@ -1541,17 +1541,17 @@ onMounted(async () => {
                         }" clearable filterable style="width: 100%" /></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="12"><el-form-item label="事发地址"><el-input v-model="model.orderAddr" placeholder="请输入事发地址"
+                  <el-col :span="12"><el-form-item label="事发地址" required><el-input v-model="model.orderAddr" placeholder="请输入事发地址"
                         clearable /></el-form-item></el-col>
                   <el-col :span="12"><el-form-item label="专项工作"><el-select v-model="model.specialWork" clearable
                         filterable placeholder="请选择专项工作"><el-option v-for="s in specialWorkOptions" :key="s.dictId" :label="s.dictName"
                           :value="s.dictId" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="24"><el-form-item label="标题"><el-input v-model="model.title" placeholder="请输入标题"
+                  <el-col :span="24"><el-form-item label="标题" required><el-input v-model="model.title" placeholder="请输入标题"
                         maxlength="200" show-word-limit @change="searchOrigin" /></el-form-item></el-col>
                 </el-row>
-                <el-form-item class="caller-content-item"><template #label>
+                <el-form-item class="caller-content-item" required><template #label>
                     <div class="caller-content-label"><span>反映内容</span><el-link style="display: block;" underline="never" type="primary" 
                         @click="intelligentExtraction">智能提取</el-link></div>
                   </template><el-input v-model="model.callerContent" type="textarea"
@@ -1576,24 +1576,24 @@ onMounted(async () => {
               <div class="section-head"><span>办理信息</span></div>
               <el-form label-width="90px" >
                 <el-row :gutter="12">
-                  <el-col :span="24"><el-form-item label="办理方式"><el-radio-group v-model="model.handleType">
+                  <el-col :span="24"><el-form-item label="办理方式" required><el-radio-group v-model="model.handleType">
                         <el-radio v-for="h in handleTypeOptions.slice(0, 5)" :key="h.value" :value="h.value">{{ h.label
                           }}</el-radio>
                       </el-radio-group></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="级别"><el-select v-model="model.orderLevel" clearable
+                  <el-col :span="8"><el-form-item label="级别" required><el-select v-model="model.orderLevel" clearable
                         @change="changeOrderLevel"><el-option v-for="o in orderLevelOptions" :key="o.levelId"
                           :label="`${o.levelName} (${o.handleDays}日)`"
                           :value="o.levelId" /></el-select></el-form-item></el-col>
-                  <el-col :span="8"><el-form-item label="办理时限"><el-date-picker v-model="model.handleEndTime"
+                  <el-col :span="8"><el-form-item label="办理时限" required><el-date-picker v-model="model.handleEndTime"
                         type="datetime" value-format="YYYY-MM-DD HH:mm:ss"
                         style="width: 100%" /></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="单位电话"><el-input v-model="tel1"
                         clearable /></el-form-item></el-col>
                 </el-row>
                 <el-row :gutter="12">
-                  <el-col :span="8"><el-form-item label="承办单位">
+                  <el-col :span="8"><el-form-item label="承办单位" required>
                       <div v-if="recommendedDeptActive && groupOptions.length" style="margin-bottom: 4px">
                         <el-tag v-for="(g, gi) in groupOptions" :key="gi"  type="success"
                           style="cursor: pointer; margin: 2px" @click="selectRecommendedDept(g)">{{ g.deptName
@@ -1633,12 +1633,12 @@ onMounted(async () => {
                           v-for="h in hffsOptions" :key="h.value" :label="h.label"
                           :value="h.value" /></el-select></el-form-item></el-col>
                 </el-row>
-                <el-form-item v-if="model.handleType === 3" label="短信模板"><el-input v-model="model.messageName"
+                <el-form-item v-if="model.handleType === 3" label="短信模板" required><el-input v-model="model.messageName"
                     readonly /><el-button  @click="loadMessageTemplates">选择模板</el-button><el-input
                     v-model="model.messageContent" style="margin-top: 4px" /></el-form-item>
-                <el-form-item label="处理意见"><el-input v-model="model.acceptCenterIdea" type="textarea"
+                <el-form-item label="处理意见" :required="[1,3,4,5].includes(model.handleType)"><el-input v-model="model.acceptCenterIdea" type="textarea"
                     :autosize="{ minRows: 5, maxRows: 8 }" placeholder="请输入处理意见，最多输入3000字" maxlength="3000" show-word-limit /></el-form-item>
-                <el-form-item v-if="model.handleType === 6" label="组长意见"><el-input v-model="model.groupLeaderOpinion"
+                <el-form-item v-if="model.handleType === 6" label="组长意见" required><el-input v-model="model.groupLeaderOpinion"
                     type="textarea" :autosize="{ minRows: 2, maxRows: 6 }" maxlength="500"
                     show-word-limit /></el-form-item>
                 <el-form-item label="答复意见"><el-input v-model="model.releaseContent" type="textarea"

@@ -6,6 +6,11 @@ NProgress.configure({ showSpinner: false })
 
 const HomeRouteView = { name: 'HomeRouteView', render: () => null }
 
+const withHomeCache = (route) => ({
+  ...route,
+  meta: { ...(route.meta ?? {}), keepAlive: true }
+})
+
 const homeChildren = [
   { path: 'home', name: 'homeIndex', component: HomeRouteView, meta: { title: 'Home' } },
   { path: 'BlankPage', name: 'BlankPage', component: HomeRouteView, meta: { title: 'BlankPage' } },
@@ -58,7 +63,7 @@ const homeChildren = [
   { path: 'query/reportItem', name: 'reportItem', component: HomeRouteView, meta: { title: 'Query Report Item' } },
   { path: 'query/SampleLibrary', name: 'SampleLibrary', component: HomeRouteView, meta: { title: 'Sample Library' } },
   { path: ':pathMatch(.*)*', name: 'homeFallback', component: HomeRouteView }
-]
+].map(withHomeCache)
 
 const routes = [
   {

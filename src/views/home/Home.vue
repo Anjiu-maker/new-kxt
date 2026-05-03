@@ -1333,13 +1333,14 @@ onUnmounted(() => {
             :title="activeTab.title"
           ></iframe>
 
-          <component
-            :is="activeInternalPage.component"
-            v-else-if="activeInternalPage.component"
-            :key="`${activeTab?.id || rolePageIndex}_${activeTab?.refreshKey || 0}`"
-            v-bind="activeInternalPage.props"
-            @notice-read="handleNoticeRead"
-          />
+          <KeepAlive v-else-if="activeInternalPage.component">
+            <component
+              :is="activeInternalPage.component"
+              :key="`${activeTab?.id || rolePageIndex}_${activeTab?.refreshKey || 0}`"
+              v-bind="activeInternalPage.props"
+              @notice-read="handleNoticeRead"
+            />
+          </KeepAlive>
 
           <section v-else class="welcome-panel">
             <div>

@@ -848,13 +848,22 @@ async function loadFjList() {
 
 // ── 智能推荐 ──
 async function recommendedDept() {
-  const hotspot = leafValue(model.hotspot1);
-  if (!hotspot) return;
+  const hotspotIds = normalizeSelectedPath(model.hotspot1);
+  if (!hotspotIds.length) return;
   try {
-    const r = await http.get("/hotspotDept/recommend", { params: { hotspot } });
+    const r = await http.get("/hotspotDept/recommend", {
+      params: {
+        hotspot: hotspotIds[hotspotIds.length - 1],
+        hitHotSpotIds: hotspotIds.join(","),
+        hitDeptId: model.dept1Id || "",
+      },
+    });
     if (r.data?.code === 200) {
-      groupOptions.value = r.data.data || [];
-      recommendedDeptActive.value = true;
+      const data = r.data.data || [];
+      groupOptions.value = data.flatMap((item) =>
+        Array.isArray(item?.options) ? item.options : item?.deptId ? [item] : [],
+      );
+      recommendedDeptActive.value = groupOptions.value.length > 0;
     }
   } catch { }
 }
@@ -903,17 +912,81 @@ watch(
 );
 
 // ── AI 智能提取 ──
+async function contentByHandlerDeptId() {
+  const content = `${model.title || ""}${model.callerContent || ""}`;
+  if (!content) return;
+  try {
+    const r = await http.get("/externalInterface/getRecommendationDept", {
+      params: {
+        content,
+        orderId: model.orderId || orderId.value || "",
+      },
+    });
+    const dept = r.data?.data || {};
+    if (r.data?.code === 200 && dept.deptId) {
+      model.handlerDeptId = dept.deptId;
+      model.handlerDeptName = dept.deptName || "";
+      deptAndUserRef.value?.setCurrentDept(dept.deptId, dept.deptName);
+      getDeptTels(dept.deptId);
+    }
+  } catch { }
+}
+
+function firstEntity(source, keys) {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (Array.isArray(value) && value.length) return value[0]?.text || value[0];
+    if (value?.text) return value.text;
+    if (typeof value === "string") return value;
+  }
+  return "";
+}
+
+function applyOrderTypeByText(text) {
+  if (!text) return;
+  const type = orderTypeOptions.value.find(
+    (item) => item.dictName?.includes(text) || `${text}类` === item.dictName,
+  );
+  if (type) {
+    model.orderType = type.dictId;
+    model.orderTypeName = type.dictName;
+  }
+}
+
+function applyHotspotPath(path) {
+  const ids = normalizeSelectedPath(path);
+  model.hotspot1 = ids;
+  for (let i = 0; i < 5; i++) {
+    model[`hotspot${i + 1}`] = ids[i] || "";
+  }
+}
+
 async function intelligentExtraction() {
-  if (!model.callerContent) return;
+  if (!model.callerContent) {
+    ElMessage.warning("请输入内容后进行智能提取");
+    return;
+  }
+  contentByHandlerDeptId();
+  getHotType();
+  getMindTitle();
   try {
     const r = await http.get("/externalInterface/getExtraction", {
-      params: { content: model.callerContent },
+      params: { text: model.callerContent },
     });
     if (r.data?.code === 200) {
-      const d = r.data.data || {};
-      if (d.name && !model.name) model.name = d.name;
-      if (d.addr && !model.addr) model.addr = d.addr;
-      if (d.title && !model.title) model.title = d.title;
+      const d = r.data.data?.result?.[0] || r.data.data || {};
+      const name = firstEntity(d, ["姓名", "name", "fullname"]);
+      const addr = firstEntity(d, ["地址", "addr", "address"]);
+      const time = firstEntity(d, ["时间", "time"]);
+      const event = firstEntity(d, ["事件", "event", "title", "subject"]);
+      const type = firstEntity(d, ["类型", "type", "order"]);
+      const org = firstEntity(d, ["组织机构", "dept", "organization"]);
+      if (name && !model.name) model.name = name;
+      if (addr) model.orderAddr = addr;
+      if (time && !model.incidentTime) model.incidentTime = time;
+      if (event && !model.title) model.title = event;
+      if (org && !model.handlerDeptName) model.handlerDeptName = org;
+      applyOrderTypeByText(type);
       ElMessage.success("智能提取完成");
     }
   } catch {
@@ -921,22 +994,38 @@ async function intelligentExtraction() {
   }
 }
 async function getHotType() {
-  if (!model.callerContent) return;
+  if (!model.callerContent) {
+    ElMessage.warning("请输入内容后进行热点推荐");
+    return;
+  }
   try {
     const r = await http.get("/externalInterface/getHotType", {
-      params: { content: model.callerContent },
+      params: {
+        content: model.callerContent,
+        orderId: model.orderId || orderId.value || "",
+      },
     });
-    if (r.data?.code === 200 && r.data.data?.length) {
-      const first = r.data.data[0];
-      if (first.dictId && !model.hotspot1) model.hotspot1 = first.dictId;
+    if (r.data?.code === 200) {
+      const list = r.data.data?.data || r.data.data || [];
+      const first = Array.isArray(list) ? list[0] : list;
+      const path = Array.isArray(first)
+        ? first
+        : first?.path || first?.ids || (first?.dictId ? [first.dictId] : []);
+      if (path.length) {
+        applyHotspotPath(path);
+        recommendedDept();
+      }
     }
   } catch { }
 }
 async function getMindTitle() {
-  if (!model.callerContent) return;
+  if (!model.callerContent) {
+    ElMessage.warning("请输入内容后进行标题推荐");
+    return;
+  }
   try {
     const r = await http.get("/externalInterface/getMindTitle", {
-      params: { content: model.callerContent },
+      params: { text: model.callerContent },
     });
     if (r.data?.code === 200 && r.data.data && !model.title)
       model.title = r.data.data;
@@ -1303,8 +1392,7 @@ onMounted(async () => {
                 <span>受理单信息</span>
                 <div class="section-actions">
                   <el-button  @click="uploadFileWin = true">上传附件</el-button><el-button
-                     @click="isShowFj = true">查看附件</el-button><el-button  type="warning"
-                    @click="intelligentExtraction">智能提取</el-button><el-button 
+                     @click="isShowFj = true">查看附件</el-button><el-button 
                     @click="getHotType">推荐热点</el-button><el-button  @click="getMindTitle">推荐标题</el-button>
                 </div>
               </div>
@@ -1355,7 +1443,10 @@ onMounted(async () => {
                   <el-col :span="24"><el-form-item label="标题"><el-input v-model="model.title" placeholder="请输入标题"
                         maxlength="200" show-word-limit @change="searchOrigin" /></el-form-item></el-col>
                 </el-row>
-                <el-form-item label="反映内容"><el-input v-model="model.callerContent" type="textarea"
+                <el-form-item class="caller-content-item"><template #label>
+                    <div class="caller-content-label"><span>反映内容</span><el-button link type="primary" 
+                        @click="intelligentExtraction">智能提取</el-button></div>
+                  </template><el-input v-model="model.callerContent" type="textarea"
                     :autosize="{ minRows: 9, maxRows: 12 }" placeholder="请输入反映内容" maxlength="3000"
                     show-word-limit /></el-form-item>
                 <el-row :gutter="12">
@@ -2059,6 +2150,39 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
   color: $text;
   font-size: 14px;
   line-height: 24px;
+}
+
+:deep(.order-section .caller-content-item) {
+  min-height: 260px;
+}
+
+:deep(.order-section .caller-content-item .el-form-item__label) {
+  min-height: 260px;
+  line-height: normal;
+}
+
+:deep(.order-section .caller-content-item .el-form-item__content) {
+  min-height: 260px;
+  line-height: normal;
+}
+
+:deep(.caller-content-label) {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 260px;
+  align-items: center;
+  justify-content: center;
+}
+
+:deep(.caller-content-label .el-button) {
+  position: absolute;
+  top: 145px;
+  left: 50%;
+  height: 22px;
+  padding: 0;
+  transform: translateX(-50%);
+  font-size: 14px;
 }
 
 :deep(.handle-section .el-textarea__inner) {

@@ -44,6 +44,10 @@ export default {
     { dictId: 3, dictName: '非常满意' }, { dictId: 2, dictName: '满意' },
     { dictId: 1, dictName: '理解' }, { dictId: 0, dictName: '不满意' }
   ],
+  deptSatisfactionss: [
+    { dictId: 3, dictName: '非常满意' }, { dictId: 2, dictName: '满意' },
+    { dictId: 1, dictName: '理解' }, { dictId: 0, dictName: '不满意' }
+  ],
   isFollow: [
     { dictId: 0, dictName: '否' }, { dictId: 1, dictName: '是' }
   ]

@@ -4,29 +4,68 @@ import 'nprogress/nprogress.css'
 
 NProgress.configure({ showSpinner: false })
 
+const HomeRouteView = { name: 'HomeRouteView', render: () => null }
+
+const homeChildren = [
+  { path: 'home', name: 'homeIndex', component: HomeRouteView, meta: { title: 'Home' } },
+  { path: 'BlankPage', name: 'BlankPage', component: HomeRouteView, meta: { title: 'BlankPage' } },
+  { path: 'ZxIndex', name: 'ZxIndex', component: HomeRouteView, meta: { title: 'ZxIndex' } },
+  { path: 'FzgIndex', name: 'FzgIndex', component: HomeRouteView, meta: { title: 'FzgIndex' } },
+  { path: 'CbgIndex', name: 'CbgIndex', component: HomeRouteView, meta: { title: 'CbgIndex' } },
+  { path: 'DbzxIndex', name: 'DbzxIndex', component: HomeRouteView, meta: { title: 'DbzxIndex' } },
+  { path: 'LdspgIndex', name: 'LdspgIndex', component: HomeRouteView, meta: { title: 'LdspgIndex' } },
+  { path: 'ZnjIndex', name: 'ZnjIndex', component: HomeRouteView, meta: { title: 'ZnjIndex' } },
+  { path: 'ZnjddzxIndex', name: 'ZnjddzxIndex', component: HomeRouteView, meta: { title: 'ZnjddzxIndex' } },
+  { path: 'HfIndex', name: 'HfIndex', component: HomeRouteView, meta: { title: 'HfIndex' } },
+  { path: 'BjshIndex', name: 'BjshIndex', component: HomeRouteView, meta: { title: 'BjshIndex' } },
+  { path: 'zx/index', name: 'zxIndex', component: HomeRouteView, meta: { title: 'ZxIndex' } },
+  { path: 'fzg/index', name: 'fzgIndex', component: HomeRouteView, meta: { title: 'FzgIndex' } },
+  { path: 'cbg/index', name: 'cbgIndex', component: HomeRouteView, meta: { title: 'CbgIndex' } },
+  { path: 'dbzx/index', name: 'dbzxIndex', component: HomeRouteView, meta: { title: 'DbzxIndex' } },
+  { path: 'ldspg/index', name: 'ldspgIndex', component: HomeRouteView, meta: { title: 'LdspgIndex' } },
+  { path: 'znj/index', name: 'znjIndex', component: HomeRouteView, meta: { title: 'ZnjIndex' } },
+  { path: 'znjddzx/index', name: 'znjddzxIndex', component: HomeRouteView, meta: { title: 'ZnjddzxIndex' } },
+  { path: 'hf/index', name: 'hfIndex', component: HomeRouteView, meta: { title: 'HfIndex' } },
+  { path: 'bjsh/index', name: 'bjshIndex', component: HomeRouteView, meta: { title: 'BjshIndex' } },
+  { path: 'admin/index', name: 'adminIndex', component: HomeRouteView, meta: { title: 'BlankPage' } },
+  { path: 'notice/mine', name: 'noticeMine', component: HomeRouteView, meta: { title: 'Notice Mine' } },
+  { path: 'order/addOrder', name: 'addOrder', component: HomeRouteView, meta: { title: 'Add Order' } },
+  { path: 'order/editOrder', name: 'editOrder', component: HomeRouteView, meta: { title: 'Edit Order' } },
+  { path: 'order/quickAddOrder', name: 'quickAddOrder', component: HomeRouteView, meta: { title: 'Quick Add Order' } },
+  { path: 'order/specialAddOrder', name: 'specialAddOrder', component: HomeRouteView, meta: { title: 'Special Add Order' } },
+  { path: 'flow/order/:md', name: 'flowOrder', component: HomeRouteView, meta: { title: 'Flow Order' } },
+  { path: 'order/fzgth', name: 'fzgth', component: HomeRouteView, meta: { title: 'Fzgth' } },
+  { path: 'order/cfdb', name: 'cfdb', component: HomeRouteView, meta: { title: 'Cfdb' } },
+  { path: 'order/zcsw', name: 'zcsw', component: HomeRouteView, meta: { title: 'Zcsw' } },
+  { path: 'order/zcswAll', name: 'zcswAll', component: HomeRouteView, meta: { title: 'Zcsw All' } },
+  { path: 'order/zcswSpecial', name: 'zcswSpecial', component: HomeRouteView, meta: { title: 'Zcsw Special' } },
+  { path: 'xxcx/rwfpmx', name: 'rwfpmx', component: HomeRouteView, meta: { title: 'Rwfpmx' } },
+  { path: 'query/integratedQuery', name: 'integratedQuery', component: HomeRouteView, meta: { title: 'Integrated Query' } },
+  { path: 'query/myOrder', name: 'myOrder', component: HomeRouteView, meta: { title: 'My Order' } },
+  { path: 'xxcx/mytask', name: 'myTask', component: HomeRouteView, meta: { title: 'My Task' } },
+  { path: 'query/citizen', name: 'citizen', component: HomeRouteView, meta: { title: 'Citizen' } },
+  { path: 'xxcx/citizen', name: 'citizenLegacy', component: HomeRouteView, meta: { title: 'Citizen' } },
+  { path: 'query/caseOpen', name: 'caseOpen', component: HomeRouteView, meta: { title: 'Case Open' } },
+  { path: 'xxcx/caseOpen', name: 'caseOpenLegacy', component: HomeRouteView, meta: { title: 'Case Open' } },
+  { path: 'query/addressBook', name: 'addressBook', component: HomeRouteView, meta: { title: 'Address Book' } },
+  { path: 'xxcx/txl', name: 'addressbookLegacy', component: HomeRouteView, meta: { title: 'Address Book' } },
+  { path: 'query/reportDataQuery', name: 'reportDataQuery', component: HomeRouteView, meta: { title: 'Report Data Query' } },
+  { path: 'query/queryItem', name: 'queryItem', component: HomeRouteView, meta: { title: 'Query Item' } },
+  { path: 'query/item', name: 'item', component: HomeRouteView, meta: { title: 'Query Item' } },
+  { path: 'query/queryTemplate', name: 'queryTemplate', component: HomeRouteView, meta: { title: 'Query Template' } },
+  { path: 'query/template', name: 'template', component: HomeRouteView, meta: { title: 'Query Template' } },
+  { path: 'query/queryReportItem', name: 'queryReportItem', component: HomeRouteView, meta: { title: 'Query Report Item' } },
+  { path: 'query/reportItem', name: 'reportItem', component: HomeRouteView, meta: { title: 'Query Report Item' } },
+  { path: 'query/SampleLibrary', name: 'SampleLibrary', component: HomeRouteView, meta: { title: 'Sample Library' } },
+  { path: ':pathMatch(.*)*', name: 'homeFallback', component: HomeRouteView }
+]
+
 const routes = [
   {
     path: '/login',
     name: 'login',
     component: () => import('@/views/login/Login.vue'),
-    meta: { title: '登录' }
-  },
-  {
-    path: '/',
-    redirect: '/home'
-  },
-  {
-    path: '/home',
-    name: 'home',
-    component: () => import('@/views/home/Home.vue'),
-    meta: { title: '首页' }
-  },
-  {
-    path: '/notice/mine',
-    name: 'noticeMine',
-    component: () => import('@/views/notice/NoticeMine.vue'),
-    props: (route) => ({ query: route.query }),
-    meta: { title: '我的公告' }
+    meta: { title: 'Login' }
   },
   {
     path: '/migration',
@@ -36,142 +75,16 @@ const routes = [
         path: '',
         name: 'migration-dashboard',
         component: () => import('@/views/migration/Dashboard.vue'),
-        meta: { title: '重构工作台' }
+        meta: { title: 'Migration Dashboard' }
       }
     ]
   },
   {
-    path: '/order/addOrder',
-    name: 'addOrder',
-    component: () => import('@/views/order/AddOrder.vue'),
-    meta: { title: '新增工单' }
-  },
-  {
-    path: '/order/editOrder',
-    name: 'editOrder',
-    component: () => import('@/views/order/AddOrder.vue'),
-    meta: { title: '编辑工单' }
-  },
-  {
-    path: '/order/quickAddOrder',
-    name: 'quickAddOrder',
-    component: () => import('@/views/order/AddOrder-quick.vue'),
-    meta: { title: '快速受理' }
-  },
-  {
-    path: '/order/specialAddOrder',
-    name: 'specialAddOrder',
-    component: () => import('@/views/order/AddOrder-special.vue'),
-    meta: { title: '专项诉求' }
-  },
-  {
-    path: '/flow/order/:md',
-    name: 'flowOrder',
-    component: () => import('@/views/order/FlowCommonList.vue'),
-    meta: { title: '流转列表' }
-  },
-  {
-    path: '/order/fzgth',
-    name: 'fzgth',
-    component: () => import('@/views/order/Fzgth.vue'),
-    meta: { title: '分转岗退回' }
-  },
-  {
-    path: '/order/cfdb',
-    name: 'cfdb',
-    component: () => import('@/views/order/Cfdb.vue'),
-    meta: { title: '重复督办' }
-  },
-  {
-    path: '/order/zcsw',
-    name: 'zcsw',
-    component: () => import('@/views/order/Zcsw.vue'),
-    meta: { title: '暂存事务' }
-  },
-  {
-    path: '/order/zcswAll',
-    name: 'zcswAll',
-    component: () => import('@/views/order/ZcswAll.vue'),
-    meta: { title: '全部暂存事务' }
-  },
-  {
-    path: '/order/zcswSpecial',
-    name: 'zcswSpecial',
-    component: () => import('@/views/order/ZcswSpecial.vue'),
-    meta: { title: '专项暂存事务' }
-  },
-  {
-    path: '/xxcx/rwfpmx',
-    name: 'rwfpmx',
-    component: () => import('@/views/order/Rwfpmx.vue'),
-    meta: { title: '任务分配明细' }
-  },
-  // ── informationquery (综合查询) ──
-  {
-    path: '/query',
-    component: () => import('@/layouts/AppLayout.vue'),
-    children: [
-      {
-        path: 'integratedQuery',
-        name: 'integratedQuery',
-        component: () => import('@/views/informationquery/IntegratedQuery.vue'),
-        meta: { title: '综合查询' }
-      },
-      {
-        path: 'myOrder',
-        name: 'myOrder',
-        component: () => import('@/views/informationquery/MyOrder.vue'),
-        meta: { title: '我的工单' }
-      },
-      {
-        path: 'citizen',
-        name: 'citizen',
-        component: () => import('@/views/informationquery/Citizen.vue'),
-        meta: { title: '群众信息' }
-      },
-      {
-        path: 'caseOpen',
-        name: 'caseOpen',
-        component: () => import('@/views/informationquery/CaseOpen.vue'),
-        meta: { title: '案例公开' }
-      },
-      {
-        path: 'addressBook',
-        name: 'addressBook',
-        component: () => import('@/views/informationquery/AddressBook.vue'),
-        meta: { title: '通讯录' }
-      },
-      {
-        path: 'reportDataQuery',
-        name: 'reportDataQuery',
-        component: () => import('@/views/informationquery/ReportDataQuery.vue'),
-        meta: { title: '报表数据' }
-      },
-      {
-        path: 'queryItem',
-        name: 'queryItem',
-        component: () => import('@/views/informationquery/QueryItem.vue'),
-        meta: { title: '查询条件项' }
-      },
-      {
-        path: 'queryTemplate',
-        name: 'queryTemplate',
-        component: () => import('@/views/informationquery/QueryTemplate.vue'),
-        meta: { title: '查询模板' }
-      },
-      {
-        path: 'queryReportItem',
-        name: 'queryReportItem',
-        component: () => import('@/views/informationquery/QueryReportItem.vue'),
-        meta: { title: '导出字段' }
-      },
-      {
-        path: 'SampleLibrary',
-        name: 'SampleLibrary',
-        component: () => import('@/views/informationquery/IntegratedQuery.vue'),
-        meta: { title: '样本库' }
-      }
-    ]
+    path: '/',
+    name: 'home',
+    component: () => import('@/views/home/Home.vue'),
+    redirect: '/home',
+    children: homeChildren
   },
   {
     path: '/:pathMatch(.*)*',

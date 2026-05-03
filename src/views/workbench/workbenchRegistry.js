@@ -10,31 +10,60 @@ import HfIndex from './HfIndex.vue'
 import BjshIndex from './BjshIndex.vue'
 import NoticeMine from '@/views/notice/NoticeMine.vue'
 
-// ── 工单模块页面 ──
-import Fzgth from '@/views/order/Fzgth.vue'
-import Cfdb from '@/views/order/Cfdb.vue'
-import Zcsw from '@/views/order/Zcsw.vue'
-import ZcswAll from '@/views/order/ZcswAll.vue'
-import ZcswSpecial from '@/views/order/ZcswSpecial.vue'
-import Rwfpmx from '@/views/order/Rwfpmx.vue'
-import FlowCommonList from '@/views/order/FlowCommonList.vue'
 import AddOrder from '@/views/order/AddOrder.vue'
 import AddOrderQuick from '@/views/order/AddOrder-quick.vue'
 import AddOrderSpecial from '@/views/order/AddOrder-special.vue'
+import Cfdb from '@/views/order/Cfdb.vue'
+import FlowCommonList from '@/views/order/FlowCommonList.vue'
+import Fzgth from '@/views/order/Fzgth.vue'
+import Rwfpmx from '@/views/order/Rwfpmx.vue'
+import Zcsw from '@/views/order/Zcsw.vue'
+import ZcswAll from '@/views/order/ZcswAll.vue'
+import ZcswSpecial from '@/views/order/ZcswSpecial.vue'
+
+import AddressBook from '@/views/informationquery/AddressBook.vue'
+import CaseOpen from '@/views/informationquery/CaseOpen.vue'
+import Citizen from '@/views/informationquery/Citizen.vue'
+import IntegratedQuery from '@/views/informationquery/IntegratedQuery.vue'
+import MyOrder from '@/views/informationquery/MyOrder.vue'
+import QueryItem from '@/views/informationquery/QueryItem.vue'
+import QueryReportItem from '@/views/informationquery/QueryReportItem.vue'
+import QueryTemplate from '@/views/informationquery/QueryTemplate.vue'
+import ReportDataQuery from '@/views/informationquery/ReportDataQuery.vue'
 
 const migratedComponents = {
-  // 工作台首页
-  ZxIndex, CbgIndex, DbzxIndex, LdspgIndex, FzgIndex,
-  ZnjIndex, ZnjddzxIndex, HfIndex, BjshIndex,
-  // 工单列表页
-  Fzgth, Cfdb, Zcsw, ZcswAll, ZcswSpecial, Rwfpmx,
-  // 工单流转/表单页
-  FlowCommonList, AddOrder, AddOrderQuick, AddOrderSpecial
+  BlankPage,
+  ZxIndex,
+  CbgIndex,
+  DbzxIndex,
+  LdspgIndex,
+  FzgIndex,
+  ZnjIndex,
+  ZnjddzxIndex,
+  HfIndex,
+  BjshIndex,
+  AddOrder,
+  AddOrderQuick,
+  AddOrderSpecial,
+  Cfdb,
+  FlowCommonList,
+  Fzgth,
+  Rwfpmx,
+  Zcsw,
+  ZcswAll,
+  ZcswSpecial,
+  AddressBook,
+  CaseOpen,
+  Citizen,
+  IntegratedQuery,
+  MyOrder,
+  QueryItem,
+  QueryReportItem,
+  QueryTemplate,
+  ReportDataQuery
 }
 
-// 旧路由路径 → 组件名
 const legacyPathAliases = {
-  // 工作台首页
   'zx/index': 'ZxIndex',
   'fzg/index': 'FzgIndex',
   'cbg/index': 'CbgIndex',
@@ -45,29 +74,42 @@ const legacyPathAliases = {
   'hf/index': 'HfIndex',
   'bjsh/index': 'BjshIndex',
   'admin/index': 'BlankPage',
-  // 工单列表页
+  'order/addOrder': 'AddOrder',
+  'order/editOrder': 'AddOrder',
+  'order/quickAddOrder': 'AddOrderQuick',
+  'order/specialAddOrder': 'AddOrderSpecial',
   'order/fzgth': 'Fzgth',
   'order/cfdb': 'Cfdb',
   'order/zcsw': 'Zcsw',
   'order/zcswAll': 'ZcswAll',
   'order/zcswSpecial': 'ZcswSpecial',
   'xxcx/rwfpmx': 'Rwfpmx',
-  // 工单表单页
-  'order/addOrder': 'AddOrder',
-  'order/editOrder': 'AddOrder',
-  'order/quickAddOrder': 'AddOrderQuick',
-  'order/specialAddOrder': 'AddOrderSpecial'
+  'query/integratedQuery': 'IntegratedQuery',
+  'query/myOrder': 'MyOrder',
+  'xxcx/mytask': 'MyOrder',
+  'query/citizen': 'Citizen',
+  'xxcx/citizen': 'Citizen',
+  'query/caseOpen': 'CaseOpen',
+  'xxcx/caseOpen': 'CaseOpen',
+  'query/addressBook': 'AddressBook',
+  'xxcx/txl': 'AddressBook',
+  'query/reportDataQuery': 'ReportDataQuery',
+  'query/queryItem': 'QueryItem',
+  'query/item': 'QueryItem',
+  'query/queryTemplate': 'QueryTemplate',
+  'query/template': 'QueryTemplate',
+  'query/queryReportItem': 'QueryReportItem',
+  'query/reportItem': 'QueryReportItem',
+  'query/SampleLibrary': 'IntegratedQuery'
 }
 
 function resolvePageName(rawPath) {
   const cleaned = rawPath.replace(/^\//, '').split('?')[0] || 'BlankPage'
 
-  // 直接别名匹配
   if (legacyPathAliases[cleaned]) {
     return legacyPathAliases[cleaned]
   }
 
-  // FlowCommonList: /flow/order/xxx 格式
   if (cleaned.startsWith('flow/order/')) {
     return 'FlowCommonList'
   }
@@ -83,12 +125,7 @@ export function resolveInternalPageComponent(path = '', query = {}) {
     return { component: NoticeMine, props: { query } }
   }
 
-  if (pageName === 'BlankPage') {
-    return { component: BlankPage, props: {} }
-  }
-
   if (migratedComponents[pageName]) {
-    // 提取 FlowCommonList 的 md 参数
     const props = { pageName, query, rawPath }
     if (pageName === 'FlowCommonList') {
       props.md = rawPath.replace('flow/order/', '')

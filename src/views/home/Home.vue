@@ -1,6 +1,6 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, provide, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, nextTick, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Bell,
   ArrowDown,
@@ -29,6 +29,7 @@ import CtiRestDialog from './CtiRestDialog.vue'
 import { resolveInternalPageComponent } from '@/views/workbench/workbenchRegistry'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const ctiStore = useCtiStore()
 const ctiBlackDialogVisible = ref(false)
@@ -79,6 +80,7 @@ let socketPingTimer = null
 let socketReconnectTimer = null
 let reconnectCount = 0
 let isLogout = false
+let isMenuHydrated = false
 
 const maxReconnectCount = 5
 
@@ -299,6 +301,37 @@ function buildTabRealPath(url, query) {
   return `${normalizeMenuUrl(url)}${stringifyQuery(query)}`
 }
 
+function isHomeRoutePath(path) {
+  return path === '/' || path === '/home'
+}
+
+function getTabRoutePath(tab) {
+  if (!tab || tab.external) {
+    return ''
+  }
+
+  if (tab.id === 'index') {
+    return '/home'
+  }
+
+  return normalizeMenuUrl(tab.url || '/home')
+}
+
+function syncRouteFromTab(tab) {
+  const path = getTabRoutePath(tab)
+
+  if (!path) {
+    return
+  }
+
+  const query = tab.id === 'index' ? {} : tab.query ?? {}
+  const targetFullPath = `${path}${stringifyQuery(query)}`
+
+  if (route.fullPath !== targetFullPath) {
+    router.push({ path, query }).catch(() => {})
+  }
+}
+
 function getMenuTabId(menu) {
   return `${menu?.isShowHz ?? 0}_${menu?.id ?? 'index'}_${menu?.pid ?? 0}`
 }
@@ -340,7 +373,7 @@ function makeTabFromMenu(menu, options = {}) {
   }
 }
 
-function openTab(tab) {
+function openTab(tab, shouldSyncRoute = true) {
   const existing = tabs.value.find((item) => item.id === tab.id)
 
   if (existing) {
@@ -353,9 +386,13 @@ function openTab(tab) {
   }
 
   activeTabId.value = tab.id
+
+  if (shouldSyncRoute) {
+    syncRouteFromTab(existing || tab)
+  }
 }
 
-function activateTab(tab) {
+function activateTab(tab, shouldSyncRoute = true) {
   activeTabId.value = tab.id
 
   const matchedSubmenu = menus.value
@@ -369,6 +406,10 @@ function activateTab(tab) {
     if (parent) {
       activeMenuId.value = parent.id
     }
+  }
+
+  if (shouldSyncRoute) {
+    syncRouteFromTab(tab)
   }
 }
 
@@ -607,7 +648,7 @@ provide('workbenchNav', {
   openCustomTab
 })
 
-function addHomeTab() {
+function addHomeTab(shouldSyncRoute = true) {
   openTab(
     makeTabFromMenu(null, {
       id: 'index',
@@ -617,7 +658,55 @@ function addHomeTab() {
       closable: false,
       query: {},
       skipLegacyQuery: true
-    })
+    }),
+    shouldSyncRoute
+  )
+}
+
+function findSubmenuByRoutePath(path) {
+  const cleanedPath = normalizeMenuUrl(path).replace(/^\//, '')
+  return menus.value
+    .flatMap((menu) => menu.submenu ?? [])
+    .find((submenu) => normalizeMenuUrl(parseUrlQuery(submenu.url).path).replace(/^\//, '') === cleanedPath)
+}
+
+function syncActiveTabFromRoute(currentRoute = route) {
+  if (!isMenuHydrated) {
+    return
+  }
+
+  if (isHomeRoutePath(currentRoute.path)) {
+    const homeTab = tabs.value.find((item) => item.id === 'index')
+    if (homeTab) {
+      activateTab(homeTab, false)
+    } else {
+      addHomeTab(false)
+    }
+    return
+  }
+
+  const matchedSubmenu = findSubmenuByRoutePath(currentRoute.path)
+
+  if (matchedSubmenu) {
+    const parent = menus.value.find((menu) => menu.id === matchedSubmenu.pid || menu.submenu?.some((item) => item.id === matchedSubmenu.id))
+    activeMenuId.value = parent?.id || activeMenuId.value
+    activeSubMenuId.value = matchedSubmenu.id
+    activeSubmenu.value = matchedSubmenu
+    openTab(makeTabFromMenu(matchedSubmenu, { query: currentRoute.query, skipLegacyQuery: true }), false)
+    return
+  }
+
+  openTab(
+    makeTabFromMenu(null, {
+      id: `route:${currentRoute.path}`,
+      title: currentRoute.meta?.title || currentRoute.path,
+      url: currentRoute.path,
+      fullpath: currentRoute.meta?.title || currentRoute.path,
+      closable: true,
+      query: currentRoute.query,
+      skipLegacyQuery: true
+    }),
+    false
   )
 }
 
@@ -939,12 +1028,20 @@ async function loadUserFromServer() {
 function hydrateInitialMenu() {
   const firstMenu = menus.value[0]
   if (!firstMenu) {
-    addHomeTab()
+    addHomeTab(false)
+    isMenuHydrated = true
+    syncActiveTabFromRoute()
     return
   }
 
   activeMenuId.value = firstMenu.id
-  addHomeTab()
+  addHomeTab(false)
+  isMenuHydrated = true
+
+  if (!isHomeRoutePath(route.path)) {
+    syncActiveTabFromRoute()
+    return
+  }
 
   const allSubmenus = menus.value.flatMap((menu) => menu.submenu ?? [])
   const matchedSubmenu = allSubmenus.find((item) => normalizeMenuUrl(item.url).replace(/^\//, '') === rolePageIndex.value)
@@ -1017,6 +1114,13 @@ function startHeartbeatTimers() {
     keepUserOnline().catch(() => {})
   }, 180000)
 }
+
+watch(
+  () => route.fullPath,
+  () => {
+    syncActiveTabFromRoute()
+  }
+)
 
 onMounted(async () => {
   updateTime()

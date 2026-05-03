@@ -65,6 +65,10 @@ const tempLoading = ref(false)
 const reportExcelLoading = ref(false)
 const addTemplateLoading = ref(false)
 const reportTemplateJoinItemLoading = ref(false)
+const defaultRangeTime = [
+  new Date(2000, 0, 1, 0, 0, 0),
+  new Date(2000, 0, 1, 23, 59, 59)
+]
 
 // ---- data field definitions ----
 const dataFiled = ref([])
@@ -112,6 +116,25 @@ const reportRules = {
 }
 
 const operation = ref(true)
+const callbackLinkedItemCodes = [
+  'isNotifyCallPerson',
+  'handleInfo',
+  'satisfactionss',
+  'zxAppraise',
+  'isStatistics',
+  'callbackFailReason'
+]
+const timeParamMap = {
+  createTime: ['createStartTime', 'createEndTime'],
+  incidentTime: ['incidentStartTime', 'incidentEndTime'],
+  handleEndTime: ['handleEndStartTime', 'handleEndEndTime'],
+  transferTime: ['transferStartTime', 'transferEndTime'],
+  upReportTime: ['upReportStartTime', 'upReportEndTime'],
+  callbackTime: ['callbackStartTime', 'callbackEndTime'],
+  placeOnFileTime: ['placeOnFileStartTime', 'placeOnFileEndTime'],
+  cbTime: ['cbStartTime', 'cbEndTime'],
+  sptHandleEndTime: ['sptStartTime', 'sptEndTime']
+}
 
 // ---- template rules ----
 const templateRules = {
@@ -139,18 +162,20 @@ function handleParams(data) {
   const m = JSON.parse(JSON.stringify(data))
   m.pageNum = params.pageNum
   m.pageSize = params.pageSize
-  for (const key of Object.keys(m)) {
-    if (Array.isArray(m[key]) && m[key].length === 2 && typeof m[key][0] === 'string' && m[key][0].includes(':')) {
-      m[key.replace(/^/, '') + 'StartTime'] = m[key][0]
-      m[key.replace(/^/, '') + 'EndTime'] = m[key][1]
+
+  Object.entries(timeParamMap).forEach(([key, [startKey, endKey]]) => {
+    if (Array.isArray(m[key]) && m[key].length === 2) {
+      m[startKey] = m[key][0]
+      m[endKey] = m[key][1]
       delete m[key]
     }
-  }
+  })
+
   if (m.handlerDeptId && Array.isArray(m.handlerDeptId)) m.handlerDeptId = m.handlerDeptId[m.handlerDeptId.length - 1]
   if (m.acceptDeptId && Array.isArray(m.acceptDeptId)) m.acceptDeptId = m.acceptDeptId[m.acceptDeptId.length - 1]
   if (m.deptId && Array.isArray(m.deptId)) m.deptId = m.deptId[m.deptId.length - 1]
   if (m.orderOrigin && Array.isArray(m.orderOrigin)) {
-    const first = m.orderOrigin.map(o => Array.isArray(o) ? o[0] : o).filter(Boolean)
+    const first = [...new Set(m.orderOrigin.map(o => Array.isArray(o) ? o[0] : o).filter(Boolean))]
     const second = m.orderOrigin.map(o => Array.isArray(o) ? o[1] : o).filter(Boolean)
     m.orderOrigin = first.join(',')
     m.orderOrigin2 = second.join(',')
@@ -181,54 +206,165 @@ function queryOrder(resetPage) {
 function refresh() {
   http.get('/queryTemplateItem/listTempSonItem', { params: { flag: 'false' } }).then(res => {
     if (res.data?.code == 200) {
-      tempSonItemList.value = res.data.data || []
-      isEmptyTempSonItemList.value = tempSonItemList.value.length > 0
-      tempSonItemList.value.forEach(item => {
-        if (item.queryItemCode === 'focusRemark') item.show = true
-        loadItemData(item)
+      const list = res.data.data || []
+      list.forEach((item) => {
+        item.show = !callbackLinkedItemCodes.includes(item.queryItemCode)
       })
+      tempSonItemList.value = list
+      loadQueryItemOptions(list)
     }
   })
 }
 
-function loadItemData(item) {
-  const code = item.queryItemCode
-  const type = item.queryItemType
-  if (type == 2) {
-    if (code === 'orderLevel') {
-      http.get('/order_level/list', { params: { flag: false } }).then(res => {
-        if (res.data?.code == 200) item.data = res.data.data
-      })
-    } else if (code === 'qualityLabelId') {
-      item.data = queryData.qualityLabelId
-    } else if (['handleType', 'orderSubState', 'orderSubStateE'].includes(code)) {
-      item.data = queryData[code] || []
-    } else {
-      getDictDataForItem(item)
+function hasQueryItem(code, list = tempSonItemList.value) {
+  return list.some((item) => item.queryItemCode === code)
+}
+
+function setQueryItemData(list, code, data) {
+  list.forEach((item) => {
+    if (item.queryItemCode === code) {
+      item.data = data || []
     }
-  } else if (type == 3) {
-    if (code === 'orderOrigin') {
-      getDictByCode(true, 'swly').then(res => {
-        item.data = res || []
-        getdeptOptions(item)
-      })
-    } else if (code === 'handlerDeptId' || code === 'acceptDeptId' || code === 'deptId') {
-      getdeptOptions(item)
-    } else if (code === 'hotspot') {
-      getDictByCode(true, 'rdfl').then(res => { item.data = res || [] })
-    } else {
-      getDictDataForItem(item)
-    }
+  })
+}
+
+function normalizeDictValueRows(rows = []) {
+  return rows.map((item) => ({
+    ...item,
+    dictId: item.dictValue !== undefined && item.dictValue !== '' ? Number(item.dictValue) : item.dictId
+  }))
+}
+
+async function loadDeptNodeTypeTree() {
+  try {
+    const response = await http.get('/dept/tree_nodetype', { params: { nodetype: 1, isHeader: false } })
+    return response.data?.code === 200 ? response.data.data : []
+  } catch {
+    return []
   }
 }
 
-function getDictDataForItem(item) {
-  getDictByCode(true, item.queryItemCode).then(res => { item.data = res || [] })
+async function loadQueryItemOptions(list) {
+  const tasks = []
+  const asyncHandledCodes = new Set([
+    'orderOrigin',
+    'handlerDeptId',
+    'acceptDeptId',
+    'deptId',
+    'orderType',
+    'hotspot',
+    'callbackFailReason',
+    'specialWork',
+    'satisfactionss',
+    'zxAppraise',
+    'orderLevel',
+    'deptSatisfactionss',
+    'qualityTester'
+  ])
+
+  if (hasQueryItem('orderOrigin', list)) {
+    tasks.push(getDictByCode(true, 'swly').then((data) => setQueryItemData(list, 'orderOrigin', data)))
+  }
+
+  if (hasQueryItem('handlerDeptId', list) || hasQueryItem('acceptDeptId', list)) {
+    tasks.push(
+      http.get('/dept/comprehensiveQueryDepartmentTree').then((response) => {
+        if (response.data?.code === 200) {
+          setQueryItemData(list, 'handlerDeptId', response.data.data)
+          setQueryItemData(list, 'acceptDeptId', response.data.data)
+        }
+      })
+    )
+  }
+
+  if (hasQueryItem('deptId', list)) {
+    tasks.push(loadDeptNodeTypeTree().then((data) => setQueryItemData(list, 'deptId', data)))
+  }
+
+  if (hasQueryItem('orderType', list)) {
+    tasks.push(getDictByCode(false, 'swlx').then((data) => setQueryItemData(list, 'orderType', data)))
+  }
+
+  if (hasQueryItem('hotspot', list)) {
+    tasks.push(getDictByCode(true, 'rdfl').then((data) => setQueryItemData(list, 'hotspot', data)))
+  }
+
+  if (hasQueryItem('callbackFailReason', list)) {
+    tasks.push(getDictByCode(false, 'hfsbyy').then((data) => setQueryItemData(list, 'callbackFailReason', data)))
+  }
+
+  if (hasQueryItem('specialWork', list)) {
+    tasks.push(getDictByCode(true, 'zxgz').then((data) => setQueryItemData(list, 'specialWork', data)))
+  }
+
+  if (hasQueryItem('satisfactionss', list)) {
+    tasks.push(getDictByCode(false, 'satisfactionss').then((data) => setQueryItemData(list, 'satisfactionss', normalizeDictValueRows(data))))
+  }
+
+  if (hasQueryItem('zxAppraise', list)) {
+    tasks.push(getDictByCode(false, 'zxAppraise').then((data) => setQueryItemData(list, 'zxAppraise', normalizeDictValueRows(data))))
+  }
+
+  if (hasQueryItem('orderLevel', list) || hasQueryItem('deptSatisfactionss', list)) {
+    tasks.push(
+      http.get('/order_level/list', { params: { flag: false } }).then((response) => {
+        if (response.data?.code === 200) {
+          setQueryItemData(list, 'orderLevel', response.data.data)
+        }
+      })
+    )
+  }
+
+  if (hasQueryItem('qualityTester', list)) {
+    tasks.push(
+      http.get('/group/findGroupSonUser').then((response) => {
+        if (response.data?.code === 200) {
+          const users = (response.data.data?.ZHIJIANZU || []).map((item) => ({
+            ...item,
+            dictId: item.userId,
+            dictName: item.userName
+          }))
+          setQueryItemData(list, 'qualityTester', users)
+        }
+      })
+    )
+  }
+
+  list.forEach((item) => {
+    const code = item.queryItemCode
+
+    if (code === 'handleType') item.data = queryData.handleType || []
+    if (code === 'orderSubState') item.data = queryData.orderSubState || []
+    if (code === 'orderSubStateE') item.data = queryData.orderSubStateE || []
+    if (code === 'isFollow') item.data = queryData.isFollow || []
+    if (code === 'transferInfo') item.data = queryData.transferInfo || []
+    if (code === 'handleInfo') item.data = queryData.handleInfo || []
+    if (code === 'qualityLabelId') item.data = queryData.qualityLabelId || []
+    if (code === 'deptSatisfactionss') item.data = queryData.deptSatisfactionss || queryData.satisfactionss || []
+
+    if ((item.queryItemType === 2 || item.queryItemType === 3) && item.data === undefined && !asyncHandledCodes.has(code)) {
+      tasks.push(getDictByCode(item.queryItemType === 3, code).then((data) => setQueryItemData(list, code, data)))
+    }
+  })
+
+  await Promise.allSettled(tasks)
 }
 
-function getdeptOptions(item) {
-  http.get('/dept/comprehensiveQueryDepartmentTree').then(res => {
-    if (res.data?.code == 200) item.data = res.data.data
+function changeCallBackSuccess(value) {
+  const normalizedValue = value ?? ''
+  tempSonItemList.value.forEach((item) => {
+    if (!callbackLinkedItemCodes.includes(item.queryItemCode)) {
+      return
+    }
+
+    if (normalizedValue === '') {
+      item.show = false
+      delete model[item.queryItemCode]
+      return
+    }
+
+    item.show = item.queryItemCode === 'callbackFailReason' ? normalizedValue !== '1' : normalizedValue === '1'
+    delete model[item.queryItemCode]
   })
 }
 
@@ -452,22 +588,29 @@ function exportReportForm() {
 }
 
 function setTemplate() { isShowSetTemplate.value = true }
-function addTemplate() {
-  addTemplateLoading.value = true
-  http.post('/reportTemplate/save', { tempName: '默认模板', tempCode: 'default', remarks: '' }).then(res => {
-    addTemplateLoading.value = false
-    if (res.data?.code == 200) {
-      ElMessage.success('添加成功')
-      getTempOptions()
-    } else {
-      ElMessage.error(res.data.message)
-    }
-  })
-}
-
 function checkAllAndCounter(type) {
   if (type == 1) reportTemplateAndSonItem.value = reportTempSonItemList.value.map(o => o.id)
   else reportTemplateAndSonItem.value = []
+}
+
+function addTemplate() {
+  ElMessageBox.prompt('请输入模板名称', '提示', {
+    confirmButtonText: '纭畾',
+    cancelButtonText: '鍙栨秷',
+    inputValidator: (value) => Boolean(value?.trim()),
+    inputErrorMessage: '请输入模板名称'
+  }).then(({ value }) => {
+    addTemplateLoading.value = true
+    http.post('/reportTemplate/save', { name: value }).then(res => {
+      addTemplateLoading.value = false
+      if (res.data?.code == 200) {
+        ElMessage.success('娣诲姞鎴愬姛')
+        getTempOptions()
+      } else {
+        ElMessage.error(res.data.message)
+      }
+    }).catch(() => { addTemplateLoading.value = false })
+  }).catch(() => {})
 }
 
 function reportTemplateJoinItem() {
@@ -487,7 +630,20 @@ function reportTemplateJoinItem() {
 }
 
 // ---- print ----
-function openDialogVisible() { dialogVisible.value = true }
+function openDialogVisible() {
+  if (!selectRows.value.length) {
+    ElMessage.warning('璇烽€夋嫨鑷冲皯涓€鏉℃暟鎹潵杩涜瀵煎嚭')
+    return
+  }
+
+  ElMessageBox.confirm(`鎮ㄧ‘璁ゅ鍑鸿繖 ${selectRows.value.length} 鏉′簨鍔″悧?`, '鎻愮ず', {
+    confirmButtonText: '纭畾',
+    cancelButtonText: '鍙栨秷',
+    type: 'warning'
+  }).then(() => {
+    dialogVisible.value = true
+  }).catch(() => {})
+}
 
 function batchPrinting() {
   const orderIds = selectRows.value.map(o => o.orderId)
@@ -654,7 +810,7 @@ onMounted(() => {
             <template v-if="item.queryItemType === 0">
               <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
               <el-date-picker v-model="model[item.queryItemCode]" clearable type="datetimerange" 
-                value-format="YYYY-MM-DD HH:mm:ss" range-separator="-" :default-time="['00:00:00', '23:59:59']"
+                value-format="YYYY-MM-DD HH:mm:ss" range-separator="-" :default-time="defaultRangeTime"
                 start-placeholder="开始日期" end-placeholder="结束日期" style="width:80%" />
             </template>
             <!-- Input (type 1) -->
@@ -690,9 +846,9 @@ onMounted(() => {
             </template>
             <!-- Radio (type 4) -->
             <template v-else>
-              <div style="line-height:33px">
+              <div class="query-inline-control">
                 <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
-                <el-select v-if="item.queryItemCode === 'isCallBackSuccess'" v-model="model[item.queryItemCode]"
+                <el-select v-if="item.queryItemCode === 'isCallBackSuccess'" v-model="model[item.queryItemCode]" @change="changeCallBackSuccess"
                   :placeholder="'请选择' + item.queryItemName" clearable  style="width:60%">
                   <el-option label="是" value="1" /><el-option label="否" value="0" />
                 </el-select>
@@ -911,10 +1067,110 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.integrated-query .query-item { padding: 10px 5px; }
-.integrated-query .text-justify { display: inline-block; width: 35%; text-align: right; overflow: hidden; white-space: nowrap; }
-.integrated-query .span-justify { font-size: 13px; color: #606266; }
-.integrated-query .empty-wrapper { padding: 80px 0; text-align: center; }
-.integrated-query .empty-wrapper-title { font-size: 16px; color: #909399; }
-.integrated-query .el-col { padding: 0; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.integrated-query {
+  padding: 10px 12px 12px;
+}
+
+.integrated-query .query-item {
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 0;
+  overflow: visible;
+  white-space: normal;
+}
+
+.integrated-query .query-inline-control {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-width: 0;
+  line-height: 32px;
+}
+
+.integrated-query .text-justify {
+  text-align: justify;
+  text-justify: inter-word;
+  text-justify: inter-ideograph;
+  width: 70px;
+  min-height: 30px;
+  font-size: 14px;
+  line-height: 18px;
+  padding-top: 6px;
+  white-space: normal;
+}
+
+.integrated-query .span-justify {
+  display: inline-block;
+  width: 61px;
+  max-width: 61px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-all;
+}
+.integrated-query :deep(.query-item > .el-date-editor) {
+  flex-grow: inherit;
+}
+
+/* .integrated-query :deep(.query-item > .el-input),
+.integrated-query :deep(.query-item > .el-select),
+.integrated-query :deep(.query-item > .el-cascader),
+.integrated-query :deep(.query-item > .el-date-editor),
+.integrated-query :deep(.query-inline-control > .el-select) {
+  width: calc(100% - 100px) !important;
+  min-width: 0;
+  flex: 1 1 auto;
+} */
+
+.integrated-query :deep(.query-item > .el-date-editor.el-input__wrapper),
+.integrated-query :deep(.query-item > .el-date-editor .el-input__wrapper) {
+  box-sizing: border-box;
+}
+
+.integrated-query :deep(.el-date-editor--datetimerange) {
+  max-width: none;
+}
+
+.integrated-query :deep(.el-date-editor .el-range-input) {
+  min-width: 0;
+}
+
+.integrated-query :deep(.el-date-editor .el-range-separator) {
+  flex: 0 0 18px;
+}
+
+.integrated-query .empty-wrapper {
+  padding: 80px 0;
+  text-align: center;
+}
+
+.integrated-query .empty-wrapper-title {
+  color: #909399;
+  font-size: 16px;
+}
+
+.integrated-query .el-col {
+  overflow: visible;
+}
+
+@media (max-width: 1360px) {
+  .integrated-query .query-item {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .integrated-query .text-justify {
+    flex-basis: 92px;
+  }
+
+  .integrated-query :deep(.query-item > .el-input),
+  .integrated-query :deep(.query-item > .el-select),
+  .integrated-query :deep(.query-item > .el-cascader),
+  .integrated-query :deep(.query-item > .el-date-editor),
+  .integrated-query :deep(.query-inline-control > .el-select) {
+    width: calc(100% - 92px) !important;
+  }
+}
 </style>

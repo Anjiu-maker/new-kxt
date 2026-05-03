@@ -20,7 +20,12 @@ export function useAuthCode() {
         jointProcessing: 'jointProcessing',
         resendOpt: 'resendOpt',
         updateHandleEndTime: 'updateHandleEndTime',
-        resendFreshHandleEndTime: 'resendFreshHandleEndTime'
+        resendFreshHandleEndTime: 'resendFreshHandleEndTime',
+        dbsp: 'dbsp',
+        applyInterviewOption: 'applyInterviewOption',
+        restartProcess: 'restartProcess',
+        wxhfBtnShow: 'wxhfBtnShow',
+        addYbk: 'addYbk'
       },
       smsCode: {
         orderTransferDept: 'orderTransferDept',

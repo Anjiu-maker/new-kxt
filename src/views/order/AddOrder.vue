@@ -256,16 +256,28 @@ const fmtT = (v) => {
 // ── 字典加载 ──
 async function loadDicts() {
   try {
+    // 页面初始化需要的下拉框、树形选择器数据较多，且彼此没有依赖关系。
+    // 这里统一并发请求，避免按顺序等待导致新增受理单页面打开变慢。
     const [
+      // 诉求来源：当前用户可使用的渠道树，用于“诉求来源”级联选择。
       originRes,
+      // 诉求类型：字典 swlx，用于“诉求类型”下拉。
       types,
+      // 工单级别：来自 order_level/list，用于“紧急程度/工单级别”选择。
       levelRes,
+      // 问题属地：nodetype=1 的部门树，用于诉求发生地、归属区域类字段。
       wtsdRes,
+      // 业务单位：完整部门树，用于承办单位、派发单位选择。
       ywdwRes,
+      // 热点分类：字典 rdfl，用于热线热点或知识分类辅助选择。
       hotspots,
+      // 专项工作：字典 zxgz，用于专项诉求相关字段。
       specialWorks,
+      // 年龄段：字典 ageRange，后面会转换成 Element Plus 常用的 label/value。
       ageRanges,
+      // 群众情绪：字典 qzqx，后面会转换成 label/value。
       emotions,
+      // 人物画像：字典 rwhx，后面会转换成 label/value。
       portraits,
     ] = await Promise.all([
       http.get("/user/getCurrentUserChannel"),
@@ -281,11 +293,20 @@ async function loadDicts() {
       getDictByCode(false, "qzqx"),
       getDictByCode(false, "rwhx"),
     ]);
+
+    // 后端接口返回结构不完全一致：
+    // - http.get 通常需要判断 data.code，再从 data.data 取真实数组；
+    // - getDictByCode 已在公共方法里处理过响应，通常直接返回数组。
+    // 所以下面按各接口实际结构分别兜底，避免某个接口失败时影响页面渲染。
     swlyOptions.value =
       originRes?.data?.code === 200 ? originRes.data.data || [] : [];
+
+    // dictId=2362 是历史渠道里的不可选项，保留展示但禁止用户选择。
     swlyOptions.value.forEach((item) => {
       if (item.dictId === 2362) item.disabled = true;
     });
+
+    // 直接绑定到模板使用的响应式 options，供 el-select / el-cascader 渲染。
     orderTypeOptions.value = types || [];
     orderLevelOptions.value =
       levelRes?.data?.code === 200 ? levelRes.data.data || [] : [];
@@ -293,6 +314,10 @@ async function loadDicts() {
     ywdwOptions.value = ywdwRes?.data?.data || [];
     hotspotOptions.value = hotspots || [];
     specialWorkOptions.value = specialWorks || [];
+
+    // 这三组字段模板里使用的是 { label, value } 结构，
+    // 字典接口返回的是 { dictName, dictId }，因此在这里统一做一次映射。
+    // 使用 splice 是为了保留 reactive 数组本身的引用，避免模板或 watcher 失去响应。
     ageRangeOptions.splice(
       0,
       ageRangeOptions.length,
@@ -308,6 +333,9 @@ async function loadDicts() {
       portraitOptions.length,
       ...(portraits || []).map((d) => ({ label: d.dictName, value: d.dictId })),
     );
+
+    // 编辑已有工单时不能覆盖接口回填的数据；
+    // 只有新增工单且用户还未选择时，才根据字典加载结果设置页面默认值。
     if (!props.query?.orderId) {
       if (!model.orderOrigin && swlyOptions.value.length)
         model.orderOrigin = getDefaultOriginPath(swlyOptions.value);
@@ -318,9 +346,14 @@ async function loadDicts() {
       if (!model.orderLevel && orderLevelOptions.value.length)
         await changeOrderLevel(orderLevelOptions.value[0].levelId);
     }
+
+    // 等待本轮响应式数据刷新后，再把业务单位树同步给子组件。
+    // 子组件内部依赖 deptOptions 渲染部门/人员选择器，过早调用可能拿不到最新树数据。
     await nextTick();
     if (deptAndUserRef.value)
       deptAndUserRef.value.setDeptData({ deptOptions: ywdwOptions.value });
+
+    // 常用内容依赖部分字典/页面状态，放在字典装载完成后再初始化。
     getCynr();
   } catch { }
 }

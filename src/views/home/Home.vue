@@ -1518,6 +1518,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .home-shell {
   min-height: 100dvh;
+  padding-bottom: 36px;
   background: var(--kxt-bg);
 }
 
@@ -1998,15 +1999,31 @@ onUnmounted(() => {
 }
 
 .home-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-  min-height: 36px;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  height: 36px;
   border-top: 1px solid var(--kxt-line);
   background: var(--kxt-panel);
   color: var(--kxt-muted);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 36px;
+  text-align: center;
+}
+
+.home-footer span {
+  display: inline-block;
+  height: 36px;
+  line-height: 36px;
+}
+
+.home-footer span:not(:first-child) {
+  float: right;
+  padding-right: 20px;
 }
 
 .welcome-panel {

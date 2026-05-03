@@ -1934,7 +1934,8 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
 }
 
 :deep(.info-section .el-form-item__label) {
-  width: 80px !important;
+  width: var(--order-label-width, 12.3%) !important;
+  flex: 0 0 var(--order-label-width, 12.3%);
   min-height: 37px;
   padding: 0;
   border-right: 1px solid $line-soft;
@@ -1944,6 +1945,23 @@ $shadow: 0 10px 30px rgba(26, 65, 99, 0.08);
   line-height: 37px;
   justify-content: center;
   white-space: nowrap;
+}
+
+:deep(.info-section .el-col-8 .el-form-item) {
+  --order-label-width: 37%;
+}
+
+:deep(.info-section .el-col-12 .el-form-item) {
+  --order-label-width: 24.6%;
+}
+
+:deep(.info-section .el-col-16 .el-form-item) {
+  --order-label-width: 18.5%;
+}
+
+:deep(.info-section .el-col-24 .el-form-item),
+:deep(.info-section > .el-form > .el-form-item) {
+  --order-label-width: 12.3%;
 }
 
 :deep(.info-section .el-form-item__content) {

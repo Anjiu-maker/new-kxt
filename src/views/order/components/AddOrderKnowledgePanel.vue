@@ -76,11 +76,11 @@ function views(item) {
         <div class="knowledge-main">
           <h3 class="knowledge-title" v-html="titleHtml(item)"></h3>
           <p class="knowledge-excerpt" :title="summaryTitle(item)">
-            <span>内容摘要：</span><span v-html="summaryHtml(item)"></span>
+            <span v-html="summaryHtml(item)"></span>
           </p>
           <div class="knowledge-meta">
             <span class="knowledge-dept">{{ item.sub_dept_name || "知识库" }}</span>
-            <span v-if="date(item)" class="knowledge-date">创建时间：{{ item.on_line_time || "" }}</span>
+            <span v-if="date(item)" class="knowledge-date">{{ item.on_line_time || "" }}</span>
           </div>
         </div>
         <div class="knowledge-views">
@@ -238,6 +238,7 @@ $line: #d8e5f0;
   overflow: hidden;
   color: #25364d;
   line-height: 1.65;
+  height: 60px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -258,7 +259,6 @@ $line: #d8e5f0;
   align-items: center;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 12px;
   color: #7b8aa0;
 }
 

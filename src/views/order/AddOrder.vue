@@ -215,7 +215,7 @@ const lsgdList = ref([]);
 const xggdList = ref([]);
 const lostgdList = ref([]);
 const rxList = ref([]);
-const zskPageInfo = reactive({ pageNum: 1, pageSize: 10, total: 0 });
+const zskPageInfo = reactive({ pageNum: 1, pageSize: 5, total: 0 });
 const xggdParams = reactive({ startTime: "", endTime: "" });
 
 // 弹窗
@@ -1023,7 +1023,7 @@ async function searchZsk(isSearch = false) {
   if (isSearch) {
     activeClass.value = 0;
     zskPageInfo.pageNum = 1;
-    zskPageInfo.pageSize = 9;
+    zskPageInfo.pageSize = 5;
   }
   try {
     const r = await http.get("/knowledgeBase/findHistoryOrderByTitle", {
@@ -2091,6 +2091,7 @@ onBeforeUnmount(() => {
                           value: 'dictId',
                           label: 'dictName',
                           children: 'children',
+                          expandTrigger: 'hover',
                         }" placeholder="请选择" clearable filterable style="width: 100%"
                         @change="recommendedDept" /></el-form-item></el-col>
                   <el-col :span="8"><el-form-item label="诉求类型" required><el-select v-model="model.orderTagName"><el-option

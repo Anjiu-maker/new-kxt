@@ -1806,7 +1806,6 @@ onUnmounted(() => {
   align-items: center;
   min-height: 48px;
   padding: 0 16px;
-  border-bottom: 1px solid var(--kxt-line);
   color: var(--kxt-ink-strong);
   font-weight: 700;
 
@@ -1816,7 +1815,7 @@ onUnmounted(() => {
     align-items: center;
     gap: 6px;
     color: var(--kxt-muted);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
     white-space: nowrap;
   }
@@ -1901,8 +1900,7 @@ onUnmounted(() => {
 
 .home-body.with-left-menu {
   .workspace-bar,
-  .tabs-strip,
-  .home-content {
+  .tabs-strip {
     padding-right: 24px;
     padding-left: 24px;
   }
@@ -1987,10 +1985,6 @@ onUnmounted(() => {
     background: var(--kxt-brand);
     content: "";
   }
-}
-
-.home-content {
-  padding: 18px 50px 32px;
 }
 
 .content-frame {

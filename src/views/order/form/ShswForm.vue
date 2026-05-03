@@ -36,7 +36,7 @@ async function handleSubmit(agree = true) {
   <el-dialog v-model="innerVisible" title="审核处理" width="900px" :close-on-click-modal="false" append-to-body @closed="formModel = { remarks:'', isAgree:'同意', resultHandling:'', checked:false, handleEndTime:'' }">
     <Orderinfo ref="orderInfoRef" />
 
-    <el-form label-width="90px" size="small" style="margin-top:12px">
+    <el-form label-width="90px"  style="margin-top:12px">
       <el-form-item label="处理意见"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="请输入处理意见" maxlength="500" /></el-form-item>
       <el-form-item v-if="formModel.checked">
         <div style="display:flex;align-items:center;gap:8px"><el-checkbox v-model="formModel.checked" />修改</div>

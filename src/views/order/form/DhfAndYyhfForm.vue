@@ -51,7 +51,7 @@ async function handleSubmit() {
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">回访</el-radio><el-radio :label="1">预约回访</el-radio></el-radio-group>
     </div>
 
-    <el-form v-show="handleTypeRadio === 0" label-width="100px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 0" label-width="100px"  style="margin-top:12px">
       <el-row :gutter="12">
         <el-col :span="8"><el-form-item label="回访成功"><el-select v-model="formModel.isCallbackSuccess"><el-option label="是" :value="1" /><el-option label="否" :value="0" /></el-select></el-form-item></el-col>
         <el-col :span="8"><el-form-item label="告知诉求人"><el-select v-model="formModel.isInformTheCaller"><el-option label="是" :value="1" /><el-option label="否" :value="0" /></el-select></el-form-item></el-col>
@@ -62,7 +62,7 @@ async function handleSubmit() {
       <el-form-item label="答复意见"><el-input v-model="formModel.releaseContent" type="textarea" :autosize="{ minRows:2 }" /></el-form-item>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 1" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 1" label-width="90px"  style="margin-top:12px">
       <el-form-item label="预约时间"><el-date-picker v-model="formModel.yyhfTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" /></el-form-item>
       <el-form-item label="预约内容"><el-input v-model="formModel.yyhfContent" type="textarea" :autosize="{ minRows:3 }" /></el-form-item>
     </el-form>

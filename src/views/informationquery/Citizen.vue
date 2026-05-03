@@ -245,27 +245,27 @@ onMounted(() => {
     <div class="list">
       <div class="search">
         <div class="pull-left">
-          <el-input v-model="params.name" clearable placeholder="输入群众姓名查询" size="small" class="list-simple-search-input" />
-          <el-input v-model="params.callTel" clearable placeholder="输入电话号码查询" size="small" class="list-simple-search-input" />
-          <el-input v-model="params.idcard" clearable placeholder="输入身份证号查询" size="small" class="list-simple-search-input" />
-          <el-input v-model="params.addr" clearable placeholder="输入地址查询" size="small" class="list-simple-search-input" />
-          <el-select v-model="params.sex" placeholder="请选择性别" size="small" style="width:150px" clearable @change="refresh(true)">
+          <el-input v-model="params.name" clearable placeholder="输入群众姓名查询"  class="list-simple-search-input" />
+          <el-input v-model="params.callTel" clearable placeholder="输入电话号码查询"  class="list-simple-search-input" />
+          <el-input v-model="params.idcard" clearable placeholder="输入身份证号查询"  class="list-simple-search-input" />
+          <el-input v-model="params.addr" clearable placeholder="输入地址查询"  class="list-simple-search-input" />
+          <el-select v-model="params.sex" placeholder="请选择性别"  style="width:150px" clearable @change="refresh(true)">
             <el-option :key="1" label="男" :value="1" />
             <el-option :key="0" label="女" :value="0" />
           </el-select>
-          <el-button type="primary" @click="refresh(true)" size="small" style="margin-left:10px">查询</el-button>
+          <el-button type="primary" @click="refresh(true)"  style="margin-left:10px">查询</el-button>
         </div>
         <div class="pull-right">
-          <el-button @click="refresh()" size="small">刷新</el-button>
-          <el-button type="info" @click="downloadCitizenTemplate" size="small">下载模板</el-button>
+          <el-button @click="refresh()" >刷新</el-button>
+          <el-button type="info" @click="downloadCitizenTemplate" >下载模板</el-button>
           <el-upload
             class="citizen-upload" :action="citizenUploadAction" :headers="importHeaders"
             :on-success="onSuccess" :on-change="handleChange" :show-file-list="false"
             multiple :limit="10" :on-exceed="() => ElMessage.warning('最多上传10个文件')">
-            <el-button size="small" type="info">导入信息</el-button>
+            <el-button  type="info">导入信息</el-button>
           </el-upload>
-          <el-button type="primary" @click="openAddCitizen" size="small">添加</el-button>
-          <el-button type="danger" @click="deleteCitizen({})" size="small">批量删除</el-button>
+          <el-button type="primary" @click="openAddCitizen" >添加</el-button>
+          <el-button type="danger" @click="deleteCitizen({})" >批量删除</el-button>
         </div>
       </div>
       <div class="list-wrap">
@@ -279,16 +279,16 @@ onMounted(() => {
           <el-table-column label="人物画像" header-align="center" width="100">
             <template #default="{ row: r }">
               <el-popover placement="top" trigger="hover" v-if="r.portrait?.length">
-                <template #default><el-tag v-for="(p, i) in r.portrait" :key="i" size="small" style="margin:2px">{{ portraitOptions.find(o => o.dictId == p)?.dictName || p }}</el-tag></template>
+                <template #default><el-tag v-for="(p, i) in r.portrait" :key="i"  style="margin:2px">{{ portraitOptions.find(o => o.dictId == p)?.dictName || p }}</el-tag></template>
                 <template #reference><el-button type="primary" link>查看</el-button></template>
               </el-popover>
             </template>
           </el-table-column>
           <el-table-column label="操作" header-align="center" width="200" align="center">
             <template #default="{ row: r }">
-              <el-button @click="openEditCitizen(r)" size="small">编辑</el-button>
-              <el-button @click="deleteCitizen(r)" type="danger" size="small">删除</el-button>
-              <el-button @click="showHiOrder(r)" size="small">历史事务</el-button>
+              <el-button @click="openEditCitizen(r)" >编辑</el-button>
+              <el-button @click="deleteCitizen(r)" type="danger" >删除</el-button>
+              <el-button @click="showHiOrder(r)" >历史事务</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -300,7 +300,7 @@ onMounted(() => {
 
     <!-- Add Citizen Dialog -->
     <el-dialog title="添加群众信息" v-model="addCitizenWin" width="50%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="10vh">
-      <el-form ref="addCitizenForm" :rules="citizenRules" :model="model" label-width="120px" size="small" label-suffix=":">
+      <el-form ref="addCitizenForm" :rules="citizenRules" :model="model" label-width="120px"  label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="姓名" prop="name"><el-input ref="addCitizenFirstInput" v-model.trim="model.name" placeholder="请输入姓名" /></el-form-item>
@@ -361,7 +361,7 @@ onMounted(() => {
 
     <!-- Edit Citizen Dialog -->
     <el-dialog title="编辑群众信息" v-model="editCitizenWin" width="50%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="10vh">
-      <el-form ref="editCitizenForm" :rules="citizenRules" :model="model" label-width="120px" size="small" label-suffix=":">
+      <el-form ref="editCitizenForm" :rules="citizenRules" :model="model" label-width="120px"  label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="姓名" prop="name"><el-input v-model.trim="model.name" /></el-form-item>

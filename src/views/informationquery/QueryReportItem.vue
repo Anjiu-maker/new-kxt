@@ -154,13 +154,13 @@ onMounted(() => refresh())
     <div class="list">
       <div class="search">
         <div class="pull-left">
-          <el-input v-model="params.name" clearable placeholder="输入名称查询" size="small" class="list-simple-search-input" />
-          <el-button type="primary" @click="refresh(true)" size="small">查询</el-button>
+          <el-input v-model="params.name" clearable placeholder="输入名称查询"  class="list-simple-search-input" />
+          <el-button type="primary" @click="refresh(true)" >查询</el-button>
         </div>
         <div class="pull-right">
-          <el-button @click="refresh()" size="small">刷新</el-button>
-          <el-button type="primary" @click="openAddQueryItem" size="small">添加</el-button>
-          <el-button type="danger" @click="deleteQueryItem({})" size="small">批量删除</el-button>
+          <el-button @click="refresh()" >刷新</el-button>
+          <el-button type="primary" @click="openAddQueryItem" >添加</el-button>
+          <el-button type="danger" @click="deleteQueryItem({})" >批量删除</el-button>
         </div>
       </div>
       <div class="list-wrap">
@@ -173,8 +173,8 @@ onMounted(() => refresh())
           </template>
           <el-table-column label="操作" header-align="center" width="110" align="center">
             <template #default="{ row }">
-              <el-button @click="openEditQueryItem(row)" size="small">编辑</el-button>
-              <el-button @click="deleteQueryItem(row)" type="danger" size="small">删除</el-button>
+              <el-button @click="openEditQueryItem(row)" >编辑</el-button>
+              <el-button @click="deleteQueryItem(row)" type="danger" >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -215,7 +215,7 @@ onMounted(() => refresh())
 
     <!-- Edit Dialog -->
     <el-dialog title="编辑字段" v-model="editQueryItemWin" width="40%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="7vh">
-      <el-form ref="editQueryItemForm" :rules="queryItemRules" :model="model" label-width="120px" size="small" label-suffix=":">
+      <el-form ref="editQueryItemForm" :rules="queryItemRules" :model="model" label-width="120px"  label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="名称" prop="name">

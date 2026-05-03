@@ -377,39 +377,39 @@ onMounted(async () => {
       <div class="search">
         <OrderQuery :method="method" @search="handleSearch" @reset="handleReset">
           <template v-if="method === 'hfrwc'">
-            <el-select v-model="hfAssignState" size="small" clearable placeholder="是否已指派" style="width:160px;margin:0 5px"><el-option label="是" :value="1" /><el-option label="否" :value="2" /></el-select>
-            <el-select v-model="autoHfstate" size="small" clearable placeholder="智能回访状态" style="width:160px;margin:0 5px"><el-option label="无人接听" :value="1" /><el-option label="不满意" :value="2" /><el-option label="智能回访中" :value="3" /><el-option label="智能完成" :value="4" /><el-option label="非智能回访" :value="5" /></el-select>
-            <el-select v-model="userGroupId" size="small" clearable placeholder="小组" style="width:160px;margin:0 5px"><el-option v-for="g in userGroupList" :key="g.groupId" :label="g.groupName" :value="g.groupId" /></el-select>
+            <el-select v-model="hfAssignState"  clearable placeholder="是否已指派" style="width:160px;margin:0 5px"><el-option label="是" :value="1" /><el-option label="否" :value="2" /></el-select>
+            <el-select v-model="autoHfstate"  clearable placeholder="智能回访状态" style="width:160px;margin:0 5px"><el-option label="无人接听" :value="1" /><el-option label="不满意" :value="2" /><el-option label="智能回访中" :value="3" /><el-option label="智能完成" :value="4" /><el-option label="非智能回访" :value="5" /></el-select>
+            <el-select v-model="userGroupId"  clearable placeholder="小组" style="width:160px;margin:0 5px"><el-option v-for="g in userGroupList" :key="g.groupId" :label="g.groupName" :value="g.groupId" /></el-select>
           </template>
         </OrderQuery>
 
         <!-- 工具栏按钮 -->
         <div class="toolbar-row">
           <template v-if="['hsz', 'myOrder', 'deptAssessDataDetail'].includes(method)">
-            <el-button type="info" size="small" @click="exportOrder('诉求数据')">导出</el-button>
-            <el-button v-if="method === 'hsz'" type="info" size="small" @click="recycle">还原</el-button>
-            <el-button v-if="deleteOrderAuth" type="danger" size="small" @click="remove">删除</el-button>
+            <el-button type="info"  @click="exportOrder('诉求数据')">导出</el-button>
+            <el-button v-if="method === 'hsz'" type="info"  @click="recycle">还原</el-button>
+            <el-button v-if="deleteOrderAuth" type="danger"  @click="remove">删除</el-button>
           </template>
           <template v-if="batchAudit">
-            <el-button size="small" type="primary" plain :disabled="!selectRows.length" :loading="batchAuditLoading" @click="batchAuditClick">批量审核</el-button>
+            <el-button  type="primary" plain :disabled="!selectRows.length" :loading="batchAuditLoading" @click="batchAuditClick">批量审核</el-button>
           </template>
           <template v-if="method === 'hfrwc'">
-            <el-button size="small" type="primary" plain :disabled="!selectRows.length" :loading="batchReturnVisitLoading" @click="batchReturnVisitClick">批量回访完成</el-button>
-            <el-button v-if="batchAssignOpt" size="small" type="primary" plain :disabled="!selectRows.length" :loading="batchAssignLoading" @click="batchAssign">批量指派</el-button>
-            <el-button v-if="batchReleaseOpt" size="small" type="warning" plain :disabled="!selectRows.length" :loading="batchExtractLoading" @click="batchExtract">批量释放</el-button>
-            <el-button v-if="batchReleaseOpt" size="small" type="warning" plain :loading="allExtractLoading" @click="allExtract">全部释放</el-button>
+            <el-button  type="primary" plain :disabled="!selectRows.length" :loading="batchReturnVisitLoading" @click="batchReturnVisitClick">批量回访完成</el-button>
+            <el-button v-if="batchAssignOpt"  type="primary" plain :disabled="!selectRows.length" :loading="batchAssignLoading" @click="batchAssign">批量指派</el-button>
+            <el-button v-if="batchReleaseOpt"  type="warning" plain :disabled="!selectRows.length" :loading="batchExtractLoading" @click="batchExtract">批量释放</el-button>
+            <el-button v-if="batchReleaseOpt"  type="warning" plain :loading="allExtractLoading" @click="allExtract">全部释放</el-button>
           </template>
           <template v-if="['dfp', 'znjth'].includes(method)">
-            <el-button size="small" type="primary" plain :disabled="!selectRows.length" :loading="batchFpLoading" @click="batchFp">批量分派</el-button>
+            <el-button  type="primary" plain :disabled="!selectRows.length" :loading="batchFpLoading" @click="batchFp">批量分派</el-button>
           </template>
           <template v-if="['SampleLibrary', 'orderSearch', 'orderSearchCy'].includes(method)">
             <template v-if="method === 'SampleLibrary'">
-              <el-button type="primary" size="small" @click="downYbkmb">下载模板</el-button>
+              <el-button type="primary"  @click="downYbkmb">下载模板</el-button>
               <el-upload :action="ybkImportUrl" :on-success="ybkImportSuccess" :headers="importHeaders" :show-file-list="false" :limit="10" style="display:inline-block;margin:0 5px">
-                <el-button size="small" type="info">导入样本库</el-button>
+                <el-button  type="info">导入样本库</el-button>
               </el-upload>
             </template>
-            <el-button type="info" size="small" @click="ybkExport">导出</el-button>
+            <el-button type="info"  @click="ybkExport">导出</el-button>
           </template>
         </div>
       </div>
@@ -417,7 +417,7 @@ onMounted(async () => {
       <!-- 批量操作状态栏 -->
       <div v-if="method === 'shsw' && selectRows.length > 0 && isNewSbshPg" class="batch-bar">
         <span>已选 {{ selectRows.length }} 项</span>
-        <el-button type="success" size="small" @click="selectRows.forEach(r => handleClick(1, r))">批量同意</el-button>
+        <el-button type="success"  @click="selectRows.forEach(r => handleClick(1, r))">批量同意</el-button>
       </div>
 
       <div class="list-wrap">
@@ -428,11 +428,11 @@ onMounted(async () => {
           <!-- 编号列（带标签） -->
           <el-table-column v-if="method !== 'znj_login_logs'" prop="orderNo" label="编号" width="200" align="center">
             <template #default="{ row }">
-              <el-tag v-if="row.orderLevel == 2 && ['dfp','dgd'].includes(method)" size="small" type="danger">紧急</el-tag>
-              <el-tag v-if="row.orderLevel == 11 && ['dfp','dgd'].includes(method)" size="small" type="danger">特急</el-tag>
-              <el-tag v-if="row.isStartInsideSbqs && method === 'dfk'" size="small" type="warning">请示</el-tag>
-              <el-tag v-if="row.isSubscribeCallback == 1 && method === 'dhf'" size="small" type="danger">预约</el-tag>
-              <el-tag v-else-if="row.isFollowUp == 1 && method === 'dfp'" size="small" type="warning">跟进</el-tag>
+              <el-tag v-if="row.orderLevel == 2 && ['dfp','dgd'].includes(method)"  type="danger">紧急</el-tag>
+              <el-tag v-if="row.orderLevel == 11 && ['dfp','dgd'].includes(method)"  type="danger">特急</el-tag>
+              <el-tag v-if="row.isStartInsideSbqs && method === 'dfk'"  type="warning">请示</el-tag>
+              <el-tag v-if="row.isSubscribeCallback == 1 && method === 'dhf'"  type="danger">预约</el-tag>
+              <el-tag v-else-if="row.isFollowUp == 1 && method === 'dfp'"  type="warning">跟进</el-tag>
               {{ row.orderNo }}
             </template>
           </el-table-column>
@@ -482,7 +482,7 @@ onMounted(async () => {
 
     <!-- 批量指派弹窗 -->
     <el-dialog v-model="batchAssignVisible" title="批量指派" width="550px" append-to-body>
-      <el-form label-width="80px" size="small">
+      <el-form label-width="80px" >
         <el-form-item label="指派小组"><el-select v-model="batchAssignModel.groupId" clearable filterable placeholder="选择小组" style="width:100%" :disabled="checkboxDisabled"><el-option v-for="g in [...hfGroupList, ...zxGroupList]" :key="g.groupId" :label="g.groupName" :value="g.groupId" /></el-select></el-form-item>
         <el-form-item label="指派人员"><el-select v-model="batchAssignModel.userIds" multiple clearable filterable placeholder="选择人员" style="width:100%" :disabled="radioDisabled"><el-option v-for="g in [...hfGroupList, ...zxGroupList]" :key="'u' + g.groupId" :label="g.groupName" :value="g.groupId" /></el-select></el-form-item>
       </el-form>
@@ -491,7 +491,7 @@ onMounted(async () => {
 
     <!-- Excel 导出弹窗 -->
     <el-dialog v-model="reportExcelWin" title="导出Excel" width="700px" append-to-body @closed="reportForm.fileName = ''">
-      <el-form ref="ruleFormRef" :model="reportForm" label-width="80px" size="small" :rules="{ fileName: [{ required: true, message: '请输入文件名' }], tempId: [{ required: true, message: '请选择模板' }] }">
+      <el-form ref="ruleFormRef" :model="reportForm" label-width="80px"  :rules="{ fileName: [{ required: true, message: '请输入文件名' }], tempId: [{ required: true, message: '请选择模板' }] }">
         <el-row :gutter="12">
           <el-col :span="12"><el-form-item label="文件名" prop="fileName"><el-input v-model="reportForm.fileName" placeholder="导出文件名" /></el-form-item></el-col>
           <el-col :span="12"><el-form-item label="模板" prop="tempId">
@@ -499,15 +499,15 @@ onMounted(async () => {
           </el-form-item></el-col>
         </el-row>
         <div v-if="isShowSetTempBtn" style="margin-bottom:12px">
-          <el-button size="small" @click="isShowSetTemplate = !isShowSetTemplate">配置模板</el-button>
-          <el-button size="small" type="primary" :loading="addTemplateLoading" @click="addTemplateFn">添加模板</el-button>
+          <el-button  @click="isShowSetTemplate = !isShowSetTemplate">配置模板</el-button>
+          <el-button  type="primary" :loading="addTemplateLoading" @click="addTemplateFn">添加模板</el-button>
         </div>
         <div v-if="isShowSetTemplate">
-          <div style="margin-bottom:6px"><el-button size="small" @click="checkAllAndCounter(1)">全选</el-button><el-button size="small" @click="checkAllAndCounter(0)">反选</el-button></div>
+          <div style="margin-bottom:6px"><el-button  @click="checkAllAndCounter(1)">全选</el-button><el-button  @click="checkAllAndCounter(0)">反选</el-button></div>
           <el-checkbox-group v-model="reportTemplateAndSonItem">
             <el-checkbox v-for="item in reportTempSonItemList" :key="item.id" :label="item.id" :value="item.id">{{ item.name || item.itemName }}</el-checkbox>
           </el-checkbox-group>
-          <div style="margin-top:8px"><el-button size="small" type="primary" :loading="reportTemplateJoinItemLoading" @click="reportTemplateJoinItem">保存配置</el-button></div>
+          <div style="margin-top:8px"><el-button  type="primary" :loading="reportTemplateJoinItemLoading" @click="reportTemplateJoinItem">保存配置</el-button></div>
         </div>
       </el-form>
       <template #footer><el-button @click="reportExcelWin = false">取消</el-button><el-button type="primary" :loading="reportExcelLoading" @click="exportReportForm">导出</el-button></template>

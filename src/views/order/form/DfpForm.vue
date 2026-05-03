@@ -64,7 +64,7 @@ function handleDeptChange(val) { fpModel.value.handlerDeptId = val }
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">分派</el-radio><el-radio :label="1">退回</el-radio><el-radio :label="2">直接答复</el-radio></el-radio-group>
     </div>
 
-    <el-form v-show="handleTypeRadio === 0" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 0" label-width="90px"  style="margin-top:12px">
       <el-row :gutter="12">
         <el-col :span="12"><el-form-item label="限办时间"><el-date-picker v-model="fpModel.handleEndTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" placeholder="限办时间" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="处理部门"><SelectDeptOrUser ref="deptAndUserRef" v-model="fpModel.handlerDeptId" :show-tabs="['dept']" :is-filter="true" @update:model-value="handleDeptChange" /></el-form-item></el-col>
@@ -73,11 +73,11 @@ function handleDeptChange(val) { fpModel.value.handlerDeptId = val }
       <el-checkbox v-model="fpModel.autoHf" :true-value="1" :false-value="0">自动回访</el-checkbox>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 1" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 1" label-width="90px"  style="margin-top:12px">
       <el-form-item label="退回原因"><el-input v-model="thModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="退回原因" maxlength="200" /></el-form-item>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 2" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 2" label-width="90px"  style="margin-top:12px">
       <el-form-item label="答复意见"><el-input v-model="zjdfModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="答复意见" maxlength="200" /></el-form-item>
     </el-form>
 

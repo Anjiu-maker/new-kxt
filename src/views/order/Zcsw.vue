@@ -63,12 +63,12 @@ onActivated(() => loadData())
 <template>
   <Container type="box" @resize="getTableHeight">
     <div class="list"><div class="search"><OrderQuery :fields="queryFields" @search="handleSearch" @reset="handleReset" /></div>
-      <div v-if="audioRow" style="margin:8px 0"><Audio :the-url="audioUrl" :auto-run="true" @soundError="audioRow = null" /><el-button size="small" style="margin-left:10px" @click="audioRow = null">关闭</el-button></div>
+      <div v-if="audioRow" style="margin:8px 0"><Audio :the-url="audioUrl" :auto-run="true" @soundError="audioRow = null" /><el-button  style="margin-left:10px" @click="audioRow = null">关闭</el-button></div>
       <div class="list-wrap"><el-table border v-loading="loading" :max-height="tableHeight" :data="tableData">
         <el-table-column v-for="(col, ci) in columns" :key="ci" v-bind="col" :show-overflow-tooltip="col.showOverflow">
           <template v-if="col.formatter" #default="{ row }">{{ col.formatter(row[col.prop]) }}</template>
           <template v-else-if="col.prop === 'haveSoundName'" #default="{ row }">
-            <el-button v-if="row.haveSoundName !== '无'" size="small" text type="primary" @click="playAudio(row)">播放</el-button>
+            <el-button v-if="row.haveSoundName !== '无'"  text type="primary" @click="playAudio(row)">播放</el-button>
             <span v-else>-</span>
           </template>
         </el-table-column>

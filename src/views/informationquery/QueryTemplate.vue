@@ -217,14 +217,14 @@ onMounted(() => refresh())
     <div class="list">
       <div class="search">
         <div class="pull-left">
-          <el-input v-model="params.tempName" clearable placeholder="输入模板名称查询" size="small" class="list-simple-search-input" />
-          <el-button type="primary" @click="refresh(true)" size="small">查询</el-button>
+          <el-input v-model="params.tempName" clearable placeholder="输入模板名称查询"  class="list-simple-search-input" />
+          <el-button type="primary" @click="refresh(true)" >查询</el-button>
         </div>
         <div class="pull-right">
-          <el-button @click="refresh()" size="small">刷新</el-button>
-          <el-button type="primary" @click="openAddTemplate" size="small">添加</el-button>
-          <el-button type="danger" @click="deleteTemplate({})" size="small">批量删除</el-button>
-          <el-button type="info" @click="setDefaultTemplate" size="small">设置默认模板</el-button>
+          <el-button @click="refresh()" >刷新</el-button>
+          <el-button type="primary" @click="openAddTemplate" >添加</el-button>
+          <el-button type="danger" @click="deleteTemplate({})" >批量删除</el-button>
+          <el-button type="info" @click="setDefaultTemplate" >设置默认模板</el-button>
         </div>
       </div>
       <div class="list-wrap">
@@ -234,7 +234,7 @@ onMounted(() => refresh())
           <el-table-column label="模板名称" header-align="center" width="300" align="center">
             <template #default="{ row }">
               {{ row.tempName }}
-              <el-tag v-if="row.isDefault == 1" size="small" type="success" effect="dark" style="margin-left:6px">默认模板</el-tag>
+              <el-tag v-if="row.isDefault == 1"  type="success" effect="dark" style="margin-left:6px">默认模板</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="模板编码" prop="tempCode" header-align="center" width="200" align="center" />
@@ -243,9 +243,9 @@ onMounted(() => refresh())
           <el-table-column label="备注" prop="remarks" header-align="center" align="center" />
           <el-table-column label="操作" header-align="center" width="200" align="center">
             <template #default="{ row }">
-              <el-button @click="openEditTemplateWin(row)" size="small">编辑</el-button>
-              <el-button @click="deleteTemplate(row)" type="danger" size="small">删除</el-button>
-              <el-button @click="deployTemplate(row)" type="success" size="small">配置模板</el-button>
+              <el-button @click="openEditTemplateWin(row)" >编辑</el-button>
+              <el-button @click="deleteTemplate(row)" type="danger" >删除</el-button>
+              <el-button @click="deployTemplate(row)" type="success" >配置模板</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -257,7 +257,7 @@ onMounted(() => refresh())
 
     <!-- Add Dialog -->
     <el-dialog title="添加综合查询模板" v-model="addTemplateWin" width="37%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="16vh">
-      <el-form ref="addTemplateForm" :rules="templateRules" size="small" :model="model" label-width="120px" label-suffix=":">
+      <el-form ref="addTemplateForm" :rules="templateRules"  :model="model" label-width="120px" label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="模板名称" prop="tempName">
@@ -286,7 +286,7 @@ onMounted(() => refresh())
 
     <!-- Edit Dialog -->
     <el-dialog title="编辑综合查询模板" v-model="editTemplateWin" width="37%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="16vh">
-      <el-form ref="editTemplateForm" :rules="templateRules" size="small" :model="model" label-width="120px" label-suffix=":">
+      <el-form ref="editTemplateForm" :rules="templateRules"  :model="model" label-width="120px" label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="模板名称" prop="tempName">

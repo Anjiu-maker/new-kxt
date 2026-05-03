@@ -135,7 +135,7 @@ onUnmounted(() => { window.removeEventListener('resize',resizeAll); Object.keys(
 
       <div class="main-right">
         <section class="panel"><header class="panel-header"><div class="panel-title"><el-icon><DataLine /></el-icon><strong>直属下级数据展示</strong></div></header>
-          <el-table :data="subordinateList" border max-height="500" size="small">
+          <el-table :data="subordinateList" border max-height="500" >
             <el-table-column prop="deptName" label="办理单位" min-width="140" show-overflow-tooltip />
             <el-table-column prop="djsCount" label="待接收" width="80" align="center"><template #default="{ row }"><a @click="cellClick(row.deptId)">{{ row.djsCount || 0 }}</a></template></el-table-column>
             <el-table-column prop="yyqCount" label="预逾期" width="80" align="center"><template #default="{ row }"><a @click="cellClick(row.deptId)">{{ row.yyqCount || 0 }}</a></template></el-table-column>

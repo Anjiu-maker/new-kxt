@@ -46,7 +46,7 @@ async function handleSubmit() {
     <div style="margin-top:12px"><span style="font-weight:600">督办方式：</span>
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">挂号督办</el-radio><el-radio :label="1">短信督办</el-radio><el-radio :label="2">电话督办</el-radio></el-radio-group>
     </div>
-    <el-form label-width="100px" size="small" style="margin-top:12px">
+    <el-form label-width="100px"  style="margin-top:12px">
       <template v-if="handleTypeRadio === 0">
         <el-form-item label="服务中心意见"><el-input v-model="ghdbModel.serverCenterOpinion" /></el-form-item>
         <el-form-item label="存在问题"><el-input v-model="ghdbModel.handleingProblem" type="textarea" :autosize="{ minRows:2 }" /></el-form-item>

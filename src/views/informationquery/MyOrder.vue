@@ -156,7 +156,7 @@ onMounted(init)
         <div class="pull-left">
           <OrderQuery @getParams="getParams" />
           <div class="delete" v-if="hasPermission(authCode.optCode.deleteOrder, 1)">
-            <el-button type="danger" @click="removeOrder" size="small">删除</el-button>
+            <el-button type="danger" @click="removeOrder" >删除</el-button>
           </div>
         </div>
       </div>

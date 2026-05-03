@@ -222,7 +222,7 @@ watch(() => props.method, () => init())
           <el-date-picker
             v-model="params[item.code]"
             type="datetimerange"
-            size="small"
+            
             value-format="YYYY-MM-DD HH:mm:ss"
             range-separator="-"
             :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"
@@ -235,7 +235,7 @@ watch(() => props.method, () => init())
             v-if="method === 'dfp'"
             v-model="params['userGroupId']"
             style="width:180px;margin-left:10px"
-            clearable size="small" multiple collapse-tags placeholder="请选择小组"
+            clearable  multiple collapse-tags placeholder="请选择小组"
           >
             <el-option v-for="g in userGroupList" :key="g.groupId" :label="g.groupName" :value="g.groupId" />
           </el-select>
@@ -243,18 +243,18 @@ watch(() => props.method, () => init())
 
         <!-- 文本输入 -->
         <template v-else-if="item.type === 1">
-          <el-input v-model="params[item.code]" :placeholder="'请输入' + item.label" style="width:180px" clearable size="small" />
+          <el-input v-model="params[item.code]" :placeholder="'请输入' + item.label" style="width:180px" clearable  />
         </template>
 
         <!-- 下拉选择 -->
         <template v-else-if="item.type === 2">
           <el-select
             v-if="item.code === 'orderLevel'"
-            v-model="params[item.code]" size="small" clearable filterable placeholder="请选择级别" style="width:180px"
+            v-model="params[item.code]"  clearable filterable placeholder="请选择级别" style="width:180px"
           >
             <el-option v-for="l in (item.data || [])" :key="l.levelId" :label="l.levelName + ' (' + l.handleDays + '日)'" :value="l.levelId" />
           </el-select>
-          <el-select v-else v-model="params[item.code]" :placeholder="'请选择' + item.label" clearable filterable size="small" style="width:180px">
+          <el-select v-else v-model="params[item.code]" :placeholder="'请选择' + item.label" clearable filterable  style="width:180px">
             <el-option v-for="o in (item.data || [])" :key="o.dictId || o.value" :label="o.dictName || o.label" :value="o.dictId || o.value" />
           </el-select>
         </template>
@@ -265,20 +265,20 @@ watch(() => props.method, () => init())
             v-if="item.code === 'orderOrigin'"
             v-model="params[item.code]" collapse-tags clearable filterable
             :placeholder="'请选择' + item.label" :options="item.data || []" :props="originDictProps"
-            style="width:270px" size="small"
+            style="width:270px" 
           />
           <el-cascader
             v-else
             v-model="params[item.code]" clearable filterable
             :placeholder="'请选择' + item.label" :options="item.data || []"
             :props="['handlerDeptId', 'acceptDeptId', 'deptId'].includes(item.code) ? deptProps : dictProps1"
-            style="width:180px" size="small"
+            style="width:180px" 
           />
         </template>
 
         <!-- 单选 -->
         <template v-else>
-          <el-select v-model="params[item.code]" filterable :placeholder="'请选择' + item.label" clearable size="small" style="width:180px">
+          <el-select v-model="params[item.code]" filterable :placeholder="'请选择' + item.label" clearable  style="width:180px">
             <el-option
               v-for="o in (item.code === 'sex' ? [{ label: '男', value: '1' }, { label: '女', value: '0' }] : [{ label: '是', value: '1' }, { label: '否', value: '0' }])"
               :key="o.value" :label="o.label" :value="o.value"
@@ -292,13 +292,13 @@ watch(() => props.method, () => init())
     <slot />
 
     <!-- 操作按钮 -->
-    <el-button @click="toggleMore" size="small" :icon="showMore ? 'ArrowUp' : 'ArrowDown'" />
-    <el-button type="primary" size="small" @click="handleSearch">查询</el-button>
-    <el-button v-if="['orderSearch', 'orderSearchCy'].includes(method)" type="warning" size="small" @click="handleReset">重置</el-button>
+    <el-button @click="toggleMore"  :icon="showMore ? 'ArrowUp' : 'ArrowDown'" />
+    <el-button type="primary"  @click="handleSearch">查询</el-button>
+    <el-button v-if="['orderSearch', 'orderSearchCy'].includes(method)" type="warning"  @click="handleReset">重置</el-button>
     <template v-if="showMore">
-      <el-button type="danger" size="small" @click="delMoreItem">删除</el-button>
-      <el-button type="primary" size="small" @click="addMoreItem">添加</el-button>
-      <el-button type="warning" size="small" @click="handleReset">重置</el-button>
+      <el-button type="danger"  @click="delMoreItem">删除</el-button>
+      <el-button type="primary"  @click="addMoreItem">添加</el-button>
+      <el-button type="warning"  @click="handleReset">重置</el-button>
     </template>
 
     <!-- 更多字段列表 -->
@@ -307,41 +307,41 @@ watch(() => props.method, () => init())
         <div class="item-wrapper">
           <el-select
             v-model="item.code" @change="changeField"
-            filterable size="small" placeholder="请选择字段" style="width:180px"
+            filterable  placeholder="请选择字段" style="width:180px"
           >
             <el-option v-for="f in itemList" :key="f.id || f.code" :label="f.label" :value="f.code" />
           </el-select>
 
           <template v-if="item.type === 0">
-            <el-date-picker v-model="params[item.code]" type="datetimerange" size="small"
+            <el-date-picker v-model="params[item.code]" type="datetimerange" 
               value-format="YYYY-MM-DD HH:mm:ss" range-separator="-"
               :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 1, 1, 23, 59, 59)]"
               start-placeholder="开始日期" end-placeholder="结束日期" style="width:330px"
             />
           </template>
           <template v-else-if="item.type === 1">
-            <el-input v-model="params[item.code]" :placeholder="'请输入'" style="width:180px" clearable size="small" />
+            <el-input v-model="params[item.code]" :placeholder="'请输入'" style="width:180px" clearable  />
           </template>
           <template v-else-if="item.type === 2">
-            <el-select v-if="item.code === 'orderLevel'" v-model="params[item.code]" size="small" clearable filterable placeholder="请选择级别" style="width:180px">
+            <el-select v-if="item.code === 'orderLevel'" v-model="params[item.code]"  clearable filterable placeholder="请选择级别" style="width:180px">
               <el-option v-for="l in (item.data || [])" :key="l.levelId" :label="l.levelName + ' (' + l.handleDays + '日)'" :value="l.levelId" />
             </el-select>
-            <el-select v-else v-model="params[item.code]" :placeholder="'请选择'" clearable filterable size="small" style="width:180px">
+            <el-select v-else v-model="params[item.code]" :placeholder="'请选择'" clearable filterable  style="width:180px">
               <el-option v-for="o in (item.data || [])" :key="o.dictId || o.value" :label="o.dictName || o.label" :value="o.dictId || o.value" />
             </el-select>
           </template>
           <template v-else-if="item.type === 3">
             <el-cascader v-if="item.code === 'orderOrigin'" v-model="params[item.code]" collapse-tags clearable filterable
-              :placeholder="'请选择'" :options="item.data || []" :props="originDictProps" style="width:270px" size="small"
+              :placeholder="'请选择'" :options="item.data || []" :props="originDictProps" style="width:270px" 
             />
             <el-cascader v-else v-model="params[item.code]" clearable filterable
               :placeholder="'请选择'" :options="item.data || []"
               :props="['handlerDeptId', 'acceptDeptId', 'deptId'].includes(item.code) ? deptProps : dictProps1"
-              style="width:180px" size="small"
+              style="width:180px" 
             />
           </template>
           <template v-else>
-            <el-select v-model="params[item.code]" filterable :placeholder="'请选择'" clearable size="small" style="width:180px">
+            <el-select v-model="params[item.code]" filterable :placeholder="'请选择'" clearable  style="width:180px">
               <el-option v-for="o in [{ label: '是', value: '1' }, { label: '否', value: '0' }]" :key="o.value" :label="o.label" :value="o.value" />
             </el-select>
           </template>

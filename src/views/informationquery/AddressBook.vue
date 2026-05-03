@@ -101,31 +101,31 @@ onMounted(() => {
         <div class="pull-left">
           <div v-if="params.type" class="inline-block">
             <SelectDeptOrUser v-model="params.deptId" :clearable="true" :isFilter="true" :showTabs="['dept']" style="width:180px;display:inline-block;margin-right:10px" placeholder="请选择部门" />
-            <el-select v-model="params.roleId" clearable size="small" placeholder="请选择角色" style="width:180px;margin-right:10px">
+            <el-select v-model="params.roleId" clearable  placeholder="请选择角色" style="width:180px;margin-right:10px">
               <el-option v-for="item in roleOptions" :key="item.roleId" :label="item.roleName" :value="item.roleId" />
             </el-select>
-            <el-input v-model="params.account" clearable placeholder="请输入账号查询" size="small" style="width:180px;margin-right:10px" />
-            <el-input v-model="params.userName" clearable placeholder="请输入姓名查询" size="small" style="width:180px;margin-right:10px" />
-            <el-input v-model="params.mobileTel" clearable placeholder="请输入手机号码查询" size="small" style="width:180px;margin-right:10px" />
-            <el-input v-model="params.tel" clearable placeholder="请输入固定电话查询" size="small" style="width:180px;margin-right:10px" />
+            <el-input v-model="params.account" clearable placeholder="请输入账号查询"  style="width:180px;margin-right:10px" />
+            <el-input v-model="params.userName" clearable placeholder="请输入姓名查询"  style="width:180px;margin-right:10px" />
+            <el-input v-model="params.mobileTel" clearable placeholder="请输入手机号码查询"  style="width:180px;margin-right:10px" />
+            <el-input v-model="params.tel" clearable placeholder="请输入固定电话查询"  style="width:180px;margin-right:10px" />
           </div>
           <div v-else class="inline-block">
             <SelectDeptOrUser v-model="params.deptId" :clearable="true" :isFilter="true" :showTabs="['dept']" style="width:180px;display:inline-block;margin-right:10px" placeholder="请选择部门查询" />
-            <el-select v-model="params.nodeType" @change="refresh(true)" clearable size="small" placeholder="请选择部门类型查询" style="width:180px;margin-right:10px">
+            <el-select v-model="params.nodeType" @change="refresh(true)" clearable  placeholder="请选择部门类型查询" style="width:180px;margin-right:10px">
               <el-option :value="1" label="问题属地" />
               <el-option :value="0" label="业务单位" />
             </el-select>
-            <el-input v-model="params.publicPhoneName" clearable placeholder="请输入电话名称查询" size="small" style="width:180px;margin-right:10px" />
-            <el-input v-model="params.publicPhone" clearable placeholder="请输入电话号码查询" size="small" style="width:180px;margin-right:10px" />
+            <el-input v-model="params.publicPhoneName" clearable placeholder="请输入电话名称查询"  style="width:180px;margin-right:10px" />
+            <el-input v-model="params.publicPhone" clearable placeholder="请输入电话号码查询"  style="width:180px;margin-right:10px" />
           </div>
-          <el-radio-group v-model="params.type" size="small" @change="typeChange">
+          <el-radio-group v-model="params.type"  @change="typeChange">
             <el-radio :value="1" border>人员</el-radio>
             <el-radio :value="0" border>部门</el-radio>
           </el-radio-group>
-          <el-button type="primary" @click="refresh(true)" size="small">查询</el-button>
+          <el-button type="primary" @click="refresh(true)" >查询</el-button>
         </div>
         <div class="pull-right">
-          <el-button @click="refresh()" size="small">刷新</el-button>
+          <el-button @click="refresh()" >刷新</el-button>
         </div>
       </div>
       <div class="list-wrap">

@@ -142,7 +142,7 @@ defineExpose({ setDeptData, setUserData, empty, setCurrentDept, getCheckedNodes,
       <el-tabs type="border-card" v-model="activeName" @tab-click="handleTabClick">
         <el-tab-pane v-if="showDeptTab()" label="部门信息" name="dept">
           <el-scrollbar max-height="300">
-            <el-input v-if="isFilter" v-model="filterText" placeholder="输入关键字筛选" size="small" clearable style="margin-bottom:8px" />
+            <el-input v-if="isFilter" v-model="filterText" placeholder="输入关键字筛选"  clearable style="margin-bottom:8px" />
             <el-tree
               ref="deptTreeRef"
               :data="ywdw.deptOptions"
@@ -159,7 +159,7 @@ defineExpose({ setDeptData, setUserData, empty, setCurrentDept, getCheckedNodes,
         </el-tab-pane>
         <el-tab-pane v-if="showUserTab()" label="人员信息" name="user">
           <el-scrollbar max-height="300">
-            <el-input v-if="isFilter" v-model="filterText1" placeholder="输入关键字筛选" size="small" clearable style="margin-bottom:8px" />
+            <el-input v-if="isFilter" v-model="filterText1" placeholder="输入关键字筛选"  clearable style="margin-bottom:8px" />
             <el-tree
               ref="deptUserTreeRef"
               :data="deptAndUser.userData"

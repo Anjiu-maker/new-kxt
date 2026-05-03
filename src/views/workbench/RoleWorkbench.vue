@@ -189,7 +189,7 @@ onMounted(loadWorkbench)
               <strong>待办预览</strong>
             </div>
           </header>
-          <el-table v-if="todos.length > 0" :data="todos" size="small" height="270">
+          <el-table v-if="todos.length > 0" :data="todos"  height="270">
             <el-table-column prop="orderNo" label="事务编号" min-width="150" show-overflow-tooltip />
             <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
             <el-table-column prop="stateName" label="状态" width="100" show-overflow-tooltip />

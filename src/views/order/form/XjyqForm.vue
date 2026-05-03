@@ -36,7 +36,7 @@ async function handleClick(isAgree) {
 <template>
   <el-dialog v-model="innerVisible" title="下级延期" width="800px" :close-on-click-modal="false" append-to-body @closed="formModel = { handleEndTime:'', remarks:'' }">
     <Orderinfo ref="orderInfoRef" />
-    <el-form label-width="90px" size="small" style="margin-top:12px">
+    <el-form label-width="90px"  style="margin-top:12px">
       <el-form-item label="延期至"><el-date-picker v-model="formModel.handleEndTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" /></el-form-item>
       <el-form-item label="审批意见"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="审批意见" maxlength="500" /></el-form-item>
     </el-form>

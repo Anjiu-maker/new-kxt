@@ -1337,7 +1337,7 @@ onBeforeUnmount(() => {
       <!-- Master Audio -->
       <div v-if="audioWinMaster" style="margin-bottom:8px">
         <Audio :the-url="audioUrlMaster" :call-i-d="callID" @soundError="audioWinMaster = false" />
-        <el-button size="small" @click="audioWinMaster = false">关闭</el-button>
+        <el-button  @click="audioWinMaster = false">关闭</el-button>
       </div>
 
       <!-- Header -->
@@ -1359,10 +1359,10 @@ onBeforeUnmount(() => {
             <span v-if="orderinfoData.basicData.isChaoqiReminders && !orderinfoData.basicData.isChaoqiRemindersRed" style="color:#FF8800;margin-left:12px">预超期</span>
             <span v-if="surplusTime" style="color:#FF8800;margin-left:12px">剩余：{{ time }}</span>
           </template>
-          <el-button v-if="hasPermission(authCode.optCode.modifyYq, 1) && (orderinfoData.basicData.orderSubStateName == '逾期' || (orderinfoData.basicData.isOverdue == 1 && orderinfoData.basicData.orderSubState == 99))" type="primary" size="small" @click="yuqi" style="margin-left:10px">修改逾期标识</el-button>
+          <el-button v-if="hasPermission(authCode.optCode.modifyYq, 1) && (orderinfoData.basicData.orderSubStateName == '逾期' || (orderinfoData.basicData.isOverdue == 1 && orderinfoData.basicData.orderSubState == 99))" type="primary"  @click="yuqi" style="margin-left:10px">修改逾期标识</el-button>
           <template v-if="hasPermission(authCode.optCode.editOrderBm, 1)">
-            <el-button type="primary" size="small" @click="editOrderBm('改不保密')" v-if="orderinfoData.basicData.isNameSecurity == 1">改不保密</el-button>
-            <el-button type="primary" size="small" @click="editOrderBm('改保密')" v-else>改保密</el-button>
+            <el-button type="primary"  @click="editOrderBm('改不保密')" v-if="orderinfoData.basicData.isNameSecurity == 1">改不保密</el-button>
+            <el-button type="primary"  @click="editOrderBm('改保密')" v-else>改保密</el-button>
           </template>
           <span style="margin-left:10px;font-weight:bold">是否保密：<span style="color:#0188fb">{{ orderinfoData.basicData.isNameSecurity == 1 ? '是' : '否' }}</span></span>
           <span style="margin-left:10px;font-weight:bold">是否计入统计：<span style="color:#0188fb">{{ orderinfoData.basicData.isStatistics == 1 ? '是' : '否' }}</span></span>
@@ -1378,16 +1378,16 @@ onBeforeUnmount(() => {
           <div class="oi-col oi-col-6">
             <span class="oi-key">姓名<span class="oi-suffix">：</span></span>
             <span class="oi-value">{{ orderinfoData.basicData.name }}</span>
-            <el-button v-if="computeSecrecy(orderinfoData.basicData.haveSound) === 1" size="small" type="primary" link @click="playOrderSound">播放</el-button>
+            <el-button v-if="computeSecrecy(orderinfoData.basicData.haveSound) === 1"  type="primary" link @click="playOrderSound">播放</el-button>
             <el-icon v-if="orderinfoData.basicData.isNameSecurity == 1" title="群众信息保密" style="color:#999"><Lock /></el-icon>
           </div>
           <div class="oi-col oi-col-6">
             <span class="oi-key">电话<span class="oi-suffix">：</span></span>
             <template v-if="isHaveSoftPhone && isLoginCTI">
-              <el-input v-model="orderinfoData.basicData.callTel" size="small" class="call-tel-input" />
-              <el-button size="small" class="add0" @click="add0Click">+0</el-button>
-              <el-button v-if="ctiStore.ctiState == '通话'" size="small" type="danger" @click="guaduan(orderinfoData.basicData.callTel)">挂断</el-button>
-              <el-button v-else size="small" type="success" @click="hujiao(orderinfoData.basicData.callTel, 1, orderinfoData.basicData.orderSubState == 5 ? 4 : 2)">呼叫</el-button>
+              <el-input v-model="orderinfoData.basicData.callTel"  class="call-tel-input" />
+              <el-button  class="add0" @click="add0Click">+0</el-button>
+              <el-button v-if="ctiStore.ctiState == '通话'"  type="danger" @click="guaduan(orderinfoData.basicData.callTel)">挂断</el-button>
+              <el-button v-else  type="success" @click="hujiao(orderinfoData.basicData.callTel, 1, orderinfoData.basicData.orderSubState == 5 ? 4 : 2)">呼叫</el-button>
             </template>
             <span class="oi-value" v-else>{{ orderinfoData.basicData.callTel }}</span>
           </div>
@@ -1404,7 +1404,7 @@ onBeforeUnmount(() => {
               format="YYYY-MM-DD HH:mm:ss"
               value-format="YYYY-MM-DD HH:mm:ss"
               type="datetime"
-              size="small"
+              
               :editable="false"
               :clearable="false"
               style="width:153px"
@@ -1422,14 +1422,14 @@ onBeforeUnmount(() => {
           </div>
           <div class="oi-col oi-col-6">
             <span class="oi-key">问题类型<span class="oi-suffix">：</span></span>
-            <el-select v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder || isInDzjUpdateOrder" v-model="updateOrderInfo.orderType" size="small" style="width:100px" @change="updateOrder('orderType')">
+            <el-select v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder || isInDzjUpdateOrder" v-model="updateOrderInfo.orderType"  style="width:100px" @change="updateOrder('orderType')">
               <el-option v-for="item in orderTypeOptions" :key="item.dictId" :label="item.dictName" :value="item.dictId" />
             </el-select>
             <span class="oi-value" v-else>{{ orderinfoData.basicData.orderTypeName }}</span>
           </div>
           <div class="oi-col oi-col-5">
             <span class="oi-key">问题级别<span class="oi-suffix">：</span></span>
-            <el-select v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder" v-model="updateOrderInfo.orderLevel" size="small" style="width:100px" @change="updateOrder('orderLevel')">
+            <el-select v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder" v-model="updateOrderInfo.orderLevel"  style="width:100px" @change="updateOrder('orderLevel')">
               <el-option v-for="item in orderLevelOptions" :key="item.levelId" :label="item.levelName" :value="item.levelId" />
             </el-select>
             <span class="oi-value" v-else>{{ orderinfoData.basicData.orderLevel || '' }}</span>
@@ -1447,7 +1447,7 @@ onBeforeUnmount(() => {
             <el-cascader
               v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder || isInDzjUpdateOrder"
               v-model="hotspot"
-              size="small"
+              
               :options="hotspotOptions"
               :props="hotspotProps"
               filterable
@@ -1459,12 +1459,12 @@ onBeforeUnmount(() => {
           <div class="oi-col oi-col-5">
             <span class="oi-key">是否有附件<span class="oi-suffix">：</span></span>
             <span class="oi-value">{{ isHaveFj ? '有' : '无' }}</span>
-            <el-button v-if="isHaveFj" size="small" link @click="lockAccssory">查看</el-button>
-            <el-button v-if="!(route.name == 'integratedQuery' && orderinfoData.basicData.orderSubStateName == '已归档' && !isShowbmxxAndgdbz)" size="small" link @click="openUploadFileWin">上传</el-button>
+            <el-button v-if="isHaveFj"  link @click="lockAccssory">查看</el-button>
+            <el-button v-if="!(route.name == 'integratedQuery' && orderinfoData.basicData.orderSubStateName == '已归档' && !isShowbmxxAndgdbz)"  link @click="openUploadFileWin">上传</el-button>
           </div>
           <div class="oi-col oi-col-7">
             <span class="oi-key">专项工作<span class="oi-suffix">：</span></span>
-            <el-select v-if="isInDzjUpdateOrder" v-model="updateOrderInfo.specialWork" size="small" style="width:68%" @change="updateOrder('specialWork')">
+            <el-select v-if="isInDzjUpdateOrder" v-model="updateOrderInfo.specialWork"  style="width:68%" @change="updateOrder('specialWork')">
               <el-option v-for="item in zxgzOptions" :key="item.dictId" :label="item.dictName" :value="item.dictId" />
             </el-select>
             <span class="oi-value" v-else>{{ orderinfoData.basicData.specialWork }}</span>
@@ -1477,7 +1477,7 @@ onBeforeUnmount(() => {
             <span class="oi-key">事发地址<span class="oi-suffix">：</span></span>
           </div>
           <div class="oi-col" style="width:91%">
-            <el-input v-if="isInDzjUpdateOrder" v-model="updateOrderInfo.orderAddr" size="small" style="width:80%" @blur="updateOrder('orderAddr')" />
+            <el-input v-if="isInDzjUpdateOrder" v-model="updateOrderInfo.orderAddr"  style="width:80%" @blur="updateOrder('orderAddr')" />
             <span class="oi-value" v-else>{{ orderinfoData.basicData.orderAddr }}</span>
           </div>
         </div>
@@ -1486,7 +1486,7 @@ onBeforeUnmount(() => {
         <div class="oi-row">
           <div class="oi-col oi-col-18">
             <span class="oi-key">标题<span class="oi-suffix">：</span></span>
-            <el-input v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder || isInDzjUpdateOrder" v-model="updateOrderInfo.title" size="small" style="width:90%" @blur="updateOrder('title')" />
+            <el-input v-if="isInMyOrderAndUpdateOrder || isInDfpAndUpdateOrder || isInDzjUpdateOrder" v-model="updateOrderInfo.title"  style="width:90%" @blur="updateOrder('title')" />
             <span class="oi-value" v-else style="white-space:pre-wrap">{{ orderinfoData.basicData.title }}</span>
           </div>
           <div class="oi-col oi-col-6">
@@ -1561,7 +1561,7 @@ onBeforeUnmount(() => {
             <div class="oi-col oi-col-6"><span class="oi-key">标准普通话<span class="oi-suffix">：</span></span><span class="oi-value">{{ orderinfoData.basicData.isBzpth ? '是' : '否' }}</span></div>
             <div class="oi-col oi-col-12">
               <span class="oi-key">人物画像<span class="oi-suffix">：</span></span>
-              <span class="oi-value"><el-tag v-for="(item, idx) in portrait" :key="idx" size="small" type="info" effect="plain" style="margin:0 2px">{{ item }}</el-tag></span>
+              <span class="oi-value"><el-tag v-for="(item, idx) in portrait" :key="idx"  type="info" effect="plain" style="margin:0 2px">{{ item }}</el-tag></span>
             </div>
             <div class="oi-col oi-col-6"><span class="oi-key">群众情绪<span class="oi-suffix">：</span></span><span class="oi-value">{{ orderinfoData.basicData.emotion }}</span></div>
           </div>
@@ -1651,9 +1651,9 @@ onBeforeUnmount(() => {
             <div class="oi-col oi-col-12">
               <span class="oi-key">处理人联系方式<span class="oi-suffix">：</span></span>
               <template v-if="isHaveSoftPhone && isLoginCTI">
-                <el-input v-model="orderinfoData.basicData.feedbackerTel" size="small" class="call-tel-input" />
-                <el-button v-if="ctiStore.ctiState == '通话'" size="small" type="danger" @click="guaduan(orderinfoData.basicData.feedbackerTel)">挂断</el-button>
-                <el-button v-else size="small" type="success" @click="hujiao(orderinfoData.basicData.feedbackerTel, 2, 2)">呼叫</el-button>
+                <el-input v-model="orderinfoData.basicData.feedbackerTel"  class="call-tel-input" />
+                <el-button v-if="ctiStore.ctiState == '通话'"  type="danger" @click="guaduan(orderinfoData.basicData.feedbackerTel)">挂断</el-button>
+                <el-button v-else  type="success" @click="hujiao(orderinfoData.basicData.feedbackerTel, 2, 2)">呼叫</el-button>
               </template>
               <span class="oi-value" v-else>{{ orderinfoData.basicData.feedbackerTel }}</span>
             </div>
@@ -1756,7 +1756,7 @@ onBeforeUnmount(() => {
           <el-pagination
             v-if="modifyrecordPageInfo.total > 0"
             style="text-align:right;margin-top:8px"
-            size="small"
+            
             background
             @size-change="modifyrecordsSizeChange"
             @current-change="modifyrecordsCurrentChange"
@@ -1821,7 +1821,7 @@ onBeforeUnmount(() => {
           </el-table>
           <el-pagination
             style="text-align:right;margin-top:8px"
-            size="small"
+            
             background
             @size-change="(s) => { lsgdPageData.pageSize = s; getLsgdList() }"
             @current-change="getLsgdList"
@@ -1843,14 +1843,14 @@ onBeforeUnmount(() => {
         <!-- Audio player -->
         <div v-if="audioWin" style="margin-bottom:8px">
           <Audio :the-url="audioUrl" :call-i-d="callID" @soundError="audioWin = false" />
-          <el-button size="small" @click="audioWin = false">关闭</el-button>
+          <el-button  @click="audioWin = false">关闭</el-button>
         </div>
 
         <el-card class="oi-card" shadow="never">
           <!-- Tab buttons -->
           <div class="handle-tabs">
-            <el-button :type="handleAll ? 'primary' : ''" size="small" @click="showHandleAll">所有</el-button>
-            <el-button v-for="(name, idx) in ['登记', '分派', '处理', '反馈', '回访', '归档']" :key="idx" size="small" @click="jump(idx)">{{ name }}</el-button>
+            <el-button :type="handleAll ? 'primary' : ''"  @click="showHandleAll">所有</el-button>
+            <el-button v-for="(name, idx) in ['登记', '分派', '处理', '反馈', '回访', '归档']" :key="idx"  @click="jump(idx)">{{ name }}</el-button>
           </div>
 
           <!-- All items view -->
@@ -2012,7 +2012,7 @@ onBeforeUnmount(() => {
       <el-table-column prop="createTime" label="上传时间" align="center" />
       <el-table-column prop="fileTypeName" label="附件类型" align="center" width="180" :filters="filters" :filter-method="filterTag">
         <template #default="{ row }">
-          <el-tag size="small" :type="getTagType(row.fileTypeCode, 1)" :effect="getTagType(row.fileTypeCode, 2)">{{ row.fileTypeName || '无' }}</el-tag>
+          <el-tag  :type="getTagType(row.fileTypeCode, 1)" :effect="getTagType(row.fileTypeCode, 2)">{{ row.fileTypeName || '无' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="120" align="center">
@@ -2027,7 +2027,7 @@ onBeforeUnmount(() => {
 
   <!-- Upload Dialog -->
   <el-dialog v-model="uploadFileWin" title="上传附件" append-to-body :close-on-click-modal="false" top="16vh" width="30%">
-    <el-form size="small" label-width="100px">
+    <el-form  label-width="100px">
       <el-row v-if="attachmentTypeOpt">
         <el-form-item label="附件类型">
           <el-select v-model="fileData.type" placeholder="请选择附件类型">
@@ -2054,7 +2054,7 @@ onBeforeUnmount(() => {
             :file-list="fileList"
           >
             <el-tooltip effect="dark" content="请上传doc,docx,pdf,jpeg,png,jpg,mp4,mp3,wav,m4a,zip,rar格式" placement="top">
-              <el-button size="small" type="primary">上传文件</el-button>
+              <el-button  type="primary">上传文件</el-button>
             </el-tooltip>
             <template #tip>
               <div style="color:red">只允许上传（doc,docx,pdf,jpeg,png,jpg,mp4,mp3,wav,m4a,zip,rar）格式的文件</div>
@@ -2077,13 +2077,13 @@ onBeforeUnmount(() => {
         :disabled-date="(time) => time.getTime() < Date.now()"
         placeholder="请选择限办时间"
         default-time="23:59:59"
-        size="small"
+        
         type="datetime"
       />
     </div>
     <template #footer>
-      <el-button @click="yqVisable = false" size="small">取消</el-button>
-      <el-button type="primary" @click="yuqiSubmit" :loading="yqLoading" size="small">确定</el-button>
+      <el-button @click="yqVisable = false" >取消</el-button>
+      <el-button type="primary" @click="yuqiSubmit" :loading="yqLoading" >确定</el-button>
     </template>
   </el-dialog>
 </template>

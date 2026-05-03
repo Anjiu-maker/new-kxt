@@ -38,7 +38,7 @@ async function handleSubmit() {
 <template>
   <el-dialog v-model="innerVisible" title="重办事务" width="900px" :close-on-click-modal="false" append-to-body @closed="formModel = { isReal:'是', isContactPerson:1, isReplyPerson:1, contactTime:'', replyTime:'', contactCause:'', replyCause:'', basicInfo:'', resultHandling:'', feedbackerDept:'', feedbackerName:'', feedbackerTel:'', deptSatisfactionss:2 }">
     <Orderinfo ref="orderInfoRef" />
-    <el-form label-width="110px" size="small" style="margin-top:12px">
+    <el-form label-width="110px"  style="margin-top:12px">
       <el-row :gutter="12">
         <el-col :span="8"><el-form-item label="是否属实"><el-select v-model="formModel.isReal"><el-option label="是" value="是" /><el-option label="否" value="否" /></el-select></el-form-item></el-col>
         <el-col :span="8"><el-form-item label="联系群众"><el-select v-model="formModel.isContactPerson"><el-option label="是" :value="1" /><el-option label="否" :value="0" /></el-select></el-form-item></el-col>

@@ -110,17 +110,17 @@ onMounted(() => { loadDicts() })
             <!-- 录音播放 -->
             <div v-if="audioWinMaster" style="margin-bottom:8px">
               <Audio :the-url="audioUrlMaster" :call-i-d="audioCallId" @soundError="audioWinMaster = false" />
-              <el-button size="small" @click="audioWinMaster = false">关闭</el-button>
+              <el-button  @click="audioWinMaster = false">关闭</el-button>
             </div>
 
             <!-- 市民信息 -->
             <div class="info-section">
               <div class="section-head">
                 <span>市民信息</span>
-                <el-button text type="primary" size="small" @click="qzbz = !qzbz">{{ qzbz ? '收起' : '展开' }}</el-button>
-                <el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" size="small" @click="playOrderSound">通话录音</el-button>
+                <el-button text type="primary"  @click="qzbz = !qzbz">{{ qzbz ? '收起' : '展开' }}</el-button>
+                <el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary"  @click="playOrderSound">通话录音</el-button>
               </div>
-              <el-form v-show="qzbz || true" label-width="80px" size="small">
+              <el-form v-show="qzbz || true" label-width="80px" >
                 <el-row :gutter="12">
                   <el-col :span="8">
                     <el-form-item label="市民姓名"><el-input v-model="model.name" placeholder="请输入市民姓名" clearable /></el-form-item>
@@ -128,7 +128,7 @@ onMounted(() => { loadDicts() })
                   <el-col :span="10">
                     <el-form-item label="呼叫号码">
                       <el-input v-model="model.callTel" placeholder="呼叫号码" maxlength="12" show-word-limit clearable @keyup.enter="getlsgdList" />
-                      <el-button size="small" style="margin-left:6px" @click="getlsgdList">查询</el-button>
+                      <el-button  style="margin-left:6px" @click="getlsgdList">查询</el-button>
                     </el-form-item>
                   </el-col>
                   <el-col :span="6">
@@ -155,7 +155,7 @@ onMounted(() => { loadDicts() })
             <!-- 工单信息 -->
             <div class="info-section">
               <div class="section-head"><span>工单信息</span></div>
-              <el-form label-width="80px" size="small">
+              <el-form label-width="80px" >
                 <el-row :gutter="12">
                   <el-col :span="8">
                     <el-form-item label="工单来源">
@@ -185,7 +185,7 @@ onMounted(() => { loadDicts() })
             <!-- 办理单位 -->
             <div class="info-section">
               <div class="section-head"><span>办理单位</span></div>
-              <el-form label-width="80px" size="small">
+              <el-form label-width="80px" >
                 <el-row :gutter="12">
                   <el-col :span="12">
                     <el-form-item label="处理部门">
@@ -214,7 +214,7 @@ onMounted(() => { loadDicts() })
         <el-col :span="10">
           <div class="form-panel">
             <div class="panel-head"><span>历史工单</span></div>
-            <el-table :data="lsgdList" border size="small" max-height="600">
+            <el-table :data="lsgdList" border  max-height="600">
               <el-table-column type="index" label="序号" width="50" align="center" />
               <el-table-column prop="orderNo" label="编号" width="180" show-overflow-tooltip />
               <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />

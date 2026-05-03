@@ -242,7 +242,7 @@ onMounted(async () => {
 
         <section class="panel" style="margin-top:14px">
           <header class="panel-header"><div class="panel-title"><el-icon><Tickets /></el-icon><strong>电话催办单</strong></div></header>
-          <el-table :data="tableData" border max-height="320" size="small">
+          <el-table :data="tableData" border max-height="320" >
             <el-table-column type="index" label="序号" width="50" align="center" />
             <el-table-column prop="orderNo" label="事务编号" width="140" show-overflow-tooltip />
             <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
@@ -251,10 +251,10 @@ onMounted(async () => {
             <el-table-column prop="orderStateName" label="状态" width="100" show-overflow-tooltip />
             <el-table-column label="操作" width="220" align="center" fixed="right">
               <template #default="{ row }">
-                <el-button type="primary" size="small" round @click="handleClick(row)">立即处理</el-button>
-                <el-button type="warning" size="small" round @click="sqdbRow = row; sqdbVisible = true">申请督办</el-button>
-                <el-button :icon="DocumentChecked" size="small" text @click="printOrder(row, 'print')" />
-                <el-button :icon="Printer" size="small" text @click="printOrder(row, 'zprint')" />
+                <el-button type="primary"  round @click="handleClick(row)">立即处理</el-button>
+                <el-button type="warning"  round @click="sqdbRow = row; sqdbVisible = true">申请督办</el-button>
+                <el-button :icon="DocumentChecked"  text @click="printOrder(row, 'print')" />
+                <el-button :icon="Printer"  text @click="printOrder(row, 'zprint')" />
                 <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18" @click="playSound(row)" style="cursor:pointer"><Microphone /></el-icon>
               </template>
             </el-table-column>
@@ -303,11 +303,11 @@ onMounted(async () => {
 
     <el-dialog v-model="zsd.detailVisible" title="查看知识点" width="70%" :close-on-click-modal="false" append-to-body>
       <div class="knowledge-detail">
-        <div class="kd-header"><h3>{{ zsd.detailRow.title }}</h3><el-button :type="zsd.detailIsSc?'warning':'default'" size="small" @click="knowledgeClickCSc(zsd.detailRow,zsd.detailIsSc?0:1)"><el-icon><StarFilled v-if="zsd.detailIsSc"/><Star v-else/></el-icon>{{ zsd.detailIsSc?'取消收藏':'添加收藏' }}</el-button></div>
+        <div class="kd-header"><h3>{{ zsd.detailRow.title }}</h3><el-button :type="zsd.detailIsSc?'warning':'default'"  @click="knowledgeClickCSc(zsd.detailRow,zsd.detailIsSc?0:1)"><el-icon><StarFilled v-if="zsd.detailIsSc"/><Star v-else/></el-icon>{{ zsd.detailIsSc?'取消收藏':'添加收藏' }}</el-button></div>
         <div class="kd-meta"><span>{{ zsd.detailRow.createUserName }}</span><span>创建于 {{ zsd.detailRow.createTime }}</span><span><el-icon><View /></el-icon> {{ zsd.detailRow.readTime }}</span><span>分类：{{ zsd.detailRow.classifyName }}</span></div>
         <div class="kd-content" v-html="zsd.detailRow.htmlContent"></div>
       </div>
-      <template #footer><el-button type="danger" size="small" @click="zsd.detailVisible=false">关闭</el-button></template>
+      <template #footer><el-button type="danger"  @click="zsd.detailVisible=false">关闭</el-button></template>
     </el-dialog>
 
     <el-dialog v-model="noticeDetailWin" title="查看公告" width="80%" append-to-body @close="noticeDetail={}">

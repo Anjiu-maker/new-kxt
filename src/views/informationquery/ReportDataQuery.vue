@@ -137,7 +137,7 @@ onMounted(() => {
           </el-select>
         </el-col>
         <el-col :span="2">
-          <el-button type="primary" size="small" @click="getData">查询</el-button>
+          <el-button type="primary"  @click="getData">查询</el-button>
         </el-col>
       </el-row>
       <div class="btn_grop" style="margin-top:16px">

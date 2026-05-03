@@ -44,7 +44,7 @@ function submit() {
     <span>小休类型：</span>
     <el-select
       v-model="restTime"
-      size="small"
+      
       clearable
       placeholder="请选择小休类型"
       style="width: 220px"
@@ -57,8 +57,8 @@ function submit() {
       />
     </el-select>
     <template #footer>
-      <el-button size="small" type="warning" @click="visible = false">取消</el-button>
-      <el-button size="small" type="primary" @click="submit">确定</el-button>
+      <el-button  type="warning" @click="visible = false">取消</el-button>
+      <el-button  type="primary" @click="submit">确定</el-button>
     </template>
   </el-dialog>
 </template>

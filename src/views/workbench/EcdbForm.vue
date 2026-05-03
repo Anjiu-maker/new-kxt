@@ -44,7 +44,7 @@ async function handleSubmit() {
 <template>
   <el-dialog v-model="innerVisible" title="再次督办" width="800px" :close-on-click-modal="false" append-to-body @closed="formModel.remarks=''; orderData={}">
     <div v-if="orderData.orderNo" class="order-brief">
-      <el-descriptions :column="2" border size="small">
+      <el-descriptions :column="2" border >
         <el-descriptions-item label="工单编号">{{ orderData.orderNo }}</el-descriptions-item>
         <el-descriptions-item label="工单类型">{{ orderData.orderTypeName }}</el-descriptions-item>
         <el-descriptions-item label="诉求人">{{ orderData.name }}</el-descriptions-item>

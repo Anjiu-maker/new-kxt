@@ -64,7 +64,7 @@ onMounted(() => loadDicts())
 
         <div class="info-section">
           <div class="section-head"><span>市民信息</span></div>
-          <el-form label-width="80px" size="small">
+          <el-form label-width="80px" >
             <el-row :gutter="12">
               <el-col :span="8"><el-form-item label="市民姓名"><el-input v-model="model.name" placeholder="请输入" clearable /></el-form-item></el-col>
               <el-col :span="8"><el-form-item label="呼叫号码"><el-input v-model="model.callTel" placeholder="呼叫号码" maxlength="12" show-word-limit clearable /></el-form-item></el-col>
@@ -79,7 +79,7 @@ onMounted(() => loadDicts())
 
         <div class="info-section">
           <div class="section-head"><span>工单信息</span></div>
-          <el-form label-width="80px" size="small">
+          <el-form label-width="80px" >
             <el-row :gutter="12">
               <el-col :span="8"><el-form-item label="专项工作"><el-select v-model="model.specialWork" placeholder="请选择" clearable filterable style="width:100%"><el-option v-for="o in dicts.specialWorkOptions" :key="o.dictId" :label="o.dictName" :value="o.dictId" /></el-select></el-form-item></el-col>
               <el-col :span="8"><el-form-item label="工单来源"><el-cascader v-model="model.orderOrigin" :options="dicts.orderOrigin" :props="{ value:'dictId', label:'dictName', children:'children' }" placeholder="请选择" clearable filterable style="width:100%" /></el-form-item></el-col>
@@ -92,7 +92,7 @@ onMounted(() => loadDicts())
 
         <div class="info-section">
           <div class="section-head"><span>办理单位</span></div>
-          <el-form label-width="80px" size="small">
+          <el-form label-width="80px" >
             <el-row :gutter="12">
               <el-col :span="12"><el-form-item label="处理部门"><el-cascader v-model="model.handlerDeptId" :options="dicts.deptOptions" :props="{ value:'deptId', label:'deptName', children:'children' }" placeholder="请选择" clearable filterable style="width:100%" /></el-form-item></el-col>
               <el-col :span="12"><el-form-item label="办理部门"><el-cascader v-model="model.acceptDeptId" :options="dicts.deptOptions" :props="{ value:'deptId', label:'deptName', children:'children' }" placeholder="请选择" clearable filterable style="width:100%" /></el-form-item></el-col>

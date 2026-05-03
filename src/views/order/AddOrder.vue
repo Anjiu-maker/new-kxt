@@ -1234,17 +1234,17 @@ onMounted(async () => {
           <div class="form-panel">
             <div v-if="audioWinMaster" style="margin: 8px">
               <Audio :the-url="audioUrlMaster" :call-i-d="audioCallId" @soundError="audioWinMaster = false" /><el-button
-                size="small" @click="audioWinMaster = false">关闭</el-button>
+                 @click="audioWinMaster = false">关闭</el-button>
             </div>
 
             <!-- 市民信息 -->
             <div class="info-section citizen-section">
               <div class="section-head">
-                <span>市民信息</span><el-button text type="primary" size="small" @click="qzbz = !qzbz">{{ qzbz ? "收起" : "展开"
-                  }}</el-button><el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" size="small"
+                <span>市民信息</span><el-button text type="primary"  @click="qzbz = !qzbz">{{ qzbz ? "收起" : "展开"
+                  }}</el-button><el-button v-if="computeSecrecy(model.haveSound) === 1" type="primary" 
                   @click="playOrderSound">通话录音</el-button>
               </div>
-              <el-form label-width="90px" size="small">
+              <el-form label-width="90px" >
                 <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="市民姓名"><el-input v-model="model.name" placeholder="请输入"
                         clearable /></el-form-item></el-col>
@@ -1275,8 +1275,8 @@ onMounted(async () => {
                 <el-row :gutter="12"><el-col :span="16"><el-form-item label="群众地址"><el-input v-model="model.addr"
                         clearable /></el-form-item></el-col><el-col :span="8" v-show="!qzbz">
                     <div class="citizen-actions">
-                      <el-button size="small" @click="getlsgdList">查询</el-button><el-button size="small" type="success"
-                        @click="hujiao(model.callTel)">呼叫</el-button><el-button size="small" @click="add0Click">{{
+                      <el-button  @click="getlsgdList">查询</el-button><el-button  type="success"
+                        @click="hujiao(model.callTel)">呼叫</el-button><el-button  @click="add0Click">{{
                           isTelAddZero ? "去0" : "加0"
                         }}</el-button>
                     </div>
@@ -1290,12 +1290,12 @@ onMounted(async () => {
             <!-- 受理单信息 -->
             <div class="info-section order-section">
               <div class="section-head">
-                <span>受理单信息</span><el-button size="small" @click="uploadFileWin = true">上传附件</el-button><el-button
-                  size="small" @click="isShowFj = true">查看附件</el-button><el-button size="small" type="warning"
-                  @click="intelligentExtraction">智能提取</el-button><el-button size="small"
-                  @click="getHotType">推荐热点</el-button><el-button size="small" @click="getMindTitle">推荐标题</el-button>
+                <span>受理单信息</span><el-button  @click="uploadFileWin = true">上传附件</el-button><el-button
+                   @click="isShowFj = true">查看附件</el-button><el-button  type="warning"
+                  @click="intelligentExtraction">智能提取</el-button><el-button 
+                  @click="getHotType">推荐热点</el-button><el-button  @click="getMindTitle">推荐标题</el-button>
               </div>
-              <el-form label-width="90px" size="small">
+              <el-form label-width="90px" >
                 <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="服务渠道"><el-cascader v-model="model.orderOrigin"
                         :options="swlyOptions" :props="{
@@ -1353,7 +1353,7 @@ onMounted(async () => {
             <!-- 办理信息 -->
             <div class="info-section handle-section">
               <div class="section-head"><span>办理信息</span></div>
-              <el-form label-width="90px" size="small">
+              <el-form label-width="90px" >
                 <el-row :gutter="12">
                   <el-col :span="8"><el-form-item label="办理方式"><el-select v-model="model.handleType"><el-option
                           v-for="h in handleTypeOptions" :key="h.value" :label="h.label"
@@ -1369,9 +1369,9 @@ onMounted(async () => {
                 <el-row :gutter="12">
                   <el-col :span="12"><el-form-item label="办理部门">
                       <div v-if="recommendedDeptActive && groupOptions.length" style="margin-bottom: 4px">
-                        <el-tag v-for="(g, gi) in groupOptions" :key="gi" size="small" type="success"
+                        <el-tag v-for="(g, gi) in groupOptions" :key="gi"  type="success"
                           style="cursor: pointer; margin: 2px" @click="selectRecommendedDept(g)">{{ g.deptName
-                          }}</el-tag><el-button text size="small" type="danger"
+                          }}</el-tag><el-button text  type="danger"
                           @click="recommendedDeptActive = false">关闭</el-button>
                       </div>
                       <SelectDeptOrUser ref="deptAndUserRef" v-model="model.handlerDeptId" :show-tabs="['dept']"
@@ -1379,12 +1379,12 @@ onMounted(async () => {
                     </el-form-item></el-col>
                   <el-col :span="12">
                     <div style="display: flex; gap: 4px; align-items: center">
-                      <span style="white-space: nowrap">电话1:</span><el-input v-model="tel1" size="small"
-                        style="width: 100px" /><el-button size="small" type="success"
-                        @click="hujiao(tel1)">呼叫</el-button><el-button size="small" type="danger"
-                        @click="guaduan(tel1)">挂断</el-button><el-button size="small"
-                        @click="createThreeCall(tel1)">三方</el-button><el-button size="small"
-                        @click="restoreCall">恢复</el-button><el-button size="small"
+                      <span style="white-space: nowrap">电话1:</span><el-input v-model="tel1" 
+                        style="width: 100px" /><el-button  type="success"
+                        @click="hujiao(tel1)">呼叫</el-button><el-button  type="danger"
+                        @click="guaduan(tel1)">挂断</el-button><el-button 
+                        @click="createThreeCall(tel1)">三方</el-button><el-button 
+                        @click="restoreCall">恢复</el-button><el-button 
                         @click="blindTransferFn(tel1)">盲转</el-button>
                     </div>
                     <div v-if="tel2" style="
@@ -1393,8 +1393,8 @@ onMounted(async () => {
                         align-items: center;
                         margin-top: 4px;
                       ">
-                      <span style="white-space: nowrap">电话2:</span><el-input v-model="tel2" size="small"
-                        style="width: 100px" /><el-button size="small" type="success"
+                      <span style="white-space: nowrap">电话2:</span><el-input v-model="tel2" 
+                        style="width: 100px" /><el-button  type="success"
                         @click="hujiao(tel2)">呼叫</el-button>
                     </div>
                   </el-col>
@@ -1411,7 +1411,7 @@ onMounted(async () => {
                           :value="h.value" /></el-select></el-form-item></el-col>
                 </el-row>
                 <el-form-item v-if="model.handleType === 3" label="短信模板"><el-input v-model="model.messageName"
-                    readonly /><el-button size="small" @click="loadMessageTemplates">选择模板</el-button><el-input
+                    readonly /><el-button  @click="loadMessageTemplates">选择模板</el-button><el-input
                     v-model="model.messageContent" style="margin-top: 4px" /></el-form-item>
                 <el-form-item label="处理意见"><el-input v-model="model.acceptCenterIdea" type="textarea"
                     :autosize="{ minRows: 3, maxRows: 8 }" maxlength="500" show-word-limit /></el-form-item>
@@ -1432,7 +1432,7 @@ onMounted(async () => {
               <el-button type="info" @click="missingKlgVisible = true">登记缺失</el-button>
               <el-button v-if="isEdit" @click="findSoundByOrderId">查录音</el-button>
               <el-button v-if="model.relevantOrderNode" @click="qxgl">取消关联: {{ model.relevantOrderNode }}</el-button>
-              <el-tag v-if="is110Checked" type="danger" size="small">110平台已分派</el-tag>
+              <el-tag v-if="is110Checked" type="danger" >110平台已分派</el-tag>
               <el-button type="primary" :loading="submitLoading" @click="directDispatch">直派</el-button>
               <el-button type="success" :loading="submitLoading" @click="handleSubmit(true)">继续受理</el-button>
               <el-button type="primary" :loading="submitLoading" @click="handleSubmit(false)">提交</el-button>
@@ -1458,58 +1458,58 @@ onMounted(async () => {
             </div>
             <div v-show="activeClass === 0" style="padding: 10px">
               <div style="display: flex; gap: 6px; margin-bottom: 8px">
-                <el-input v-model="zskKeyword" size="small" placeholder="关键字" @keyup.enter="searchZsk" /><el-button
-                  type="primary" size="small" @click="searchZsk">搜索</el-button>
+                <el-input v-model="zskKeyword"  placeholder="关键字" @keyup.enter="searchZsk" /><el-button
+                  type="primary"  @click="searchZsk">搜索</el-button>
               </div>
-              <el-table :data="zskList" size="small" border max-height="400"><el-table-column type="index"
+              <el-table :data="zskList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="title" label="标题" min-width="160"
                   show-overflow-tooltip /><el-table-column label="操作" width="60"><template #default="{ row }"><el-button
-                      link type="primary" size="small"
+                      link type="primary" 
                       @click="zskViewDetail(row)">查看</el-button></template></el-table-column></el-table>
               <el-pagination small background layout="total, prev, next" :total="zskPageInfo.total"
                 :page-size="zskPageInfo.pageSize" style="margin-top: 6px; justify-content: flex-end" />
             </div>
             <div v-show="activeClass === 1" style="padding: 10px">
-              <el-table :data="blxxList" size="small" border max-height="400"><el-table-column type="index"
+              <el-table :data="blxxList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="120"
                   show-overflow-tooltip /></el-table>
             </div>
             <div v-show="activeClass === 2" style="padding: 10px">
-              <el-table :data="lsgdList" size="small" border max-height="400"><el-table-column type="index"
+              <el-table :data="lsgdList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="120"
                   show-overflow-tooltip /><el-table-column label="时间" width="140"><template #default="{ row }">{{
                     fmtT(row.createTime)
                     }}</template></el-table-column><el-table-column label="操作" width="120"><template
-                    #default="{ row }"><el-button link type="primary" size="small"
-                      @click="ckDispose(row)">查看</el-button><el-button link type="warning" size="small"
+                    #default="{ row }"><el-button link type="primary" 
+                      @click="ckDispose(row)">查看</el-button><el-button link type="warning" 
                       @click="cbClick(row)">催办</el-button></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 3" style="padding: 10px">
               <div style="display: flex; gap: 6px; margin-bottom: 8px">
                 <el-date-picker v-model="xggdParams.startTime" type="date" value-format="YYYY-MM-DD" placeholder="开始"
-                  size="small" /><el-date-picker v-model="xggdParams.endTime" type="date" value-format="YYYY-MM-DD"
-                  placeholder="结束" size="small" /><el-button size="small" type="primary"
+                   /><el-date-picker v-model="xggdParams.endTime" type="date" value-format="YYYY-MM-DD"
+                  placeholder="结束"  /><el-button  type="primary"
                   @click="searchOrigin">检索</el-button>
               </div>
-              <el-table :data="xggdList" size="small" border max-height="350"><el-table-column type="index"
+              <el-table :data="xggdList"  border max-height="350"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
                   show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-button link
-                      type="primary" size="small" :disabled="setGlDisabled(row)"
+                      type="primary"  :disabled="setGlDisabled(row)"
                       @click="glRow(row)">关联</el-button></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 4" style="padding: 10px">
-              <el-table :data="lostgdList" size="small" border max-height="400"><el-table-column type="index"
+              <el-table :data="lostgdList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
                   show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-button link
-                      type="primary" size="small"
+                      type="primary" 
                       @click="glRow(row)">关联</el-button></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 5" style="padding: 10px">
-              <el-tag v-for="(rx, rxi) in rxList" :key="rxi" size="small" style="margin: 3px; cursor: pointer"
+              <el-tag v-for="(rx, rxi) in rxList" :key="rxi"  style="margin: 3px; cursor: pointer"
                 @click="hujiao(rx)">{{ rx }}</el-tag><el-empty v-if="!rxList.length" description="暂无热线数据"
                 :image-size="40" />
             </div>
@@ -1520,7 +1520,7 @@ onMounted(async () => {
 
     <Orderinfo ref="orderInfoRef" />
     <!-- 催办 -->
-    <el-dialog v-model="cbFormVisible" title="催办" width="420px" append-to-body><el-form size="small"><el-form-item
+    <el-dialog v-model="cbFormVisible" title="催办" width="420px" append-to-body><el-form ><el-form-item
           label="催办意见"><el-input v-model="cbModel.urgeContent" type="textarea"
             :autosize="{ minRows: 3 }" /></el-form-item></el-form><el-checkbox
         v-model="cbModel.isSendMessage">发送短信</el-checkbox><template #footer><el-button
@@ -1561,13 +1561,13 @@ onMounted(async () => {
     </el-dialog>
     <!-- 短信模板 -->
     <el-dialog v-model="messageTemplateVisible" title="短信模板" width="500px" append-to-body><el-table
-        :data="messageTemplateOptions" size="small" border max-height="400"><el-table-column prop="name"
+        :data="messageTemplateOptions"  border max-height="400"><el-table-column prop="name"
           label="模板名称" /><el-table-column prop="content" label="内容" show-overflow-tooltip /><el-table-column label="操作"
           width="60"><template #default="{ row }"><el-button link type="primary"
               @click="selectMessageTemplate(row)">选择</el-button></template></el-table-column></el-table><template
         #footer><el-button @click="messageTemplateVisible = false">关闭</el-button></template></el-dialog>
     <!-- 申请知识点 -->
-    <el-dialog v-model="zsdApplyVisible" title="申请知识点" width="500px" append-to-body><el-form size="small"
+    <el-dialog v-model="zsdApplyVisible" title="申请知识点" width="500px" append-to-body><el-form 
         label-width="80px"><el-form-item label="标题"><el-input
             v-model="zsdApplyForm.title" /></el-form-item><el-form-item label="内容"><el-input
             v-model="zsdApplyForm.content" type="textarea"
@@ -1575,7 +1575,7 @@ onMounted(async () => {
           @click="zsdApplyVisible = false">取消</el-button><el-button type="primary"
           @click="applyKnowledge">申请</el-button></template></el-dialog>
     <!-- 登记缺失知识点 -->
-    <el-dialog v-model="missingKlgVisible" title="登记缺失知识点" width="500px" append-to-body><el-form size="small"
+    <el-dialog v-model="missingKlgVisible" title="登记缺失知识点" width="500px" append-to-body><el-form 
         label-width="80px"><el-form-item label="标题"><el-input
             v-model="missingKlgForm.title" /></el-form-item><el-form-item label="原因"><el-input
             v-model="missingKlgForm.reason" type="textarea"
@@ -1583,7 +1583,7 @@ onMounted(async () => {
           @click="missingKlgVisible = false">取消</el-button><el-button type="primary"
           @click="registerMissing">登记</el-button></template></el-dialog>
     <!-- 受理人分派 -->
-    <el-dialog v-model="assignVisible" title="分派受理人" width="450px" append-to-body><el-form size="small"><el-form-item
+    <el-dialog v-model="assignVisible" title="分派受理人" width="450px" append-to-body><el-form ><el-form-item
           label="受理人"><el-select v-model="assignUserId" filterable placeholder="选择受理人" style="width: 100%"><el-option
               v-for="u in assignUserList" :key="u.userId || u.id" :label="u.userName || u.label"
               :value="u.userId || u.id" /></el-select></el-form-item></el-form><template #footer><el-button

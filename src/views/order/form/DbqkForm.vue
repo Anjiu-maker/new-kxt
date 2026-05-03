@@ -46,7 +46,7 @@ async function handleSubmit() {
 <template>
   <el-dialog v-model="innerVisible" title="督办情况" width="800px" :close-on-click-modal="false" append-to-body @closed="formModel = { remarks:'', dbType:null, dbTypeName:'' }">
     <Orderinfo ref="orderInfoRef" />
-    <el-form label-width="90px" size="small" style="margin-top:12px">
+    <el-form label-width="90px"  style="margin-top:12px">
       <el-form-item label="督办类型"><el-select v-model="formModel.dbType" placeholder="请选择" filterable style="width:100%" @change="handleDbTypeChange"><el-option v-for="d in dbTypeOptions" :key="d.dictId" :label="d.dictName" :value="d.dictId" /></el-select></el-form-item>
       <el-form-item label="督办意见"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="督办意见" maxlength="500" /></el-form-item>
     </el-form>

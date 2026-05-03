@@ -49,7 +49,7 @@ async function handleSubmit() {
     <div style="margin-top:12px"><span style="font-weight:600">催办方式：</span>
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">短信催办</el-radio><el-radio :label="1">电话催办</el-radio><el-radio :label="2">申请督办</el-radio></el-radio-group>
     </div>
-    <el-form label-width="90px" size="small" style="margin-top:12px">
+    <el-form label-width="90px"  style="margin-top:12px">
       <el-form-item v-show="handleTypeRadio !== 2" label="催办意见"><el-input v-model="(handleTypeRadio === 0 ? dxcbModel : dhcbModel).remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="催办意见" /></el-form-item>
       <el-form-item v-show="handleTypeRadio === 2" label="申请原因"><el-input v-model="sqdbModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="申请原因" /></el-form-item>
     </el-form>

@@ -44,7 +44,7 @@ async function handleClick(isAgree) {
 <template>
   <el-dialog v-model="innerVisible" :title="currentPage.title" width="800px" :close-on-click-modal="false" append-to-body @closed="formModel = { remarks:'' }">
     <Orderinfo ref="orderInfoRef" />
-    <el-form label-width="90px" size="small" style="margin-top:12px">
+    <el-form label-width="90px"  style="margin-top:12px">
       <el-form-item label="批示意见"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="批示意见" maxlength="500" /></el-form-item>
     </el-form>
     <template #footer>

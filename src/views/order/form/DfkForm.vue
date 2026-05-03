@@ -57,7 +57,7 @@ async function handleSubmit() {
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">上报事务</el-radio><el-radio :label="1">延期</el-radio><el-radio :label="2">处理记录</el-radio></el-radio-group>
     </div>
 
-    <el-form v-show="handleTypeRadio === 0" label-width="110px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 0" label-width="110px"  style="margin-top:12px">
       <el-row :gutter="12">
         <el-col :span="8"><el-form-item label="是否属实"><el-select v-model="fkModel.isReal"><el-option label="是" value="是" /><el-option label="否" value="否" /></el-select></el-form-item></el-col>
         <el-col :span="8"><el-form-item label="联系群众"><el-select v-model="fkModel.isContactPerson"><el-option label="是" :value="1" /><el-option label="否" :value="0" /></el-select></el-form-item></el-col>
@@ -76,12 +76,12 @@ async function handleSubmit() {
       </el-row>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 1" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 1" label-width="90px"  style="margin-top:12px">
       <el-form-item label="延期至"><el-date-picker v-model="yqModel.yqTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" /></el-form-item>
       <el-form-item label="延期原因"><el-input v-model="yqModel.reasonsDelay" type="textarea" :autosize="{ minRows:3 }" /></el-form-item>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 2" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 2" label-width="90px"  style="margin-top:12px">
       <el-form-item label="处理记录"><el-input v-model="clgcModel.processRecord" type="textarea" :autosize="{ minRows:3 }" /></el-form-item>
     </el-form>
 

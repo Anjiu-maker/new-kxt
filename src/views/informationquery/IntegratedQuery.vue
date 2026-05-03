@@ -633,15 +633,15 @@ onMounted(() => {
   <Container type="box" class="integrated-query" @resize="getTableHeight">
     <el-row>
       <el-col :span="12">
-        <el-button @click="emptyModel" type="warning" size="small">重置</el-button>
-        <el-button v-if="!showTable" @click="queryOrder(true)" type="primary" size="small" :loading="loading">查询</el-button>
-        <el-button v-else @click="backQuery" type="info" size="small">返回</el-button>
-        <el-button v-if="showTable" @click="openReportDialog" type="primary" size="small">导出Excel</el-button>
-        <el-button v-if="showTable" @click="openDialogVisible" type="success" size="small">批量导出Word</el-button>
+        <el-button @click="emptyModel" type="warning" >重置</el-button>
+        <el-button v-if="!showTable" @click="queryOrder(true)" type="primary"  :loading="loading">查询</el-button>
+        <el-button v-else @click="backQuery" type="info" >返回</el-button>
+        <el-button v-if="showTable" @click="openReportDialog" type="primary" >导出Excel</el-button>
+        <el-button v-if="showTable" @click="openDialogVisible" type="success" >批量导出Word</el-button>
       </el-col>
       <el-col :span="12" style="text-align:right">
-        <el-button v-if="!showTable" @click="openTemplateJoinItemWin" type="info" size="small">创建/设置模板</el-button>
-        <el-button v-else @click="styleTableshow" type="info" size="small">设置</el-button>
+        <el-button v-if="!showTable" @click="openTemplateJoinItemWin" type="info" >创建/设置模板</el-button>
+        <el-button v-else @click="styleTableshow" type="info" >设置</el-button>
       </el-col>
     </el-row>
 
@@ -653,7 +653,7 @@ onMounted(() => {
             <!-- Time Range (type 0) -->
             <template v-if="item.queryItemType === 0">
               <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
-              <el-date-picker v-model="model[item.queryItemCode]" clearable type="datetimerange" size="small"
+              <el-date-picker v-model="model[item.queryItemCode]" clearable type="datetimerange" 
                 value-format="YYYY-MM-DD HH:mm:ss" range-separator="-" :default-time="['00:00:00', '23:59:59']"
                 start-placeholder="开始日期" end-placeholder="结束日期" style="width:80%" />
             </template>
@@ -661,19 +661,19 @@ onMounted(() => {
             <template v-else-if="item.queryItemType === 1">
               <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
               <el-input v-if="item.queryItemCode === 'focusRemark'" v-model="model[item.queryItemCode]"
-                :placeholder="'请输入' + item.queryItemName" style="width:60%" clearable size="small" @blur="focusRemarkBlur" />
+                :placeholder="'请输入' + item.queryItemName" style="width:60%" clearable  @blur="focusRemarkBlur" />
               <el-input v-else v-model="model[item.queryItemCode]" :placeholder="'请输入' + item.queryItemName"
-                style="width:60%" clearable size="small" />
+                style="width:60%" clearable  />
             </template>
             <!-- Select (type 2) -->
             <template v-else-if="item.queryItemType === 2">
               <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
               <el-select v-if="item.queryItemCode === 'orderLevel'" v-model="model[item.queryItemCode]" multiple collapse-tags clearable
-                :placeholder="'请选择' + item.queryItemName" size="small" style="width:60%">
+                :placeholder="'请选择' + item.queryItemName"  style="width:60%">
                 <el-option v-for="son in item.data" :key="son.levelId" :label="son.levelName + ' (' + son.handleDays + '日)'" :value="son.levelId" />
               </el-select>
               <el-select v-else v-model="model[item.queryItemCode]" multiple collapse-tags clearable
-                :placeholder="'请选择' + item.queryItemName" size="small" style="width:60%">
+                :placeholder="'请选择' + item.queryItemName"  style="width:60%">
                 <el-option v-for="son in item.data" :key="son.dictId" :label="son.dictName" :value="son.dictId" />
               </el-select>
             </template>
@@ -682,26 +682,26 @@ onMounted(() => {
               <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
               <el-cascader v-if="item.queryItemCode === 'orderOrigin'" clearable collapse-tags
                 :placeholder="'请选择' + item.queryItemName" v-model="model[item.queryItemCode]"
-                :options="item.data" :props="originDictProps" filterable style="width:80%" size="small" />
+                :options="item.data" :props="originDictProps" filterable style="width:80%"  />
               <el-cascader v-else clearable :placeholder="'请选择' + item.queryItemName"
                 v-model="model[item.queryItemCode]" :options="item.data"
                 :props="item.queryItemCode === 'handlerDeptId' || item.queryItemCode === 'acceptDeptId' || item.queryItemCode === 'deptId' ? deptProps : (item.queryItemCode === 'hotspot' ? dictProps1 : dictProps)"
-                filterable style="width:60%" size="small" />
+                filterable style="width:60%"  />
             </template>
             <!-- Radio (type 4) -->
             <template v-else>
               <div style="line-height:33px">
                 <div class="text-justify"><span class="span-justify">{{ item.queryItemName }}:</span></div>
                 <el-select v-if="item.queryItemCode === 'isCallBackSuccess'" v-model="model[item.queryItemCode]"
-                  :placeholder="'请选择' + item.queryItemName" clearable size="small" style="width:60%">
+                  :placeholder="'请选择' + item.queryItemName" clearable  style="width:60%">
                   <el-option label="是" value="1" /><el-option label="否" value="0" />
                 </el-select>
                 <el-select v-else-if="item.queryItemCode === 'isTimelyReceive'" v-model="model[item.queryItemCode]"
-                  :placeholder="'请选择' + item.queryItemName" clearable size="small" style="width:60%">
+                  :placeholder="'请选择' + item.queryItemName" clearable  style="width:60%">
                   <el-option label="否" value="0" />
                 </el-select>
                 <el-select v-else v-model="model[item.queryItemCode]" :placeholder="'请选择' + item.queryItemName"
-                  clearable size="small" style="width:60%">
+                  clearable  style="width:60%">
                   <el-option v-for="son in (item.queryItemCode === 'sex' ? [{ label: '男', value: '1' }, { label: '女', value: '0' }] : [{ label: '是', value: '1' }, { label: '否', value: '0' }])"
                     :key="son.value" :label="son.label" :value="son.value" />
                 </el-select>
@@ -766,7 +766,7 @@ onMounted(() => {
     <el-dialog title="配置模板中的条件项" v-model="templateJoinItemWin" width="50%" :append-to-body="true" :close-on-click-modal="false" top="16vh">
       <el-row type="flex" align="middle">
         <el-col :span="6">
-          <el-select :disabled="!currentTemplate.tempId" v-model="currentTemplate.tempId" @change="changeTemplate" placeholder="请选择模板" size="small">
+          <el-select :disabled="!currentTemplate.tempId" v-model="currentTemplate.tempId" @change="changeTemplate" placeholder="请选择模板" >
             <el-option v-for="item in templateList" :key="item.tempId" :label="item.tempName" :value="item.tempId">
               <span style="float:left">{{ item.tempName }}</span>
               <span style="float:right;color:#8492a6;font-size:13px">{{ item.isDefault ? '默认模板' : '' }}</span>
@@ -795,7 +795,7 @@ onMounted(() => {
 
     <!-- Add Template Dialog -->
     <el-dialog title="添加综合查询模板" v-model="addTemplateWin" width="37%" :append-to-body="true" :close-on-click-modal="false" top="16vh">
-      <el-form ref="addTemplateForm" :rules="templateRules" size="small" :model="tempModel" label-width="120px" label-suffix=":">
+      <el-form ref="addTemplateForm" :rules="templateRules"  :model="tempModel" label-width="120px" label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="模板名称" prop="tempName">
@@ -824,7 +824,7 @@ onMounted(() => {
 
     <!-- Export Excel Dialog -->
     <el-dialog title="导出Excel" v-model="reportExcelWin" append-to-body top="20vh" :close-on-click-modal="false" width="700px" @close="() => {}">
-      <el-form :model="reportForm" :rules="reportRules" ref="ruleForm" size="small" label-width="110px">
+      <el-form :model="reportForm" :rules="reportRules" ref="ruleForm"  label-width="110px">
         <el-row>
           <el-col :span="12">
             <el-form-item label="文件名" prop="fileName"><el-input v-model="reportForm.fileName" /></el-form-item>
@@ -853,16 +853,16 @@ onMounted(() => {
         </el-row>
       </el-form>
       <template #footer>
-        <el-button @click="reportExcelWin = false" size="small">取消</el-button>
-        <el-button type="primary" @click="exportReportForm" :loading="reportExcelLoading" size="small">导出</el-button>
+        <el-button @click="reportExcelWin = false" >取消</el-button>
+        <el-button type="primary" @click="exportReportForm" :loading="reportExcelLoading" >导出</el-button>
       </template>
     </el-dialog>
 
     <!-- Set Export Template Dialog -->
     <el-dialog title="设置模板" v-model="isShowSetTemplate" append-to-body top="20vh" :close-on-click-modal="false" width="800px">
       <el-row>
-        <el-button size="small" type="primary" @click="checkAllAndCounter(1)">全选</el-button>
-        <el-button size="small" type="success" @click="checkAllAndCounter(2)">反选</el-button>
+        <el-button  type="primary" @click="checkAllAndCounter(1)">全选</el-button>
+        <el-button  type="success" @click="checkAllAndCounter(2)">反选</el-button>
       </el-row>
       <el-row>
         <el-checkbox-group v-model="reportTemplateAndSonItem">
@@ -872,8 +872,8 @@ onMounted(() => {
         </el-checkbox-group>
       </el-row>
       <template #footer>
-        <el-button @click="isShowSetTemplate = false" size="small">取消</el-button>
-        <el-button type="primary" @click="reportTemplateJoinItem" :loading="reportTemplateJoinItemLoading" size="small">确定</el-button>
+        <el-button @click="isShowSetTemplate = false" >取消</el-button>
+        <el-button type="primary" @click="reportTemplateJoinItem" :loading="reportTemplateJoinItemLoading" >确定</el-button>
       </template>
     </el-dialog>
 
@@ -882,8 +882,8 @@ onMounted(() => {
       <el-radio v-model="printType" :value="1">打印</el-radio>
       <el-radio v-model="printType" :value="2">交办打印</el-radio>
       <template #footer>
-        <el-button @click="dialogVisible = false" size="small">取消</el-button>
-        <el-button type="primary" @click="batchPrinting" :loading="batchPrintLoading" size="small">确定</el-button>
+        <el-button @click="dialogVisible = false" >取消</el-button>
+        <el-button type="primary" @click="batchPrinting" :loading="batchPrintLoading" >确定</el-button>
       </template>
     </el-dialog>
 
@@ -896,8 +896,8 @@ onMounted(() => {
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="wxhfFormVisible = false" size="small">取消</el-button>
-        <el-button @click="wxhfSubmit" :loading="wxhfLoading" type="primary" size="small">确定</el-button>
+        <el-button @click="wxhfFormVisible = false" >取消</el-button>
+        <el-button @click="wxhfSubmit" :loading="wxhfLoading" type="primary" >确定</el-button>
       </template>
     </el-dialog>
 

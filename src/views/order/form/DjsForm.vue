@@ -47,15 +47,15 @@ async function handleSubmit() {
       <el-radio-group v-model="handleTypeRadio"><el-radio :label="0">接收</el-radio><el-radio :label="1">退回</el-radio><el-radio :label="2">分派</el-radio></el-radio-group>
     </div>
 
-    <el-form v-show="handleTypeRadio === 0" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 0" label-width="90px"  style="margin-top:12px">
       <el-form-item label="处理意见"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="处理意见" maxlength="200" /></el-form-item>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 1" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 1" label-width="90px"  style="margin-top:12px">
       <el-form-item label="退回原因"><el-input v-model="formModel.remarks" type="textarea" :autosize="{ minRows:3 }" placeholder="退回原因" maxlength="200" /></el-form-item>
     </el-form>
 
-    <el-form v-show="handleTypeRadio === 2" label-width="90px" size="small" style="margin-top:12px">
+    <el-form v-show="handleTypeRadio === 2" label-width="90px"  style="margin-top:12px">
       <el-row :gutter="12">
         <el-col :span="12"><el-form-item label="处理部门"><SelectDeptOrUser ref="deptAndUserRef" v-model="formModel.handlerDeptId" :show-tabs="['dept']" :is-filter="true" /></el-form-item></el-col>
         <el-col :span="12"><el-form-item label="限办时间"><el-date-picker v-model="formModel.handleEndTime" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" /></el-form-item></el-col>

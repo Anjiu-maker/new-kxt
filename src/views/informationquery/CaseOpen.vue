@@ -237,22 +237,22 @@ onMounted(() => {
       <div class="search">
         <div class="pull-left">
           <el-date-picker v-model="paramCreateTime" clearable type="datetimerange"
-            size="small" format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"
+             format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"
             range-separator="-" :default-time="['00:00:00', '23:59:59']"
             start-placeholder="开始日期" end-placeholder="结束日期" style="width:330px" />&nbsp;
-          <el-input v-model="params.orderNo" clearable placeholder="请输入编号" size="small" style="width:170px" />&nbsp;
-          <el-input v-model="params.createUserName" clearable placeholder="请输入创建人" size="small" style="width:170px" />&nbsp;
-          <el-input v-model="params.title" clearable placeholder="请输入标题" size="small" style="width:170px" />&nbsp;
+          <el-input v-model="params.orderNo" clearable placeholder="请输入编号"  style="width:170px" />&nbsp;
+          <el-input v-model="params.createUserName" clearable placeholder="请输入创建人"  style="width:170px" />&nbsp;
+          <el-input v-model="params.title" clearable placeholder="请输入标题"  style="width:170px" />&nbsp;
           <el-radio-group v-model="params.isPublic" @change="refresh">
             <el-radio :value="1">是</el-radio>
             <el-radio :value="0">否</el-radio>
           </el-radio-group>
         </div>
-        <el-button type="primary" @click="refresh" size="small">查询</el-button>
+        <el-button type="primary" @click="refresh" >查询</el-button>
         <div class="pull-right">
-          <el-button @click="refresh" size="small">刷新</el-button>
-          <el-button type="primary" @click="add" size="small">添加</el-button>
-          <el-button type="danger" @click="del({})" size="small">批量删除</el-button>
+          <el-button @click="refresh" >刷新</el-button>
+          <el-button type="primary" @click="add" >添加</el-button>
+          <el-button type="danger" @click="del({})" >批量删除</el-button>
         </div>
       </div>
       <div class="list-wrap">
@@ -266,8 +266,8 @@ onMounted(() => {
           </template>
           <el-table-column label="操作" header-align="center" width="120" align="center">
             <template #default="{ row }">
-              <el-button @click="edit(row)" size="small">编辑</el-button>
-              <el-button @click="del(row)" type="danger" size="small">删除</el-button>
+              <el-button @click="edit(row)" >编辑</el-button>
+              <el-button @click="del(row)" type="danger" >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -279,12 +279,12 @@ onMounted(() => {
 
     <!-- Add Dialog -->
     <el-dialog title="添加案例公开" v-model="addWin" width="60%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="5vh">
-      <el-form ref="addForm" :rules="formRules" :model="model" label-width="120px" size="small" label-suffix=":">
+      <el-form ref="addForm" :rules="formRules" :model="model" label-width="120px"  label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="编号" prop="orderNo">
               <el-input ref="addFirstInput" v-model.trim="model.orderNo" placeholder="请输入编号" />
-              <el-button @click="findOrderByNo" size="small" style="margin-left:8px">查询</el-button>
+              <el-button @click="findOrderByNo"  style="margin-left:8px">查询</el-button>
             </el-form-item>
           </el-col>
           <el-col :span="11">
@@ -369,12 +369,12 @@ onMounted(() => {
 
     <!-- Edit Dialog -->
     <el-dialog title="编辑案例公开" v-model="editWin" width="60%" :append-to-body="true" :close-on-click-modal="false" :before-close="beforeClose" top="5vh">
-      <el-form ref="editForm" :rules="formRules" :model="model" label-width="120px" size="small" label-suffix=":">
+      <el-form ref="editForm" :rules="formRules" :model="model" label-width="120px"  label-suffix=":">
         <el-row>
           <el-col :span="11">
             <el-form-item label="编号" prop="orderNo">
               <el-input v-model.trim="model.orderNo" placeholder="请输入编号" />
-              <el-button @click="findOrderByNo" size="small" style="margin-left:8px">查询</el-button>
+              <el-button @click="findOrderByNo"  style="margin-left:8px">查询</el-button>
             </el-form-item>
           </el-col>
           <el-col :span="11">

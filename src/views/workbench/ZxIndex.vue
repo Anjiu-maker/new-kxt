@@ -596,7 +596,7 @@ onMounted(async () => {
             border
             max-height="320"
             v-loading="tableLoading"
-            size="small"
+            
           >
             <el-table-column type="index" label="序号" width="50" align="center" />
             <el-table-column prop="orderNo" label="事务编号" width="140" show-overflow-tooltip />
@@ -608,9 +608,9 @@ onMounted(async () => {
             <el-table-column prop="orderStateName" label="状态" width="100" show-overflow-tooltip />
             <el-table-column label="操作" width="220" align="center" fixed="right">
               <template #default="{ row }">
-                <el-button type="primary" size="small" round @click="handleClick(row)">立即处理</el-button>
-                <el-button :icon="DocumentChecked" size="small" text @click="printOrder(row, 'print')" />
-                <el-button :icon="Printer" size="small" text @click="printOrder(row, 'zprint')" />
+                <el-button type="primary"  round @click="handleClick(row)">立即处理</el-button>
+                <el-button :icon="DocumentChecked"  text @click="printOrder(row, 'print')" />
+                <el-button :icon="Printer"  text @click="printOrder(row, 'zprint')" />
                 <el-icon v-if="row.haveSoundName !== '无'" color="#e19f22" :size="18" @click="playSound(row)" style="cursor:pointer"><Microphone /></el-icon>
               </template>
             </el-table-column>
@@ -724,7 +724,7 @@ onMounted(async () => {
           <h3>{{ zsd.detailRow.title }}</h3>
           <el-button
             :type="zsd.detailIsSc ? 'warning' : 'default'"
-            size="small"
+            
             @click="knowledgeClickCSc(zsd.detailRow, zsd.detailIsSc ? 0 : 1)"
           >
             <el-icon><StarFilled v-if="zsd.detailIsSc" /><Star v-else /></el-icon>
@@ -742,7 +742,7 @@ onMounted(async () => {
         <div class="kd-content" v-html="zsd.detailRow.htmlContent"></div>
       </div>
       <template #footer>
-        <el-button type="danger" size="small" @click="knowledgeCloseDialog">关闭</el-button>
+        <el-button type="danger"  @click="knowledgeCloseDialog">关闭</el-button>
       </template>
     </el-dialog>
 

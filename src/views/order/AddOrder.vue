@@ -51,6 +51,9 @@ const isTelAddZero = ref(false);
 const isSpt = ref(false);
 const is110 = ref(false);
 const isMustSl = ref(false);
+const sptDisabled = ref(false);
+const sptHandleTime = ref("");
+const dockingId = ref(null);
 const recommendedDeptActive = ref(false);
 const groupOptions = ref([]);
 const tel1 = ref("");
@@ -130,6 +133,8 @@ const initModel = () => ({
   subDeptId: "",
   hffs: 6,
   releaseContent: "",
+  provinceThFlag: 0,
+  businessDeptId: null,
 });
 const model = reactive(initModel());
 
@@ -472,6 +477,10 @@ async function loadOrderData() {
     );
     if (r.data?.code === 200) {
       const d = r.data.data;
+      dockingId.value = d.dockingId || null;
+      sptHandleTime.value = d.sptHandleEndTime || "";
+      if (d.dockingId) sptDisabled.value = true;
+      if ((d.orderOriginName || "").includes("市长信箱")) isMustSl.value = true;
       const fields = [
         "name",
         "callTel",
@@ -501,6 +510,9 @@ async function loadOrderData() {
         "emotion",
         "hotspot1",
         "hotspot2",
+        "hotspot3",
+        "hotspot4",
+        "hotspot5",
         "orderTagName",
         "ageRange",
         "shotMessageNumber",
@@ -516,6 +528,7 @@ async function loadOrderData() {
         "messageName",
         "messageContent",
         "releaseContent",
+        "provinceThFlag",
       ];
       fields.forEach((f) => {
         if (d[f] !== undefined) model[f] = d[f];
@@ -543,6 +556,10 @@ async function loadOrderData() {
         d.dept5Id,
       ].filter((v) => v !== undefined && v !== null && v !== "");
       if (deptPath.length) model.deptId = deptPath;
+      const startStr = (d.createTime || "").substring(0, 4);
+      if (startStr && parseInt(startStr) < 2025) model.hotspot1 = [];
+      const hotspotLeaf = leafValue(model.hotspot1);
+      if (hotspotLeaf) getBindDept(hotspotLeaf);
       if (model.callTel) {
         getlsgdList();
         getblxxList();
@@ -551,46 +568,137 @@ async function loadOrderData() {
   } catch { }
 }
 
-// ── 提交 ──
-function getSubmitApi() {
-  if (model.handleType === 6) return "/orderInfo/applyDifficult";
-  return isEdit.value && model.handleType !== 0
-    ? "/orderInfo/zx_submit"
-    : "/orderInfo/save";
+// ── 填充名称 ──
+function fillNames() {
+  const originPath = normalizeSelectedPath(model.orderOrigin);
+  const originNodes = findTreePath(swlyOptions.value, originPath);
+  model.orderOriginName = originNodes[0]?.dictName || "";
+  model.orderOrigin2Name = originNodes[1]?.dictName || "";
+  model.orderOrigin3Name = originNodes[2]?.dictName || "";
+  const orderType = orderTypeOptions.value.find((item) => item.dictId == model.orderType);
+  model.orderTypeName = orderType?.dictName || "";
+  const level = orderLevelOptions.value.find((item) => item.levelId == model.orderLevel);
+  model.orderLevelName = level?.levelName || "";
+  model.orderLevelValue = level?.handleDays || "";
+  model.handleTypeName = handleTypeOptions.find((item) => item.value == model.handleType)?.label || "";
+  model.transferInfoName = transferInfoOptions.find((item) => item.value == model.transferInfo)?.label || "";
+  const hotspotPath = normalizeSelectedPath(model.hotspot1);
+  const hotspotNodes = findTreePath(hotspotOptions.value, hotspotPath);
+  for (let i = 0; i < 5; i++) {
+    model[`hotspot${i + 1}`] = hotspotPath[i] || "";
+    model[`hotspot${i + 1}Name`] = hotspotNodes[i]?.dictName || "";
+  }
+  const deptPath = normalizeSelectedPath(model.deptId);
+  const deptNodes = findTreePath(wtsdOptions.value, deptPath, "deptId");
+  model.deptName = deptNodes[deptNodes.length - 1]?.deptName || "";
+  for (let i = 0; i < 5; i++) model[`dept${i + 1}Id`] = deptPath[i] || "";
+  const ageData = ageRangeOptions.find((o) => o.dictId == model.ageRange);
+  model.ageRangeName = ageData?.dictName || "";
 }
 
-async function handleSubmit(continueAccept = false) {
-  if (!model.title) {
-    ElMessage.warning("请输入标题");
-    return;
+// ── 表单验证 ──
+function checkOutOrder() {
+  if (!model.name) { ElMessage.error("市民姓名为必填项！"); return false }
+  const originPath = normalizeSelectedPath(model.orderOrigin);
+  if (!originPath.length) { ElMessage.error("服务渠道为必填项！"); return false }
+  if (!model.orderType) { ElMessage.error("类型为必填项！"); return false }
+  if (!model.emotion) { ElMessage.error("群众情绪为必填项！"); return false }
+  const hotspotPath = normalizeSelectedPath(model.hotspot1);
+  if (!hotspotPath.length) { ElMessage.error("热点分类为必填项！"); return false }
+  if (!model.orderTagName) { ElMessage.error("诉求人类型为必填项！"); return false }
+  if (!model.orderAddr) { ElMessage.error("事发地址为必填项！"); return false }
+  const deptPath = normalizeSelectedPath(model.deptId);
+  if (!deptPath.length) { ElMessage.error("问题属地为必填项！"); return false }
+  if (!model.title) { ElMessage.error("标题为必填项！"); return false }
+  if (!model.callerContent) { ElMessage.error("内容为必填项！"); return false }
+  if (!model.handleType) { ElMessage.error("办理方式为必填项！"); return false }
+  if (!model.orderLevel) { ElMessage.error("级别为必填项！"); return false }
+  if (!model.handleEndTime) { ElMessage.error("办理时限为必填项！"); return false }
+  if (!model.handlerDeptId) { ElMessage.error("承办单位为必填项！"); return false }
+  return true
+}
+
+// ── 提交流程分发 ──
+async function doSave(handleTypeOverride, handleTypeName, opts = {}) {
+  const prevType = model.handleType;
+  const prevTypeName = model.handleTypeName;
+  if (handleTypeOverride !== undefined) {
+    model.handleType = handleTypeOverride;
+    model.handleTypeName = handleTypeName;
   }
-  if (!model.callerContent) {
-    ElMessage.warning("请输入内容");
-    return;
-  }
+  fillNames();
+  model.isNameSecurity = model.isNameSecurity ? 1 : 0;
+  delete model.visitTime;
+  const payload = buildSubmitPayload({ isTelAddZero: isTelAddZero.value });
+  if (isEdit.value) payload.orderId = orderId.value;
+  payload.isSubmit = opts.isSubmit ?? "1";
+  payload.isContinueAccept = opts.isContinueAccept ? 1 : 0;
+  payload.isSendMassMessage = sendMessage.value;
+  if (opts.provinceThFlag) payload.provinceThFlag = opts.provinceThFlag;
+  if (opts.isCall) payload.isCall = true;
+  const api = handleTypeOverride === 6 ? "/orderInfo/applyDifficult"
+    : isEdit.value && handleTypeOverride !== 0 ? "/orderInfo/zx_submit"
+    : "/orderInfo/save";
   try {
     submitLoading.value = true;
-    const payload = buildSubmitPayload({ isTelAddZero: isTelAddZero.value });
-    if (isEdit.value) payload.orderId = orderId.value;
-    payload.isContinueAccept = continueAccept ? 1 : 0;
-    payload.isSubmit = continueAccept ? "" : "1";
-    payload.isSendMassMessage = sendMessage.value;
-    const r = await http.post(getSubmitApi(), payload);
+    const r = await http.post(api, payload);
+    submitLoading.value = false;
     if (r.data?.code === 200) {
-      ElMessage.success(continueAccept ? "保存成功，继续受理" : "提交成功");
-      if (continueAccept) {
+      if (opts.isContinueAccept) {
         jxslHandlerModel();
+        prevType !== undefined && (model.handleType = prevType);
+        prevTypeName !== undefined && (model.handleTypeName = prevTypeName);
         return;
       }
+      ElMessage.success(r.data.message || "操作成功");
       workbenchNav?.openMenuByCode("zcsw");
     } else {
       ElMessage.error(r.data?.message || "操作失败");
+      model.handleType = prevType;
+      model.handleTypeName = prevTypeName;
     }
   } catch {
-    ElMessage.error("操作失败");
-  } finally {
     submitLoading.value = false;
+    ElMessage.error("操作失败");
+    model.handleType = prevType;
+    model.handleTypeName = prevTypeName;
   }
+}
+
+// ── 主提交入口 ──
+async function handleSubmit(continueAccept = false) {
+  if (continueAccept) {
+    await doSave(0, "暂存", { isContinueAccept: true, isSubmit: "" });
+    return;
+  }
+  fillNames();
+  model.isSendMassMessage = !sendMessage.value !== false && sendMessage.value;
+  if (!checkOutOrder()) return;
+  const handleType = model.handleType;
+  const typeNameMap = { 1: "直接答复", 2: "交办", 3: "不予受理", 4: "无效电话", 5: "其他", 6: "申请疑难", 7: "关联", 10: "退回省平台", 11: "退回110" };
+  const name = typeNameMap[handleType] || "提交";
+  if (handleType === 3 && !model.messageCode) {
+    ElMessage.error("不予受理时短信模板为必填项！"); return;
+  }
+  if (handleType === 6 && !model.groupLeaderOpinion) {
+    ElMessage.error("申请疑难时组长意见为必填项！"); return;
+  }
+  if (handleType === 1 && !model.acceptCenterIdea) {
+    ElMessage.error("直接答复时处理意见为必填项！"); return;
+  }
+  if ([3, 4, 5].includes(handleType) && !model.acceptCenterIdea) {
+    ElMessage.error(name + "处理意见为必填项！"); return;
+  }
+  try {
+    await ElMessageBox.confirm("您确认" + name + "此受理单吗?", "提示", {
+      confirmButtonText: "确定", cancelButtonText: "取消", type: "warning"
+    });
+  } catch { return }
+  const opts = {};
+  if (handleType === 10) opts.provinceThFlag = 1;
+  if (handleType === 11) opts.provinceThFlag = 2;
+  if (handleType === 6) opts.isSubmit = undefined;
+  await doSave(handleType, name, opts);
 }
 
 // ── 继续受理：重置表单保留电话/姓名 ──
@@ -1444,8 +1552,8 @@ onMounted(async () => {
                         maxlength="200" show-word-limit @change="searchOrigin" /></el-form-item></el-col>
                 </el-row>
                 <el-form-item class="caller-content-item"><template #label>
-                    <div class="caller-content-label"><span>反映内容</span><el-button link type="primary" 
-                        @click="intelligentExtraction">智能提取</el-button></div>
+                    <div class="caller-content-label"><span>反映内容</span><el-link style="display: block;" underline="never" type="primary" 
+                        @click="intelligentExtraction">智能提取</el-link></div>
                   </template><el-input v-model="model.callerContent" type="textarea"
                     :autosize="{ minRows: 9, maxRows: 12 }" placeholder="请输入反映内容" maxlength="3000"
                     show-word-limit /></el-form-item>
@@ -1604,9 +1712,9 @@ onMounted(async () => {
                   show-overflow-tooltip /><el-table-column label="时间" width="140"><template #default="{ row }">{{
                     fmtT(row.createTime)
                     }}</template></el-table-column><el-table-column label="操作" width="120"><template
-                    #default="{ row }"><el-button link type="primary" 
-                      @click="ckDispose(row)">查看</el-button><el-button link type="warning" 
-                      @click="cbClick(row)">催办</el-button></template></el-table-column></el-table>
+                    #default="{ row }"><el-link underline="never" type="primary" 
+                      @click="ckDispose(row)">查看</el-link><el-link underline="never" type="warning" 
+                      @click="cbClick(row)">催办</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 3" style="padding: 10px">
               <div style="display: flex; gap: 6px; margin-bottom: 8px">
@@ -1618,17 +1726,17 @@ onMounted(async () => {
               <el-table :data="xggdList"  border max-height="350"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
-                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-button link
+                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-link underline="never"
                       type="primary"  :disabled="setGlDisabled(row)"
-                      @click="glRow(row)">关联</el-button></template></el-table-column></el-table>
+                      @click="glRow(row)">关联</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 4" style="padding: 10px">
               <el-table :data="lostgdList"  border max-height="400"><el-table-column type="index"
                   width="40" /><el-table-column prop="orderNo" label="编号" width="160"
                   show-overflow-tooltip /><el-table-column prop="title" label="标题" min-width="140"
-                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-button link
+                  show-overflow-tooltip /><el-table-column label="关联"><template #default="{ row }"><el-link underline="never"
                       type="primary" 
-                      @click="glRow(row)">关联</el-button></template></el-table-column></el-table>
+                      @click="glRow(row)">关联</el-link></template></el-table-column></el-table>
             </div>
             <div v-show="activeClass === 5" style="padding: 10px">
               <el-tag v-for="(rx, rxi) in rxList" :key="rxi"  style="margin: 3px; cursor: pointer"
@@ -1685,8 +1793,8 @@ onMounted(async () => {
     <el-dialog v-model="messageTemplateVisible" title="短信模板" width="500px" append-to-body><el-table
         :data="messageTemplateOptions"  border max-height="400"><el-table-column prop="name"
           label="模板名称" /><el-table-column prop="content" label="内容" show-overflow-tooltip /><el-table-column label="操作"
-          width="60"><template #default="{ row }"><el-button link type="primary"
-              @click="selectMessageTemplate(row)">选择</el-button></template></el-table-column></el-table><template
+          width="60"><template #default="{ row }"><el-link underline="never" type="primary"
+              @click="selectMessageTemplate(row)">选择</el-link></template></el-table-column></el-table><template
         #footer><el-button @click="messageTemplateVisible = false">关闭</el-button></template></el-dialog>
     <!-- 申请知识点 -->
     <el-dialog v-model="zsdApplyVisible" title="申请知识点" width="500px" append-to-body><el-form 
